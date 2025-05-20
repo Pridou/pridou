@@ -1,10 +1,13 @@
 export enum TokenType {
     Alpha,
     Number,
+
     Equals,
     BinaryOperator,
+
     OpeningParenthesis,
     ClosingParenthesis,
+
     Let,
     Const,
 }
