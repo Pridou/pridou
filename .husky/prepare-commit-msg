@@ -1,0 +1,6 @@
+#!/bin/sh
+
+if [ -z "$HUSKY_SKIP_CZ_CHECK" ] && [ -z "$2" ]; then
+  echo "⛔️ Please use 'npm run commit' or 'bun commit' for your commits."
+  exit 1
+fi

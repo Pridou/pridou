@@ -1,11 +1,52 @@
 {
   "name": "pridou",
-  "module": "index.ts",
-  "type": "module",
-  "devDependencies": {
-    "@types/bun": "latest"
+  "version": "1.0.0",
+  "description": "The pridou interpreter.",
+  "main": "dist/index.js",
+  "bin": {
+    "pridou": "dist/cli.js"
   },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+  "type": "module",
+  "contributors": [],
+  "scripts": {
+    "start": "node .",
+    "dev": "tsx --watch src/index.ts",
+    "build": "tsc",
+    "check": "biome check",
+    "check:fix": "biome check --fix",
+    "format": "biome format",
+    "format:fix": "biome format --fix",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --fix",
+    "commit": "cross-env HUSKY_SKIP_CZ_CHECK=1 git-cz",
+    "prepare": "husky"
+  },
+  "homepage": "https://github.com/Pridou/pridou#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pridou/pridou.git"
+  },
+  "keywords": ["typescript", "interpreter", "cli", "library"],
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@types/bun": "latest",
+    "commitizen": "4.3.1",
+    "cross-env": "^7.0.3",
+    "cz-conventional-changelog": "3.3.0",
+    "husky": "^9.1.7",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
   }
 }

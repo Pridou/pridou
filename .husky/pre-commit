@@ -1,0 +1,3 @@
+#!/bin/sh
+
+npm run check --staged --no-errors-on-unmatched --colors=off
