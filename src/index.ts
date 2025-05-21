@@ -105,4 +105,4 @@ function tokenize(sourceCode: string): Token[] {
   return tokens;
 }
 
-console.log(tokenize("const x = 5"));
+export { tokenize };

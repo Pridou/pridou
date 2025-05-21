@@ -8,6 +8,6 @@
   "editor.formatOnSave": true,
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
-    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, jsconfig.json, tsconfig.json"
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, jsconfig.json, tsconfig.json, tsconfig.*.json"
   }
 }

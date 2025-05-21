@@ -2,16 +2,26 @@
   "name": "pridou",
   "version": "1.0.0",
   "description": "The pridou interpreter.",
-  "main": "dist/index.js",
+  "main": "lib/cjs/index.js",
+  "module": "lib/esm/index.js",
+  "types": "lib/cjs/index.d.ts",
   "bin": {
-    "pridou": "dist/cli.js"
+    "pridou": "bin/cli"
   },
   "type": "module",
-  "contributors": [],
+  "contributors": [
+    "cannotbefound (https://github.com/cannotbefound)",
+    "0BLV1V10N1 (https://github.com/0BL1V10N1)",
+    "Noam790 (https://github.com/Noam790)"
+  ],
   "scripts": {
     "start": "node .",
     "dev": "tsx --watch src/index.ts",
-    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest dev",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
     "check": "biome check",
     "check:fix": "biome check --fix",
     "format": "biome format",
@@ -19,7 +29,7 @@
     "lint": "biome lint",
     "lint:fix": "biome lint --fix",
     "commit": "cross-env HUSKY_SKIP_CZ_CHECK=1 git-cz",
-    "prepare": "husky"
+    "prepare": "node .husky/install.mjs"
   },
   "homepage": "https://github.com/Pridou/pridou#readme",
   "repository": {
@@ -32,13 +42,27 @@
     "@biomejs/biome": "1.9.4",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "@types/bun": "latest",
+    "@types/bun": "^1.2.13",
     "commitizen": "4.3.1",
     "cross-env": "^7.0.3",
     "cz-conventional-changelog": "3.3.0",
     "husky": "^9.1.7",
     "tsx": "^4.19.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
+  },
+  "files": ["lib/", "bin/", "README.md", "LICENCE"],
+  "exports": {
+    ".": {
+      "import": {
+        "default": "./lib/esm/index.js",
+        "types": "./lib/esm/index.d.ts"
+      },
+      "require": {
+        "default": "./lib/cjs/index.js",
+        "types": "./lib/cjs/index.d.ts"
+      }
+    }
   },
   "config": {
     "commitizen": {
@@ -47,6 +71,7 @@
   },
   "engines": {
     "node": ">=20",
-    "npm": ">=10"
+    "npm": ">=10",
+    "bun": ">=1.2.13"
   }
 }
