@@ -15,8 +15,8 @@
     "Noam790 (https://github.com/Noam790)"
   ],
   "scripts": {
-    "start": "node .",
-    "dev": "tsx --watch src/index.ts",
+    "start": "node bin/cli",
+    "dev": "node --watch bin/cli",
     "test": "vitest run",
     "test:watch": "vitest dev",
     "build": "npm run build:cjs && npm run build:esm",
@@ -36,6 +36,9 @@
     "type": "git",
     "url": "git+https://github.com/Pridou/pridou.git"
   },
+  "bugs": {
+    "url": "https://github.com/Pridou/pridou/issues"
+  },
   "keywords": ["typescript", "interpreter", "cli", "library"],
   "license": "MIT",
   "devDependencies": {
@@ -47,7 +50,6 @@
     "cross-env": "^7.0.3",
     "cz-conventional-changelog": "3.3.0",
     "husky": "^9.1.7",
-    "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4"
   },
