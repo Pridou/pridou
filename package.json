@@ -57,12 +57,12 @@
   "exports": {
     ".": {
       "import": {
-        "default": "./lib/esm/index.js",
-        "types": "./lib/esm/index.d.ts"
+        "types": "./lib/esm/index.d.ts",
+        "default": "./lib/esm/index.js"
       },
       "require": {
-        "default": "./lib/cjs/index.js",
-        "types": "./lib/cjs/index.d.ts"
+        "types": "./lib/cjs/index.d.ts",
+        "default": "./lib/cjs/index.js"
       }
     }
   },
@@ -73,7 +73,7 @@
   },
   "engines": {
     "node": ">=20",
-    "npm": ">=10",
-    "bun": ">=1.2.13"
+    "bun": ">=1.2.13",
+    "npm": ">=10"
   }
 }
