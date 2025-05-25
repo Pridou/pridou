@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
 import { tokenize } from "../lib/esm/index.js";
+import { Parser } from "../lib/esm/parser/parser.js"
 
-console.log(tokenize("const x = 5"));
+const parser = new Parser(tokenize("const x = 5"));
+const ast = parser.parse();
+console.log(JSON.stringify(ast, null, 2));

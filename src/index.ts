@@ -105,4 +105,5 @@ function tokenize(sourceCode: string): Token[] {
   return tokens;
 }
 
-export { tokenize };
+export { tokenize, TokenType };
+export type { Token };
