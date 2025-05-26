@@ -8,6 +8,8 @@ import {
 	type InterpreterNumber,
 } from "./types/index.ts";
 
+import { tokenize } from "./src/lexer";
+
 ((): void => {
 	const parser: Parser = new Parser();
 	const environment: Environment = new Environment();
@@ -28,6 +30,8 @@ import {
 	}, true); */
 
 	// Bun.file("./src/demos/index.pri").text().then(v => console.log(parser.toAST(v)));
+
+console.log(tokenize('const x = "bonjour";'));
 
 	while (true) {
 		const input: string | null = prompt();

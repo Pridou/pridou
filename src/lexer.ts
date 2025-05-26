@@ -26,8 +26,6 @@ const canBeSkippedValues: Set<string> = new Set<string>([
 	"\r",
 	"\t",
 	"\v",
-	"'",
-	'"',
 	"\\",
 ]);
 
@@ -38,8 +36,10 @@ function shouldBeSkipped(value: string): boolean {
 export function tokenize(sourceCode: string): LexerToken[] {
 	const tokens: LexerToken[] = [];
 	const source: string[] = <string[]>sourceCode.split("");
-
+	let str="";
+	let bool = false;
 	while (source.length > 0) {
+<<<<<<< HEAD
 		const token = source[0]
 		const keys = Object.keys(config);
 		const type = config[token];
@@ -47,6 +47,63 @@ export function tokenize(sourceCode: string): LexerToken[] {
 			tokens.push(toToken(type, token));
 			continue;
 		}
+=======
+		switch (source[0]) {
+			case '"':
+				source.shift();
+				if (bool) {
+					tokens.push(toToken(LexerTokenType.String, str));
+				}
+
+				bool = !bool;
+
+				break;
+
+			case "=":
+				tokens.push(toToken(LexerTokenType.Equals, source.shift()));
+				break;
+			case "%":
+			case "*":
+			case "+":
+			case "-":
+			case "/":
+				tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
+				break;
+			case ",":
+				tokens.push(toToken(LexerTokenType.Comma, source.shift()));
+				break;
+			case ":":
+				tokens.push(toToken(LexerTokenType.Colon, source.shift()));
+				break;
+			case ";":
+				tokens.push(toToken(LexerTokenType.Semicolon, source.shift()));
+				break;
+			case "(":
+				tokens.push(toToken(LexerTokenType.OpeningParenthesis, source.shift()));
+				break;
+			case ")":
+				tokens.push(toToken(LexerTokenType.ClosingParenthesis, source.shift()));
+				break;
+			case "{":
+				tokens.push(toToken(LexerTokenType.OpeningCurlyBracket, source.shift()));
+				break;
+			case "}":
+				tokens.push(toToken(LexerTokenType.ClosingCurlyBracket, source.shift()));
+				break;
+			case "[":
+				tokens.push(toToken(LexerTokenType.OpeningSquareBracket, source.shift()));
+				break;
+			case "]":
+				tokens.push(toToken(LexerTokenType.ClosingSquareBracket, source.shift()));
+				break;
+			default:
+				if (bool) {
+					str += source.shift();
+
+					break;
+				}
+
+>>>>>>> 2725173b9c80ced0ca5f7adf4b1c7dd2c226e104
 				if (isAlpha(source[0])) {
 					let alpha: string = "";
 
@@ -63,17 +120,26 @@ export function tokenize(sourceCode: string): LexerToken[] {
 					let number: string = "";
 
 					while (source.length > 0 && isNumber(source[0])) {
-						number += source.shift();
+						number += source.shift(); 
 					}
+					if (source[0] === ".") {
+						number += source.shift() ;
 
-					tokens.push(toToken(LexerTokenType.Number, number));
-
-					break;
+						while (source.length > 0 && isNumber(source[0])) {
+							number += source.shift();
+						}
+						tokens.push(toToken(LexerTokenType.Float, number));
+						break;
+					} 
+					
+					else {
+						tokens.push(toToken(LexerTokenType.Number, number));
+						break;
+					}
 				}
 
 				if (shouldBeSkipped(source[0])) {
 					source.shift();
-
 					break;
 				}
 
