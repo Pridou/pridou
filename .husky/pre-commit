@@ -1,5 +1,4 @@
 #!/bin/sh
 
 npx biome check --staged --no-errors-on-unmatched --colors=off
-# npm test
-#! decomment npm test
+npm test

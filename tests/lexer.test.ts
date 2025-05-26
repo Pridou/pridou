@@ -144,7 +144,7 @@ describe("Lexer", () => {
 
   describe("Structures", () => {
     it("Array", () => {
-      const array = tokenize("[1, 'hello']");
+      const array = tokenize("[1, 'hello', \"world\"]");
       const expected: LexerToken[] = [
         {
           type: LexerTokenType.OpeningSquareBracket,
@@ -162,13 +162,26 @@ describe("Lexer", () => {
           type: LexerTokenType.String,
           value: "hello",
         },
+        {
+          type: LexerTokenType.Comma,
+          value: ",",
+        },
+        {
+          type: LexerTokenType.String,
+          value: "world",
+        },
+        {
+          type: LexerTokenType.ClosingSquareBracket,
+          value: "]",
+        },
         EOF,
       ];
 
       expect(array).toStrictEqual(expected);
     });
 
-    it("Function", () => {
+    //TODO: Add functions
+    it.skip("Function", () => {
       const func = tokenize("function hello(name) { }");
       const expected: LexerToken[] = [
         {

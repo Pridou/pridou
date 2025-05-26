@@ -38,22 +38,31 @@ export function tokenize(sourceCode: string): LexerToken[] {
   const source: string[] = <string[]>sourceCode.split("");
   let str = "";
   let isBuildStr = false;
+  let stringDelimiter: string | null = null;
 
   while (source.length > 0) {
     switch (source[0]) {
       case "'":
-      case '"':
-        if (isBuildStr && source[0] === "'") continue;
+      case '"': {
+        const currentDelimiter = source.shift() ?? null;
 
-        source.shift();
+        if (isBuildStr && currentDelimiter !== stringDelimiter) {
+          str += currentDelimiter;
+          continue;
+        }
+
         if (isBuildStr) {
           tokens.push(toToken(LexerTokenType.String, str));
           str = "";
+          stringDelimiter = null;
+        } else {
+          stringDelimiter = currentDelimiter;
         }
 
         isBuildStr = !isBuildStr;
 
         break;
+      }
 
       case "=":
         tokens.push(toToken(LexerTokenType.Equals, source.shift()));
