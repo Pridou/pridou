@@ -38,6 +38,7 @@ export interface LexerToken {
 export enum ASTNodeType {
 	Program = "Program",
 
+	FunctionDeclaration = "FunctionDeclaration",
 	VariableDeclaration = "VariableDeclaration",
 
 	Alpha = "Alpha",
@@ -65,6 +66,10 @@ export interface ASTProgram extends ASTStatement {
 export interface ASTArray extends ASTStatement {
 	type: ASTNodeType.Array;
 	body: ASTStatement[];
+}
+
+export interface ASTFunctionDeclaration extends ASTStatement {
+	type: ASTNodeType.FunctionDeclaration;
 }
 
 export interface ASTVariableDeclaration extends ASTStatement {
