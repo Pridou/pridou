@@ -213,7 +213,7 @@ export default class Parser {
 	}
 
 	private parseIfStatement(): ASTIfStatement{
-	this.#tokens.shift(); // consume 'if'
+	this.#tokens.shift(); 
 
 	if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
 		throw new InvalidTokenError("Expected '(' after 'if'");
