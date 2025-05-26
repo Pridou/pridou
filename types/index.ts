@@ -41,12 +41,12 @@ export enum ASTNodeType {
 	
 	Alpha = "Alpha",
 	Number = "Number",
-<<<<<<< HEAD
+
 	String = "String",
-=======
+
 	Float = "Float",
 	Array = "Array",
->>>>>>> 88267440d599ade4594bb5a63770901a11ee6e40
+
 	
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",

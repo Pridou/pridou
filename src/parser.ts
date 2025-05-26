@@ -5,6 +5,7 @@ import {
 	type ASTAssignmentExpression,
 	type ASTBinaryExpression,
 	type ASTExpression,
+	type ASTString,
 	type ASTNumber,
 	type ASTProgram,
 	type ASTStatement,
@@ -125,7 +126,7 @@ export default class Parser {
 				return expression;
 			}
 			case LexerTokenType.String:
-				return <ASTString{
+				return <ASTString>{
 					type: ASTNodeType.String,
 					value: this.#tokens.shift()?.value,
 				};

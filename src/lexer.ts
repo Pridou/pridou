@@ -36,7 +36,8 @@ function shouldBeSkipped(value: string): boolean {
 export function tokenize(sourceCode: string): LexerToken[] {
 	const tokens: LexerToken[] = [];
 	const source: string[] = <string[]>sourceCode.split("");
-
+	let str="";
+	let bool = false;
 	while (source.length > 0) {
 		switch (source[0]) {
 			case '"':
