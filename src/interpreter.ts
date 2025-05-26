@@ -1,64 +1,47 @@
-import type Environment from "@/src/environment";
-import { InvalidNodeError , InvalidTokenError} from "@/src/errs";
-import {
-	type ASTAlpha,
-	type ASTArray,
-	type ASTAssignmentExpression,
-	type ASTBinaryExpression,
-	ASTNodeType,
-	type ASTNumber,
-	type ASTProgram,
-	type ASTStatement,
-	type ASTString,
-	type ASTVariableDeclaration,
-	type InterpreterArray,
-	type InterpreterNull,
-	type InterpreterNumber,
-	type InterpreterString,
-	type InterpreterValue,
-	InterpreterValueType,
-} from "@/types";
+import Environment from '@/src/environment';
+import {InvalidNodeError, InvalidTokenError} from '@/src/errs';
+import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterNull, type InterpreterNumber, type InterpreterObject, type InterpreterString, type InterpreterValue, InterpreterValueType,} from '@/types';
 
 export function evaluate(
-	node: ASTStatement,
-	environment: Environment,
-): InterpreterValue {
-	switch (node.type) {
-		case ASTNodeType.Program: {
-			let lastEvaluatedValue: InterpreterValue = {
-				type: InterpreterValueType.Null,
-				value: null,
-			} as InterpreterNull;
+    node: ASTStatement,
+    environment: Environment,
+    ): InterpreterValue {
+  switch (node.type) {
+    case ASTNodeType.Program: {
+      let lastEvaluatedValue: InterpreterValue = {
+        type: InterpreterValueType.Null,
+        value: null,
+      } as InterpreterNull;
 
-			for (const statement of (<ASTProgram>node).body) {
-				lastEvaluatedValue = evaluate(statement, environment);
-			}
+      for (const statement of (<ASTProgram>node).body) {
+        lastEvaluatedValue = evaluate(statement, environment);
+      }
 
-			return lastEvaluatedValue;
-		}
-		case ASTNodeType.VariableDeclaration:
-			return environment.addVariable(
-				(<ASTVariableDeclaration>node).alpha,
-				// FIXME:
-				evaluate((<ASTVariableDeclaration>node).value!, environment) ??
-					<InterpreterNull>{
-						type: InterpreterValueType.Null,
-						value: null,
-					},
-				(<ASTVariableDeclaration>node).metadata.isConstant,
-			);
-		case ASTNodeType.Alpha:
-			return environment.getVariable((<ASTAlpha>node).value);
-		case ASTNodeType.Number:
-			return <InterpreterNumber>{
-				type: InterpreterValueType.Number,
-				value: (<ASTNumber>node).value,
-			};
-		case ASTNodeType.Float:
-			return <InterpreterNumber>{
-				type: InterpreterValueType.Number,
-				value: (<ASTNumber>node).value,
-			};
+      return lastEvaluatedValue;
+    }
+    case ASTNodeType.VariableDeclaration:
+      return environment.addVariable(
+          (<ASTVariableDeclaration>node).alpha,
+          // FIXME:
+          evaluate((<ASTVariableDeclaration>node).value!, environment) ??
+              <InterpreterNull>{
+                type: InterpreterValueType.Null,
+                value: null,
+              },
+          (<ASTVariableDeclaration>node).metadata.isConstant,
+      );
+    case ASTNodeType.Alpha:
+      return environment.getVariable((<ASTAlpha>node).value);
+    case ASTNodeType.Number:
+      return <InterpreterNumber>{
+        type: InterpreterValueType.Number,
+        value: (<ASTNumber>node).value,
+      };
+    case ASTNodeType.Float:
+      return <InterpreterNumber>{
+        type: InterpreterValueType.Number,
+        value: (<ASTNumber>node).value,
+      };
 
     case ASTNodeType.BinaryExpression: {
       const leftHandSide =
@@ -72,7 +55,8 @@ export function evaluate(
           rightHandSide.type === InterpreterValueType.String) {
         return <InterpreterString>{
           type: InterpreterValueType.String,
-          value: (<InterpreterString>leftHandSide).value.concat((<InterpreterString>rightHandSide).value)
+          value: (<InterpreterString>leftHandSide)
+                     .value.concat((<InterpreterString>rightHandSide).value)
         };
       }
 
@@ -85,10 +69,9 @@ export function evaluate(
             (<InterpreterString>leftHandSide).value :
             (<InterpreterString>rightHandSide).value;
 
-				const count =
-					leftHandSide.type === InterpreterValueType.Number
-						? (<InterpreterNumber>leftHandSide).value
-						: (<InterpreterNumber>rightHandSide).value;
+        const count = leftHandSide.type === InterpreterValueType.Number ?
+            (<InterpreterNumber>leftHandSide).value :
+            (<InterpreterNumber>rightHandSide).value;
 
         if (count < 0) {
           throw new InvalidTokenError(
@@ -107,59 +90,116 @@ export function evaluate(
         const rightValue = (<InterpreterNumber>rightHandSide).value;
         let value = 0;
 
-				switch ((<ASTBinaryExpression>node).binaryOperator) {
-					case "%":
-						value = leftValue % rightValue;
-						break;
-					case "*":
-						value = leftValue * rightValue;
-						break;
-					case "+":
-						value = leftValue + rightValue;
-						break;
-					case "-":
-						value = leftValue - rightValue;
-						break;
-					case "/":
-						value = leftValue / rightValue;
-						break;
-				}
+        switch ((<ASTBinaryExpression>node).binaryOperator) {
+          case '%':
+            value = leftValue % rightValue;
+            break;
+          case '*':
+            value = leftValue * rightValue;
+            break;
+          case '+':
+            value = leftValue + rightValue;
+            break;
+          case '-':
+            value = leftValue - rightValue;
+            break;
+          case '/':
+            value = leftValue / rightValue;
+            break;
+        }
 
-				return <InterpreterNumber>{
-					type: InterpreterValueType.Number,
-					value,
-				};
-			}
+        return <InterpreterNumber>{
+          type: InterpreterValueType.Number,
+          value,
+        };
+      }
 
-			return <InterpreterNull>{ type: InterpreterValueType.Null, value: null };
-		}
-		case ASTNodeType.AssignmentExpression:
-			if ((<ASTAssignmentExpression>node).assignee.type !== ASTNodeType.Alpha) {
-				// TODO: Add custom error
-				throw Error;
-			}
+      return <InterpreterNull>{type: InterpreterValueType.Null, value: null};
+    }
+    case ASTNodeType.AssignmentExpression: {
+      const assignee = (<ASTAssignmentExpression>node).assignee;
 
-			return environment.setVariable(
-				(<ASTAlpha>(<ASTAssignmentExpression>node).assignee).value,
-				evaluate((<ASTAssignmentExpression>node).value, environment),
-			);
+      if (assignee.type === ASTNodeType.ObjectAttribute) {
+        const object =
+            evaluate((<ASTObjectAttribute>assignee).object, environment);
+        if (object.type !== InterpreterValueType.Object) {
+          throw new InvalidTokenError(
+              'Cannot assign to property of non-object value');
+        }
 
-		case ASTNodeType.String:
-			return <InterpreterString>{
-				type: InterpreterValueType.String,
-				value: (<ASTString>node).value,
-			};
+        const propertyName =
+            (<ASTAlpha>(<ASTObjectAttribute>assignee).property).value;
+        const value =
+            evaluate((<ASTAssignmentExpression>node).value, environment);
 
-		case ASTNodeType.Array: {
-			const elements: InterpreterValue[] = [];
-			for (const expression of (<ASTArray>node).body) {
-				elements.push(evaluate(expression, environment));
-			}
+        (<InterpreterObject>object).properties[propertyName] = value;
+        (<InterpreterObject>object)
+            .environment.setVariable(propertyName, value);
 
-			return <InterpreterArray>{ type: InterpreterValueType.Array, elements };
-		}
+        return value;
+      }
 
-		default:
-			throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);
-	}
+      if (assignee.type === ASTNodeType.Alpha) {
+        return environment.setVariable(
+            (<ASTAlpha>assignee).value,
+            evaluate((<ASTAssignmentExpression>node).value, environment));
+      }
+
+      throw new InvalidTokenError('Invalid assignment target');
+    }
+
+    case ASTNodeType.String:
+      return <InterpreterString>{
+        type: InterpreterValueType.String,
+        value: (<ASTString>node).value,
+      };
+
+    case ASTNodeType.Array: {
+      const elements: InterpreterValue[] = [];
+      for (const expression of (<ASTArray>node).body) {
+        elements.push(evaluate(expression, environment));
+      }
+
+      return <InterpreterArray>{type: InterpreterValueType.Array, elements};
+    }
+
+    case ASTNodeType.Object: {
+      const properties: {[key: string]: InterpreterValue} = {};
+      const objectEnv = new Environment(environment);
+
+      for (const [key, expr] of Object.entries((<ASTObject>node).properties)) {
+        const value = evaluate(expr, environment);
+        properties[key] = value;
+        objectEnv.addVariable(key, value, false);
+      }
+
+      return <InterpreterObject>{
+        type: InterpreterValueType.Object,
+        properties,
+        environment: objectEnv
+      };
+    }
+
+    case ASTNodeType.ObjectAttribute: {
+      const object = evaluate((<ASTObjectAttribute>node).object, environment);
+      if (object.type !== InterpreterValueType.Object) {
+        throw new InvalidTokenError(
+            'Cannot access property of non-object value');
+      }
+
+      const propertyName =
+          (<ASTAlpha>(<ASTObjectAttribute>node).property).value;
+      const property = (<InterpreterObject>object).properties[propertyName];
+
+      if (!property) {
+        throw new InvalidTokenError(
+            `Property '${propertyName}' does not exist`);
+      }
+
+      return property;
+    }
+
+    default:
+      throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);
+  }
 }

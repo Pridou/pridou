@@ -1,3 +1,5 @@
+import type Environment from "@/src/environment";
+
 // Lexer
 
 export enum LexerTokenType {
@@ -17,6 +19,7 @@ export enum LexerTokenType {
 	Comma = "Comma",
 	Colon = "Colon",
 	Semicolon = "Semicolon",
+	Dot = "Dot",
 
 	OpeningParenthesis = "OpeningParenthesis",
 	ClosingParenthesis = "ClosingParenthesis",
@@ -51,6 +54,10 @@ export enum ASTNodeType {
 
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
+
+	Object = "Object",
+	ObjectProperty = "ObjectProperty",
+	ObjectAttribute = "Attribute"
 }
 
 export interface ASTStatement {
@@ -111,6 +118,23 @@ export interface ASTString extends ASTStatement {
 	value: string;
 }
 
+export interface ASTObject extends ASTStatement {
+  type: ASTNodeType.Object;
+  properties: { [key: string]: ASTExpression };
+}
+
+export interface ASTObjectProperty extends ASTStatement {
+  type: ASTNodeType.ObjectProperty;
+  key: string;
+  value: ASTExpression;
+}
+
+export interface ASTObjectAttribute extends ASTStatement {
+  type: ASTNodeType.ObjectAttribute;
+  object: ASTExpression;
+  property: ASTExpression;
+}
+
 // Interpreter
 
 export enum InterpreterValueType {
@@ -119,6 +143,7 @@ export enum InterpreterValueType {
 	Number = "Number",
 	Boolean = "Boolean",
 	String = "String",
+	Object = "Object"
 }
 
 export interface InterpreterValue {
@@ -148,4 +173,10 @@ export interface InterpreterArray extends InterpreterValue {
 export interface InterpreterString extends InterpreterValue {
 	type: InterpreterValueType.String;
 	value: string;
+}
+
+export interface InterpreterObject extends InterpreterValue {
+  type: InterpreterValueType.Object;
+  properties: { [key: string]: InterpreterValue };
+  environment: Environment;
 }

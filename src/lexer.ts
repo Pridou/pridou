@@ -65,6 +65,9 @@ export function tokenize(sourceCode: string): LexerToken[] {
 			case ",":
 				tokens.push(toToken(LexerTokenType.Comma, source.shift()));
 				break;
+			case ".":
+				tokens.push(toToken(LexerTokenType.Dot, source.shift()));
+				break;
 			case ":":
 				tokens.push(toToken(LexerTokenType.Colon, source.shift()));
 				break;

@@ -1,244 +1,284 @@
-import {
-	ASTNodeType,
-	LexerTokenType,
-	type ASTAlpha,
-	type ASTAssignmentExpression,
-	type ASTBinaryExpression,
-	type ASTExpression,
-	type ASTString,
-	type ASTNumber,
-	type ASTFloat,
-	type ASTArray,
-	type ASTProgram,
-	type ASTStatement,
-	type ASTVariableDeclaration,
-	type LexerToken,
-} from "@/types";
+import {InvalidTokenError} from '@/src/errs';
+import {tokenize} from '@/src/lexer';
+import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, type ASTFloat, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type LexerToken, LexerTokenType,} from '@/types';
 
-import { tokenize } from "@/src/lexer";
-import { InvalidTokenError } from "@/src/errs";
-
-const additiveOperators: Set<string> = new Set<string>(["+", "-"]);
-const multiplicativeOperators: Set<string> = new Set<string>(["%", "*", "/"]);
+const additiveOperators: Set<string> = new Set<string>(['+', '-']);
+const multiplicativeOperators: Set<string> = new Set<string>(['%', '*', '/']);
 
 export default class Parser {
-	#tokens: LexerToken[] = [];
+  #tokens: LexerToken[] = [];
 
-	private peek(offset: number = 0): LexerToken {
-		return this.#tokens[offset];
-	}
+  private peek(offset = 0): LexerToken {
+    return this.#tokens[offset];
+  }
 
-	private parseVariableDeclaration(): ASTStatement {
-		const isConstant: boolean =
-			this.#tokens.shift()?.type === LexerTokenType.Const;
+  private parseVariableDeclaration(): ASTStatement {
+    const isConstant: boolean =
+        this.#tokens.shift()?.type === LexerTokenType.Const;
 
-		const alpha: string | undefined = this.#tokens.shift()?.value;
+    const alpha: string|undefined = this.#tokens.shift()?.value;
 
-		if (!alpha) {
-			throw new InvalidTokenError("Expected identifier after let/const");
-		}
+    if (!alpha) {
+      throw new InvalidTokenError('Expected identifier after let/const');
+    }
 
-		if (this.peek().type === LexerTokenType.Semicolon) {
-			this.#tokens.shift();
+    if (this.peek().type === LexerTokenType.Semicolon) {
+      this.#tokens.shift();
 
-			if (isConstant) {
-				throw new InvalidTokenError("Missing initializer in const declaration");
-			}
+      if (isConstant) {
+        throw new InvalidTokenError('Missing initializer in const declaration');
+      }
 
-			return <ASTVariableDeclaration>{
-				type: ASTNodeType.VariableDeclaration,
-				alpha,
-				metadata: {
-					isConstant: false,
-				},
-			};
-		}
+      return <ASTVariableDeclaration>{
+        type: ASTNodeType.VariableDeclaration,
+        alpha,
+        metadata: {
+          isConstant: false,
+        },
+      };
+    }
 
-		if (this.#tokens.shift()?.type !== LexerTokenType.Equals) {
-			throw new InvalidTokenError("Expected '=' in variable declaration");
-		}
+    if (this.#tokens.shift()?.type !== LexerTokenType.Equals) {
+      throw new InvalidTokenError('Expected \'=\' in variable declaration');
+    }
 
-		const variableDeclaration: ASTVariableDeclaration = {
-			type: ASTNodeType.VariableDeclaration,
-			alpha,
-			value: this.parseExpression(),
-			metadata: {
-				isConstant,
-			},
-		};
+    const variableDeclaration: ASTVariableDeclaration = {
+      type: ASTNodeType.VariableDeclaration,
+      alpha,
+      value: this.parseExpression(),
+      metadata: {
+        isConstant,
+      },
+    };
 
-		if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-			throw new InvalidTokenError("Expected ';' after variable declaration");
-		}
+    if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+      throw new InvalidTokenError('Expected \';\' after variable declaration');
+    }
 
-		return variableDeclaration;
-	}
+    return variableDeclaration;
+  }
 
-	private parseAssignmentExpression(): ASTExpression {
-		const leftExpression: ASTExpression = this.parseAdditiveExpression();
+  private parseAssignmentExpression(): ASTExpression {
+    const leftExpression: ASTExpression = this.parseAdditiveExpression();
 
-		if (this.peek().type === LexerTokenType.Equals) {
-			this.#tokens.shift();
+    if (this.peek().type === LexerTokenType.Equals) {
+      this.#tokens.shift();
 
-			const assignment: ASTAssignmentExpression = {
-				type: ASTNodeType.AssignmentExpression,
-				value: this.parsePrimitiveExpression(),
-				assignee: leftExpression,
-			};
+      const assignment: ASTAssignmentExpression = {
+        type: ASTNodeType.AssignmentExpression,
+        value: this.parsePrimitiveExpression(),
+        assignee: leftExpression,
+      };
 
-			if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-				throw new InvalidTokenError(
-					"E;xpected ';' after assignment expression",
-				);
-			}
+      if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+        throw new InvalidTokenError(
+            'Expected \';\' after assignment expression');
+      }
 
-			return assignment;
-		}
+      return assignment;
+    }
 
-		return leftExpression;
-	}
+    return leftExpression;
+  }
 
-	private parsePrimitiveExpression(): ASTExpression {
-		const tokenType: LexerTokenType = this.peek().type;
+  private parsePrimitiveExpression(): ASTExpression {
+    let expression: ASTExpression;
 
-		switch (tokenType) {
-			case LexerTokenType.Alpha:
-				return <ASTAlpha>{
-					type: ASTNodeType.Alpha,
-					value: this.#tokens.shift()?.value,
-				};
-			case LexerTokenType.Number:
-				return <ASTNumber>{
-					type: ASTNodeType.Number,
-					// TODO: Correct typing
-					// @ts-ignore
-					value: +this.#tokens.shift()?.value,
-				};
-			case LexerTokenType.Float:
-				return <ASTFloat>{
-					type: ASTNodeType.Float,
-					// TODO: Correct typing
-					// @ts-ignore
-					value: +this.#tokens.shift()?.value,
-				};
-			case LexerTokenType.OpeningParenthesis: {
-				this.#tokens.shift();
+    switch (this.peek().type) {
+      case LexerTokenType.Number:
+        const numberToken = this.#tokens.shift();
+        expression = <ASTNumber>{
+          type: ASTNodeType.Number,
+          value: Number(numberToken?.value)
+        };
+        break;
 
-				const expression: ASTExpression = this.parseAdditiveExpression();
-				const temporaryToken: LexerToken | undefined = this.#tokens.shift();
+      case LexerTokenType.Float:
+        const floatToken = this.#tokens.shift();
+        expression = <ASTFloat>{
+          type: ASTNodeType.Float,
+          value: Number(floatToken?.value)
+        };
+        break;
 
-				if (
-					!temporaryToken ||
-					temporaryToken.type !== LexerTokenType.ClosingParenthesis
-				) {
-					throw new InvalidTokenError("Expected ')' after expression");
-				}
+      case LexerTokenType.Alpha:
+        const alphaToken = this.#tokens.shift();
+        expression =
+            <ASTAlpha>{type: ASTNodeType.Alpha, value: alphaToken?.value};
+        break;
 
-				return expression;
-			}
-			case LexerTokenType.String:
-				return <ASTString>{
-					type: ASTNodeType.String,
-					value: this.#tokens.shift()?.value,
-				};
+      case LexerTokenType.String:
+        const stringToken = this.#tokens.shift();
+        expression =
+            <ASTString>{type: ASTNodeType.String, value: stringToken?.value};
+        break;
 
-			case LexerTokenType.OpeningSquareBracket: {
-				this.#tokens.shift();
-				const body: ASTExpression[] = [];
-				while (this.peek().type !== LexerTokenType.ClosingSquareBracket) {
-					body.push(this.parseExpression());
+      case LexerTokenType.OpeningParenthesis: {
+        this.#tokens.shift();
+        expression = this.parseAdditiveExpression();
 
-					if (this.peek().type === LexerTokenType.Comma) {
-						this.#tokens.shift();
-					} else if (this.peek().type !== LexerTokenType.ClosingSquareBracket) {
-						throw new InvalidTokenError(
-							"Expected ',' or ']' in array expression",
-						);
-					}
-				}
-				if (
-					this.#tokens.shift()?.type !== LexerTokenType.ClosingSquareBracket
-				) {
-					throw new InvalidTokenError("Expected ']' after array elements");
-				}
-				return <ASTArray>{ type: ASTNodeType.Array, body };
-			}
+        if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+          throw new InvalidTokenError('Expected \')\' after expression');
+        }
+        break;
+      }
 
-			default:
-				throw new InvalidTokenError(
-					`Unexpected token '${this.peek().value}' in expression`,
-				);
-		}
-	}
+      case LexerTokenType.OpeningSquareBracket: {
+        this.#tokens.shift();
+        const body: ASTExpression[] = [];
 
-	private parseAdditiveExpression(): ASTExpression {
-		let leftExpression: ASTExpression = this.parseMultiplicativeExpression();
+        while (this.peek().type !== LexerTokenType.ClosingSquareBracket) {
+          body.push(this.parseExpression());
 
-		while (additiveOperators.has(this.peek()?.value)) {
-			const binaryOperator: string | undefined = this.#tokens.shift()?.value;
+          if (this.peek().type === LexerTokenType.Comma) {
+            this.#tokens.shift();
+          } else if (this.peek().type !== LexerTokenType.ClosingSquareBracket) {
+            throw new InvalidTokenError(
+                'Expected \',\' or \']\' in array expression');
+          }
+        }
 
-			if (!binaryOperator) {
-				throw new InvalidTokenError("Expected binary operator");
-			}
+        if (this.#tokens.shift()?.type !==
+            LexerTokenType.ClosingSquareBracket) {
+          throw new InvalidTokenError('Expected \']\' after array elements');
+        }
 
-			const rightExpression: ASTExpression =
-				this.parseMultiplicativeExpression();
+        expression = <ASTArray>{type: ASTNodeType.Array, body};
+        break;
+      }
 
-			leftExpression = <ASTBinaryExpression>{
-				type: ASTNodeType.BinaryExpression,
-				binaryOperator,
-				leftExpression,
-				rightExpression,
-			};
-		}
+      case LexerTokenType.OpeningCurlyBracket:
+        expression = this.parseObjectExpression();
+        break;
 
-		return leftExpression;
-	}
+      default:
+        throw new InvalidTokenError(
+            `Unexpected token type: ${this.peek().type}`);
+    }
 
-	private parseMultiplicativeExpression(): ASTExpression {
-		let leftExpression: ASTExpression = this.parsePrimitiveExpression();
+    while (this.peek().type === LexerTokenType.Dot) {
+      this.#tokens.shift();
 
-		while (multiplicativeOperators.has(this.peek()?.value)) {
-			const binaryOperator: string | undefined = this.#tokens.shift()?.value;
-			if (!binaryOperator) {
-				throw new InvalidTokenError("Expected binary operator");
-			}
+      const property = this.#tokens.shift();
+      if (property?.type !== LexerTokenType.Alpha &&
+          property?.type !== LexerTokenType.String) {
+        throw new InvalidTokenError('Expected identifier after dot');
+      }
 
-			const rightExpression: ASTExpression = this.parsePrimitiveExpression();
+      expression = <ASTObjectAttribute>{
+        type: ASTNodeType.ObjectAttribute,
+        object: expression,
+        property: <ASTAlpha> {
+          type: ASTNodeType.Alpha, value: property.value
+        }
+      };
+    }
 
-			leftExpression = <ASTBinaryExpression>{
-				type: ASTNodeType.BinaryExpression,
-				binaryOperator,
-				leftExpression,
-				rightExpression,
-			};
-		}
+    return expression;
+  }
 
-		return leftExpression;
-	}
+  private parseAdditiveExpression(): ASTExpression {
+    let leftExpression: ASTExpression = this.parseMultiplicativeExpression();
 
-	private parseExpression(): ASTExpression {
-		switch (this.peek().type) {
-			case LexerTokenType.Let:
-			case LexerTokenType.Const:
-				return this.parseVariableDeclaration();
-			default:
-				return this.parseAssignmentExpression();
-		}
-	}
+    while (additiveOperators.has(this.peek()?.value)) {
+      const binaryOperator: string|undefined = this.#tokens.shift()?.value;
 
-	public toAST(sourceCode: string): ASTProgram {
-		this.#tokens = tokenize(sourceCode);
+      if (!binaryOperator) {
+        throw new InvalidTokenError('Expected binary operator');
+      }
 
-		const program: ASTProgram = {
-			type: ASTNodeType.Program,
-			body: [],
-		};
+      const rightExpression: ASTExpression =
+          this.parseMultiplicativeExpression();
 
-		while (this.peek().type !== LexerTokenType.EOF) {
-			program.body.push(this.parseExpression());
-		}
+      leftExpression = <ASTBinaryExpression>{
+        type: ASTNodeType.BinaryExpression,
+        binaryOperator,
+        leftExpression,
+        rightExpression,
+      };
+    }
 
-		return program;
-	}
+    return leftExpression;
+  }
+
+  private parseMultiplicativeExpression(): ASTExpression {
+    let leftExpression: ASTExpression = this.parsePrimitiveExpression();
+
+    while (multiplicativeOperators.has(this.peek()?.value)) {
+      const binaryOperator: string|undefined = this.#tokens.shift()?.value;
+      if (!binaryOperator) {
+        throw new InvalidTokenError('Expected binary operator');
+      }
+
+      const rightExpression: ASTExpression = this.parsePrimitiveExpression();
+
+      leftExpression = <ASTBinaryExpression>{
+        type: ASTNodeType.BinaryExpression,
+        binaryOperator,
+        leftExpression,
+        rightExpression,
+      };
+    }
+
+    return leftExpression;
+  }
+
+  private parseExpression(): ASTExpression {
+    switch (this.peek().type) {
+      case LexerTokenType.Let:
+      case LexerTokenType.Const:
+        return this.parseVariableDeclaration();
+      default:
+        return this.parseAssignmentExpression();
+    }
+  }
+
+  private parseObjectExpression(): ASTObject {
+    this.#tokens.shift();
+
+    const properties: {[key: string]: ASTExpression} = {};
+
+    while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+      const key = this.#tokens.shift();
+      // Accepter les clés de type Alpha ou String
+      if (key?.type !== LexerTokenType.Alpha &&
+          key?.type !== LexerTokenType.String) {
+        throw new InvalidTokenError(
+            'Expected identifier or string as object key');
+      }
+
+      if (this.#tokens.shift()?.type !== LexerTokenType.Colon) {
+        throw new InvalidTokenError('Expected \':\' after object key');
+      }
+
+      properties[key.value] = this.parseExpression();
+
+      if (this.peek().type === LexerTokenType.Comma) {
+        this.#tokens.shift();
+      } else if (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+        throw new InvalidTokenError('Expected \',\' or \'}\' in object');
+      }
+    }
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+      throw new InvalidTokenError('Expected \'}\' after object properties');
+    }
+
+    return <ASTObject>{type: ASTNodeType.Object, properties};
+  }
+
+  public toAST(sourceCode: string): ASTProgram {
+    this.#tokens = tokenize(sourceCode);
+
+    const program: ASTProgram = {
+      type: ASTNodeType.Program,
+      body: [],
+    };
+
+    while (this.peek().type !== LexerTokenType.EOF) {
+      program.body.push(this.parseExpression());
+    }
+
+    return program;
+  }
 }
