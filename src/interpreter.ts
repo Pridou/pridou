@@ -2,12 +2,14 @@ import {
 	ASTNodeType,
 	InterpreterValueType,
 	type ASTAlpha,
+	type ASTArray,
 	type ASTAssignmentExpression,
 	type ASTBinaryExpression,
 	type ASTNumber,
 	type ASTProgram,
 	type ASTStatement,
 	type ASTVariableDeclaration,
+	type InterpreterArray,
 	type InterpreterNull,
 	type InterpreterNumber,
 	type InterpreterValue,
@@ -100,6 +102,18 @@ export function evaluate(
 				(<ASTAlpha>(<ASTAssignmentExpression>node).assignee).value,
 				evaluate((<ASTAssignmentExpression>node).value, environment),
 			);
+
+		case ASTNodeType.Array: {
+			const elements: InterpreterValue[] = [];
+			for(const expression of (<ASTArray>node).body){
+				elements.push(evaluate(expression,environment));
+			}
+
+			return <InterpreterArray>{
+				type: InterpreterValueType.Array,
+				elements
+			};
+		}
 
 		default:
 			throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);

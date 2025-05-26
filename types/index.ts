@@ -39,6 +39,7 @@ export enum ASTNodeType {
 	
 	Alpha = "Alpha",
 	Number = "Number",
+	Array = "Array",
 	
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
@@ -52,6 +53,11 @@ export interface ASTExpression extends ASTStatement {}
 
 export interface ASTProgram extends ASTStatement {
 	type: ASTNodeType.Program;
+	body: ASTStatement[];
+}
+
+export interface ASTArray extends ASTStatement {
+	type: ASTNodeType.Array;
 	body: ASTStatement[];
 }
 
@@ -91,7 +97,7 @@ export interface ASTAssignmentExpression extends ASTStatement {
 
 export enum InterpreterValueType {
 	Null = "Null",
-
+	Array = "Array",
 	Number = "Number",
 	Boolean = "Boolean",
 }
@@ -113,4 +119,9 @@ export interface InterpreterNumber extends InterpreterValue {
 export interface InterpreterBoolean extends InterpreterValue {
 	type: InterpreterValueType.Boolean;
 	value: number;
+}
+
+export interface InterpreterArray extends InterpreterValue {
+  type: InterpreterValueType.Array;
+  elements: InterpreterValue[];
 }

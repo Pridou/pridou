@@ -26,8 +26,6 @@ const canBeSkippedValues: Set<string> = new Set<string>([
 	"\r",
 	"\t",
 	"\v",
-	"'",
-	'"',
 	"\\",
 ]);
 
@@ -38,6 +36,8 @@ function shouldBeSkipped(value: string): boolean {
 export function tokenize(sourceCode: string): LexerToken[] {
 	const tokens: LexerToken[] = [];
 	const source: string[] = <string[]>sourceCode.split("");
+
+	let state = false;
 
 	while (source.length > 0) {
 		switch (source[0]) {
