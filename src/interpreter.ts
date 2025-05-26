@@ -2,6 +2,7 @@ import {
 	ASTNodeType,
 	InterpreterValueType,
 	type ASTAlpha,
+	type ASTArray,
 	type ASTAssignmentExpression,
 	type ASTBinaryExpression,
 	type ASTNumber,
@@ -11,6 +12,7 @@ import {
 
 	type ASTStatement,
 	type ASTVariableDeclaration,
+	type InterpreterArray,
 	type InterpreterNull,
 	type InterpreterNumber,
 	type InterpreterValue,
@@ -53,6 +55,12 @@ export function evaluate(
 				type: InterpreterValueType.Number,
 				value: (<ASTNumber>node).value,
 			};
+		case ASTNodeType.Float:
+			return <InterpreterNumber>{
+				type: InterpreterValueType.Number,
+				value: (<ASTNumber>node).value,
+			};
+
 		case ASTNodeType.BinaryExpression: {
 			const leftHandSide: InterpreterNumber = <InterpreterNumber>(
 				evaluate((<ASTBinaryExpression>node).leftExpression, environment)
@@ -110,6 +118,18 @@ export function evaluate(
 			value: (<ASTString>node).value,
 	};
 
+
+		case ASTNodeType.Array: {
+			const elements: InterpreterValue[] = [];
+			for(const expression of (<ASTArray>node).body){
+				elements.push(evaluate(expression,environment));
+			}
+
+			return <InterpreterArray>{
+				type: InterpreterValueType.Array,
+				elements
+			};
+		}
 
 		default:
 			throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);

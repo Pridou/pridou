@@ -3,6 +3,7 @@
 export enum LexerTokenType {
 	Alpha =  "Alpha",
 	Number = "Number",
+	Float = "Float",
 
 	Let = "Let",
 	Const = "Const",
@@ -40,7 +41,12 @@ export enum ASTNodeType {
 	
 	Alpha = "Alpha",
 	Number = "Number",
+<<<<<<< HEAD
 	String = "String",
+=======
+	Float = "Float",
+	Array = "Array",
+>>>>>>> 88267440d599ade4594bb5a63770901a11ee6e40
 	
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
@@ -54,6 +60,11 @@ export interface ASTExpression extends ASTStatement {}
 
 export interface ASTProgram extends ASTStatement {
 	type: ASTNodeType.Program;
+	body: ASTStatement[];
+}
+
+export interface ASTArray extends ASTStatement {
+	type: ASTNodeType.Array;
 	body: ASTStatement[];
 }
 
@@ -74,6 +85,11 @@ export interface ASTAlpha extends ASTStatement {
 export interface ASTNumber extends ASTStatement {
 	type: ASTNodeType.Number;
 	value: number;
+}
+
+export interface ASTFloat extends ASTStatement {
+	type: ASTNodeType.Float;
+	value: number ;
 }
 
 export interface ASTBinaryExpression extends ASTStatement {
@@ -99,7 +115,7 @@ export interface ASTString extends ASTStatement {
 
 export enum InterpreterValueType {
 	Null = "Null",
-
+	Array = "Array",
 	Number = "Number",
 	Boolean = "Boolean",
 	String = "String",
@@ -121,7 +137,12 @@ export interface InterpreterNumber extends InterpreterValue {
 
 export interface InterpreterBoolean extends InterpreterValue {
 	type: InterpreterValueType.Boolean;
-	value: boolean;
+	value: number;
+}
+
+export interface InterpreterArray extends InterpreterValue {
+  type: InterpreterValueType.Array;
+  elements: InterpreterValue[];
 }
 
 export interface InterpreterString extends InterpreterValue {

@@ -37,9 +37,6 @@ export function tokenize(sourceCode: string): LexerToken[] {
 	const tokens: LexerToken[] = [];
 	const source: string[] = <string[]>sourceCode.split("");
 
-	let str ="";
-	let bool = false;
-
 	while (source.length > 0) {
 		switch (source[0]) {
 			case '"':
@@ -97,7 +94,7 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				}
 
 				if (isAlpha(source[0])) {
-					let alpha = "";
+					let alpha: string = "";
 
 					while (source.length > 0 && isAlpha(source[0])) {
 						alpha += source.shift();
@@ -109,20 +106,29 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				}
 
 				if (isNumber(source[0])) {
-					let number = "";
+					let number: string = "";
 
 					while (source.length > 0 && isNumber(source[0])) {
-						number += source.shift();
+						number += source.shift(); 
 					}
+					if (source[0] === ".") {
+						number += source.shift() ;
 
-					tokens.push(toToken(LexerTokenType.Number, number));
-
-					break;
+						while (source.length > 0 && isNumber(source[0])) {
+							number += source.shift();
+						}
+						tokens.push(toToken(LexerTokenType.Float, number));
+						break;
+					} 
+					
+					else {
+						tokens.push(toToken(LexerTokenType.Number, number));
+						break;
+					}
 				}
 
 				if (shouldBeSkipped(source[0])) {
 					source.shift();
-
 					break;
 				}
 
