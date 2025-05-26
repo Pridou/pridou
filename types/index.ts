@@ -112,5 +112,5 @@ export interface InterpreterNumber extends InterpreterValue {
 
 export interface InterpreterBoolean extends InterpreterValue {
 	type: InterpreterValueType.Boolean;
-	value: boolean;
+	value: number;
 }
