@@ -1,6 +1,6 @@
 import type Environment from '@/src/environment';
 import {InvalidNodeError} from '@/src/errs';
-import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, ASTNodeType, type ASTNumber, type ASTProgram,
+import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, ASTNodeType, type ASTNumber, type ASTProgram, type ASTRepeatStatement,
 
         type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterNull, type InterpreterNumber, type InterpreterString, type InterpreterValue, InterpreterValueType,} from '@/types';
 
@@ -129,6 +129,28 @@ export function evaluate(
 
       return <InterpreterArray>{type: InterpreterValueType.Array, elements};
     }
+    case ASTNodeType.RepeatStatement: {
+      const timesNode = (<ASTRepeatStatement>node).times;
+      const timesValue = evaluate(timesNode, environment);
+
+      if (timesValue.type !== InterpreterValueType.Number) {
+        throw new Error("Repeat count must be a number");
+      }
+
+      const count = (timesValue as InterpreterNumber).value;
+
+      for (let i = 0; i < count; i++) {
+        for (const stmt of (<ASTRepeatStatement>node).body) {
+          evaluate(stmt, environment);
+        }
+      }
+
+      return <InterpreterNull>{
+        type: InterpreterValueType.Null,
+        value: null,
+      };
+  }
+
 
     default:
       throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);

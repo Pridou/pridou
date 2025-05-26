@@ -13,6 +13,7 @@ import {
 	type ASTStatement,
 	type ASTVariableDeclaration,
 	type LexerToken,
+	type ASTRepeatStatement,
 } from "@/types";
 
 import { tokenize } from "@/src/lexer";
@@ -72,6 +73,40 @@ export default class Parser {
     }
 
     return variableDeclaration;
+  }
+
+  private parseRepeatStatement(): ASTRepeatStatement{
+	this.#tokens.shift(); 
+
+	if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
+		throw new InvalidTokenError("Expected '(' after repeat");
+	}
+
+	const times = this.parseExpression();
+
+	if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+		throw new InvalidTokenError("Expected ')' after repeat count");
+	}
+
+	if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
+		throw new InvalidTokenError("Expected '{' to start repeat block");
+	}
+
+	const body: ASTStatement[] = [];
+
+	while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+		body.push(this.parseExpression() as ASTStatement);
+	}
+
+	if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+		throw new InvalidTokenError("Expected '}' to close repeat block");
+	}
+
+	return {
+		type: ASTNodeType.RepeatStatement,
+		times,
+		body,
+	};
   }
 
   private parseAssignmentExpression(): ASTExpression {
@@ -216,6 +251,8 @@ export default class Parser {
       case LexerTokenType.Let:
       case LexerTokenType.Const:
         return this.parseVariableDeclaration();
+	  case LexerTokenType.Repeat:
+		return this.parseRepeatStatement();	
       default:
         return this.parseAssignmentExpression();
     }

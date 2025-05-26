@@ -6,6 +6,10 @@ import { Config , LexerTokenType} from "@/types";
 export default{
 	let: LexerTokenType.Let,
 	const: LexerTokenType.Const,
+	string: LexerTokenType.String,
+	float: LexerTokenType.Float,
+	repeat: LexerTokenType.Repeat,
+	print: LexerTokenType.Print,
 	"=": LexerTokenType.Equals,
 	"+": LexerTokenType.BinaryOperator,
 	"-": LexerTokenType.BinaryOperator,
@@ -21,7 +25,8 @@ export default{
 	"}": LexerTokenType.ClosingCurlyBracket,
 	"[": LexerTokenType.OpeningSquareBracket,
 	"]": LexerTokenType.ClosingSquareBracket,
-	"Alpha": LexerTokenType.Alpha,
-	"Number": LexerTokenType.Number,
-	"EOF": LexerTokenType.EOF,
+	Alpha: LexerTokenType.Alpha,
+	Number: LexerTokenType.Number,
+	EOF: LexerTokenType.EOF,
+
 } as Config;

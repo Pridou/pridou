@@ -15,6 +15,8 @@ export enum LexerTokenType {
 	Comma = "Comma",
 	Colon = "Colon",
 	Semicolon = "Semicolon",
+	Repeat = "Repeat",
+	Print = "Print",
 
 	OpeningParenthesis = "OpeningParenthesis",
 	ClosingParenthesis = "ClosingParenthesis",
@@ -38,6 +40,7 @@ export enum ASTNodeType {
 	Program = "Program",
 
 	VariableDeclaration = "VariableDeclaration",
+	RepeatStatement = "RepeatStatment",
 	
 	Alpha = "Alpha",
 	Number = "Number",
@@ -109,6 +112,11 @@ export interface ASTString extends ASTStatement {
 	type: ASTNodeType.String;
 	value: String;
 }
+export interface ASTRepeatStatement extends ASTStatement{
+	type: ASTNodeType.RepeatStatement;
+	times: ASTExpression;
+	body: ASTStatement[];
+}
 
 
 // Interpreter
@@ -139,4 +147,4 @@ export interface InterpreterBoolean extends InterpreterValue {
 	type: InterpreterValueType.Boolean;
 	value: number;
 }
-export {Config} from "@/types/config"
+export {Config} from "./config"
