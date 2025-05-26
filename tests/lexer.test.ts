@@ -1,15 +1,32 @@
-import { expect, test } from "bun:test";
+import {expect, test} from "bun:test";
 
-import { LexerTokenType, type LexerToken } from "@/types";
+import {LexerTokenType} from "@/types";
 
-import { tokenize } from "@/src/lexer";
+import {tokenize} from "@/src/lexer";
 
-test("1", (): void => {
-	expect(tokenize("")).toEqual([]);
+test("1 + 1", (): void => {
+	expect(tokenize("1 + 1")).toEqual([
+		{
+			type: LexerTokenType.Number,
+			value: "1",
+		},
+		{
+			type: LexerTokenType.BinaryOperator,
+			value: "+",
+		},
+		{
+			type: LexerTokenType.Number,
+			value: "1",
+		},
+		{
+			type: LexerTokenType.EOF,
+			value: "EOF",
+		}
+	]);
 });
 
 test("2", (): void => {
-	expect(tokenize("const a = 1")).toEqual([
+	expect(tokenize("const a = 1;")).toEqual([
 		{
 			type: LexerTokenType.Const,
 			value: "const",
@@ -25,6 +42,14 @@ test("2", (): void => {
 		{
 			type: LexerTokenType.Number,
 			value: "1",
+		},
+		{
+			type: LexerTokenType.Semicolon,
+			value: ";",
+		},
+		{
+			type: LexerTokenType.EOF,
+			value: "EOF",
 		},
 	]);
 });
