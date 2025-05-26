@@ -4,6 +4,7 @@ import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBina
 
 const additiveOperators: Set<string> = new Set<string>(['+', '-']);
 const multiplicativeOperators: Set<string> = new Set<string>(['%', '*', '/']);
+const comparisonOperators: Set<string> = new Set<string>(['>', '<', '==',"===","<=",">=","!=","!=="]);
 
 export default class Parser {
   #tokens: LexerToken[] = [];

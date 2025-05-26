@@ -14,6 +14,7 @@ export enum LexerTokenType {
 
 	Equals = "Equals",
 	BinaryOperator = "BinaryOperator",
+	ComparisonOperator = "ComparisonOperator",
 
 	Comma = "Comma",
 	Colon = "Colon",
