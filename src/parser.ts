@@ -7,14 +7,12 @@ import {
 	type ASTExpression,
 	type ASTString,
 	type ASTNumber,
-	type ASTFloat,
 	type ASTArray,
 	type ASTProgram,
 	type ASTStatement,
 	type ASTVariableDeclaration,
 	type ASTForStatement,
 	type LexerToken,
-	
 } from "@/types";
 
 import { tokenize } from "@/src/lexer";
@@ -22,6 +20,7 @@ import { InvalidTokenError } from "@/src/errs";
 
 const additiveOperators: Set<string> = new Set<string>(["+", "-"]);
 const multiplicativeOperators: Set<string> = new Set<string>(["%", "*", "/"]);
+const comparatorOperators: Set<string> = new Set<string>([">", ">=", "<","<="]);
 
 export default class Parser {
 	#tokens: LexerToken[] = [];
@@ -147,13 +146,6 @@ export default class Parser {
 					// @ts-ignore
 					value: +this.#tokens.shift()?.value,
 				};
-			case LexerTokenType.Float:
-				return <ASTFloat>{
-					type: ASTNodeType.Float,
-					// TODO: Correct typing
-					// @ts-ignore
-					value: +this.#tokens.shift()?.value,
-				};
 			case LexerTokenType.OpeningParenthesis: {
 				this.#tokens.shift();
 
@@ -250,20 +242,63 @@ export default class Parser {
 		return leftExpression;
 	}
 
+	private parseIfStatement(): ASTIfStatement{
+	this.#tokens.shift(); // consume 'if'
+
+	if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
+		throw new InvalidTokenError("Expected '(' after 'if'");
+	}
+
+	const condition = this.parseExpression();
+
+	if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+		throw new InvalidTokenError("Expected ')' after condition");
+	}
+
+	const trueCase = this.parseExpression();
+
+	if (this.peek()?.type !== LexerTokenType.Else) {
+		throw new InvalidTokenError("Expected 'else' after 'if' true case");
+	}
+
+	this.#tokens.shift(); // consume 'else'
+
+	const falseCase = this.parseExpression();
+
+	return {
+		type: ASTNodeType.If,
+		condition,
+		trueCase,
+		falseCase,
+	};
+}
+
+private parseReturnStatement(): ASTReturnStatement {
+	this.#tokens.shift(); // consume 'return'
+	const value = this.parseExpression();
+
+	if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+		throw new InvalidTokenError("Expected ';' after return");
+	}
+
+	return {
+		type: ASTNodeType.Return,
+		value,
+	};
+}
+
+
+
+
 	private parseExpression(): ASTExpression {
 		switch (this.peek().type) {
 			case LexerTokenType.Let:
 			case LexerTokenType.Const:
 				return this.parseVariableDeclaration();
-			case LexerTokenType.For:
-				return this.parseForStatement();
-				
-			
 			default:
 				return this.parseAssignmentExpression();
 		}
 	}
-
 
 	public toAST(sourceCode: string): ASTProgram {
 		this.#tokens = tokenize(sourceCode);

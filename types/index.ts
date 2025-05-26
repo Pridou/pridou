@@ -3,7 +3,6 @@
 export enum LexerTokenType {
 	Alpha = "Alpha",
 	Number = "Number",
-	Float = "Float",
 
 	Let = "Let",
 	Const = "Const",
@@ -15,9 +14,14 @@ export enum LexerTokenType {
 	Equals = "Equals",
 	BinaryOperator = "BinaryOperator",
 
+	If = "If",
+	Else = "Else",
+	Return = "Return",
+
 	Comma = "Comma",
 	Colon = "Colon",
 	Semicolon = "Semicolon",
+
 
 	OpeningParenthesis = "OpeningParenthesis",
 	ClosingParenthesis = "ClosingParenthesis",
@@ -40,6 +44,7 @@ export interface LexerToken {
 export enum ASTNodeType {
 	Program = "Program",
 
+	FunctionDeclaration = "FunctionDeclaration",
 	VariableDeclaration = "VariableDeclaration",
 
 	Alpha = "Alpha",
@@ -48,12 +53,13 @@ export enum ASTNodeType {
 	String = "String",
 	For = "For",
 
-	Float = "Float",
 	Array = "Array",
 
+	
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
 	ForStatement = "ForStatement"
+	
 }
 
 export interface ASTStatement {
@@ -61,6 +67,8 @@ export interface ASTStatement {
 }
 
 export interface ASTExpression extends ASTStatement {}
+
+
 
 export interface ASTProgram extends ASTStatement {
 	type: ASTNodeType.Program;
@@ -77,6 +85,10 @@ export interface ASTForStatement extends ASTStatement {
 export interface ASTArray extends ASTStatement {
 	type: ASTNodeType.Array;
 	body: ASTStatement[];
+}
+
+export interface ASTFunctionDeclaration extends ASTStatement {
+	type: ASTNodeType.FunctionDeclaration;
 }
 
 export interface ASTVariableDeclaration extends ASTStatement {
@@ -98,11 +110,6 @@ export interface ASTNumber extends ASTStatement {
 	value: number;
 }
 
-export interface ASTFloat extends ASTStatement {
-	type: ASTNodeType.Float;
-	value: number;
-}
-
 export interface ASTBinaryExpression extends ASTStatement {
 	type: ASTNodeType.BinaryExpression;
 	binaryOperator: string;
@@ -120,6 +127,7 @@ export interface ASTString extends ASTStatement {
 	type: ASTNodeType.String;
 	value: string;
 }
+
 
 // Interpreter
 

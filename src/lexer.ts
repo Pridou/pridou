@@ -14,8 +14,14 @@ function toToken(type: LexerTokenType, value?: string): LexerToken {
 
 const reservedKeywords: { [key: string]: LexerTokenType } = {
 	const: LexerTokenType.Const,
+<<<<<<< HEAD
+	if:LexerTokenType.If,
+	else:LexerTokenType.Else,
+	return:LexerTokenType.Return,
+=======
 	function: LexerTokenType.Function,
 	let: LexerTokenType.Let,
+>>>>>>> d5da2b8e78e30632d64a7cd6396c01d591e396ee
 	For: LexerTokenType.For,
 };
 
@@ -137,17 +143,23 @@ export function tokenize(sourceCode: string): LexerToken[] {
 					while (source.length > 0 && isNumber(source[0])) {
 						number += source.shift();
 					}
+
 					if (source[0] === ".") {
 						number += source.shift();
 
-						while (source.length > 0 && isNumber(source[0])) {
-							number += source.shift();
+						if (isNumber(source[0])) {
+							while (source.length > 0 && isNumber(source[0])) {
+								number += source.shift();
+							}
+
+							tokens.push(toToken(LexerTokenType.Number, number));
+
+							break;
 						}
-						tokens.push(toToken(LexerTokenType.Float, number));
-						break;
 					}
 
 					tokens.push(toToken(LexerTokenType.Number, number));
+
 					break;
 				}
 

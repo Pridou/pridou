@@ -8,8 +8,10 @@ import {
 	ASTNodeType,
 	type ASTNumber,
 	type ASTProgram,
-	type ASTStatement,
 	type ASTString,
+	type InterpreterString,
+
+	type ASTStatement,
 	type ASTVariableDeclaration,
 	type InterpreterArray,
 	type InterpreterNull,
@@ -51,11 +53,6 @@ export function evaluate(
 		case ASTNodeType.Alpha:
 			return environment.getVariable((<ASTAlpha>node).value);
 		case ASTNodeType.Number:
-			return <InterpreterNumber>{
-				type: InterpreterValueType.Number,
-				value: (<ASTNumber>node).value,
-			};
-		case ASTNodeType.Float:
 			return <InterpreterNumber>{
 				type: InterpreterValueType.Number,
 				value: (<ASTNumber>node).value,
@@ -160,7 +157,26 @@ export function evaluate(
 			return <InterpreterArray>{ type: InterpreterValueType.Array, elements };
 		}
 
-		
+		case ASTNodeType.If: {
+			const condition = evaluate((<ASTIfStatement>node).condition, environment);
+
+			if (condition.type !== InterpreterValueType.Boolean) {
+				throw new Error("Condition in if must be a boolean");
+			}
+
+			if (condition.value) {
+				return evaluate((<ASTIfStatement>node).trueCase, environment);
+			} else {
+				return evaluate((<ASTIfStatement>node).falseCase, environment);
+			}
+		}
+
+
+		case ASTNodeType.Return:{
+			return evaluate((<ASTReturnStatement>node).value, environment);
+
+		}
+
 		default:
 			throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);
 	}
