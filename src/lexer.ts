@@ -147,7 +147,6 @@ export function tokenize(sourceCode: string): LexerToken[] {
 					break;
 				}
 
-
 				if (shouldBeSkipped(source[0])) {
 					source.shift();
 					break;
