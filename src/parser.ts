@@ -8,6 +8,7 @@ import {
 	type ASTNumber,
 	type ASTProgram,
 	type ASTStatement,
+	type ASTWhileStatement,
 	type ASTVariableDeclaration,
 	type LexerToken,
 } from "@/types";
@@ -70,6 +71,44 @@ export default class Parser {
 
 		return variableDeclaration;
 	}
+	private parseWhileStatement(): ASTWhileStatement {
+	this.#tokens.shift(); 
+
+	if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
+		throw new InvalidTokenError("Expected '(' after 'while'");
+	}
+
+	const test = this.parseExpression();
+
+	if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+		throw new InvalidTokenError("Expected ')' after condition in 'while'");
+	}
+
+	const body = this.parseExpression(); 
+
+	return {
+		type: ASTNodeType.WhileStatement,
+		test,
+		body,
+	};
+}
+
+
+
+	public toAST(sourceCode: string): ASTProgram {
+		this.#tokens = tokenize(sourceCode);
+
+		const program: ASTProgram = {
+			type: ASTNodeType.Program,
+			body: [],
+		};
+
+		while (this.peek().type !== LexerTokenType.EOF) {
+			program.body.push(this.parseExpression());
+		}
+
+		return program;
+	}
 
 	private parseAssignmentExpression(): ASTExpression {
 		const leftExpression: ASTExpression = this.parseAdditiveExpression();
@@ -109,6 +148,13 @@ export default class Parser {
 					// @ts-ignore
 					value: +this.#tokens.shift()?.value,
 				};
+			/*case LexerTokenType.String:
+				return <ASTString> {
+				type: ASTNodeType.String,
+				value: this.#tokens.shift()?.value,
+				
+				};*/
+
 			case LexerTokenType.OpeningParenthesis: {
 				this.#tokens.shift();
 
@@ -179,24 +225,24 @@ export default class Parser {
 		switch (this.peek().type) {
 			case LexerTokenType.Let:
 			case LexerTokenType.Const:
+			
 				return this.parseVariableDeclaration();
+			case LexerTokenType.While:
+				return this.parseWhileStatement();
+				
+			
 			default:
 				return this.parseAssignmentExpression();
 		}
 	}
 
-	public toAST(sourceCode: string): ASTProgram {
-		this.#tokens = tokenize(sourceCode);
-
-		const program: ASTProgram = {
-			type: ASTNodeType.Program,
-			body: [],
-		};
-
-		while (this.peek().type !== LexerTokenType.EOF) {
-			program.body.push(this.parseExpression());
-		}
-
-		return program;
-	}
+	
 }
+	
+
+
+
+
+
+	
+

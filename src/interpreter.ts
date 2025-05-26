@@ -1,26 +1,58 @@
+//import RuntimeError from "@/src/errs/RuntimeError";
 import {
+	
 	ASTNodeType,
 	InterpreterValueType,
 	type ASTAlpha,
 	type ASTAssignmentExpression,
 	type ASTBinaryExpression,
 	type ASTNumber,
+	type ASTWhileStatement,
 	type ASTProgram,
 	type ASTStatement,
 	type ASTVariableDeclaration,
 	type InterpreterNull,
 	type InterpreterNumber,
 	type InterpreterValue,
+	//type InterpreterString,
+	
 } from "@/types";
 
 import { InvalidNodeError } from "@/src/errs";
 import type Environment from "@/src/environment";
+
+import RuntimeError from "@/src/errs/RuntimeError";
 
 export function evaluate(
 	node: ASTStatement,
 	environment: Environment,
 ): InterpreterValue {
 	switch (node.type) {
+		case ASTNodeType.WhileStatement:{
+			const { test, body } = node as ASTWhileStatement;
+
+			while (true) {
+				const condition = evaluate(test, environment);
+
+				if (condition.type !== InterpreterValueType.Boolean) {
+					throw new RuntimeError("Condition in 'while' must be a boolean");
+		}
+
+				if (!(condition as any).value) break;
+
+
+				evaluate(body, environment);
+	}
+
+			return {
+				type: InterpreterValueType.Null,
+				value: null,
+	}		 as InterpreterNull;
+}
+
+		
+
+
 		case ASTNodeType.Program: {
 			let lastEvaluatedValue: InterpreterValue = {
 				type: InterpreterValueType.Null,

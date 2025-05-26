@@ -14,6 +14,7 @@ function toToken(type: LexerTokenType, value?: string): LexerToken {
 const reservedKeywords: { [key: string]: LexerTokenType } = {
 	let: LexerTokenType.Let,
 	const: LexerTokenType.Const,
+	while: LexerTokenType.While,
 };
 
 // TODO: Support unicode and hex
@@ -108,6 +109,25 @@ export function tokenize(sourceCode: string): LexerToken[] {
 
 					break;
 				}
+
+				/*if (source[0] === '"') {
+					source.shift(); // Remove opening quote
+
+					let str = "";
+					while (source.length > 0 && source[0] !== '"') {
+					str += source.shift();
+					}
+
+					if (source[0] === '"') {
+					source.shift(); // Remove closing quote
+					tokens.push(toToken(LexerTokenType.String, str));
+					} else {
+					throw new InvalidTokenError("Unterminated string literal");
+					}
+
+					break;
+				}*/
+
 
 				throw new InvalidTokenError(`Unrecognized token: '${source[0]}'`);
 		}

@@ -13,6 +13,8 @@ export enum LexerTokenType {
 	Comma = "Comma",
 	Colon = "Colon",
 	Semicolon = "Semicolon",
+	//String ="String",
+	While = "While",
 
 	OpeningParenthesis = "OpeningParenthesis",
 	ClosingParenthesis = "ClosingParenthesis",
@@ -29,6 +31,8 @@ export interface LexerToken {
 	value: string;
 }
 
+
+
 // AST
 // Parser
 
@@ -39,6 +43,8 @@ export enum ASTNodeType {
 	
 	Alpha = "Alpha",
 	Number = "Number",
+	//String ="String",
+	WhileStatement = "WhileStatement",
 	
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
@@ -62,6 +68,11 @@ export interface ASTVariableDeclaration extends ASTStatement {
 	metadata: {
 		isConstant: boolean;
 	};
+}
+export interface ASTWhileStatement extends ASTStatement{
+	type: ASTNodeType.WhileStatement;
+	test: ASTExpression;
+	body: ASTStatement;
 }
 
 export interface ASTAlpha extends ASTStatement {
@@ -94,6 +105,7 @@ export enum InterpreterValueType {
 
 	Number = "Number",
 	Boolean = "Boolean",
+	//String ="String",
 }
 
 export interface InterpreterValue {
@@ -114,3 +126,18 @@ export interface InterpreterBoolean extends InterpreterValue {
 	type: InterpreterValueType.Boolean;
 	value: number;
 }
+
+
+
+
+/*export interface ASTString {
+	type: ASTNodeType.String;
+	value: string;
+}*/
+
+/*export interface InterpreterString extends InterpreterValue {
+	type: InterpreterValueType.String;
+	value: string;
+}*/
+
+
