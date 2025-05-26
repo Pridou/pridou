@@ -6,6 +6,7 @@ export enum LexerTokenType {
 
 	Let = "Let",
 	Const = "Const",
+	String= "String",
 	
 	Equals = "Equals",
 	BinaryOperator = "BinaryOperator",
@@ -39,6 +40,7 @@ export enum ASTNodeType {
 	
 	Alpha = "Alpha",
 	Number = "Number",
+	String = "String",
 	
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
@@ -87,6 +89,12 @@ export interface ASTAssignmentExpression extends ASTStatement {
 	assignee: ASTExpression,
 }
 
+export interface ASTString extends ASTStatement {
+	type: ASTNodeType.String;
+	value: String;
+}
+
+
 // Interpreter
 
 export enum InterpreterValueType {
@@ -94,6 +102,7 @@ export enum InterpreterValueType {
 
 	Number = "Number",
 	Boolean = "Boolean",
+	String = "String",
 }
 
 export interface InterpreterValue {
@@ -113,4 +122,9 @@ export interface InterpreterNumber extends InterpreterValue {
 export interface InterpreterBoolean extends InterpreterValue {
 	type: InterpreterValueType.Boolean;
 	value: boolean;
+}
+
+export interface InterpreterString extends InterpreterValue {
+	type: InterpreterValueType.String;
+	value: String;
 }

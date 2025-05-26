@@ -8,6 +8,7 @@ import {
 	type ASTNumber,
 	type ASTProgram,
 	type ASTStatement,
+	type ASTString,
 	type ASTVariableDeclaration,
 	type LexerToken,
 } from "@/types";
@@ -124,6 +125,12 @@ export default class Parser {
 
 				return expression;
 			}
+			case LexerTokenType.String:
+				return <ASTString>{
+					type: ASTNodeType.String,
+					value: this.#tokens.shift()?.value,
+				};
+	
 			default:
 				throw new InvalidTokenError(`Unexpected token '${this.peek().value}' in expression`);
 		}

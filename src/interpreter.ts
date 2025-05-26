@@ -6,6 +6,9 @@ import {
 	type ASTBinaryExpression,
 	type ASTNumber,
 	type ASTProgram,
+	type ASTString,
+	type InterpreterString,
+
 	type ASTStatement,
 	type ASTVariableDeclaration,
 	type InterpreterNull,
@@ -100,6 +103,13 @@ export function evaluate(
 				(<ASTAlpha>(<ASTAssignmentExpression>node).assignee).value,
 				evaluate((<ASTAssignmentExpression>node).value, environment),
 			);
+
+		case ASTNodeType.String:
+			return <InterpreterString>{
+			type: InterpreterValueType.String,
+			value: (<ASTString>node).value,
+	};
+
 
 		default:
 			throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);

@@ -26,8 +26,6 @@ const canBeSkippedValues: Set<string> = new Set<string>([
 	"\r",
 	"\t",
 	"\v",
-	"'",
-	'"',
 	"\\",
 ]);
 
@@ -39,8 +37,21 @@ export function tokenize(sourceCode: string): LexerToken[] {
 	const tokens: LexerToken[] = [];
 	const source: string[] = <string[]>sourceCode.split("");
 
+	let str ="";
+	let bool = false;
+
 	while (source.length > 0) {
 		switch (source[0]) {
+			case '"':
+				source.shift();
+				if (bool) {
+					tokens.push(toToken(LexerTokenType.String, str));
+				}
+
+				bool = !bool;
+
+				break;
+
 			case "=":
 				tokens.push(toToken(LexerTokenType.Equals, source.shift()));
 				break;
@@ -79,6 +90,12 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				tokens.push(toToken(LexerTokenType.ClosingSquareBracket, source.shift()));
 				break;
 			default:
+				if (bool) {
+					str += source.shift();
+
+					break;
+				}
+
 				if (isAlpha(source[0])) {
 					let alpha = "";
 
