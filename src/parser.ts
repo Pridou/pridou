@@ -1,6 +1,22 @@
-import {InvalidTokenError} from '@/src/errs';
-import {tokenize} from '@/src/lexer';
-import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, ASTNodeType, type ASTNumber, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type LexerToken, LexerTokenType} from '@/types';
+import {
+	ASTNodeType,
+	LexerTokenType,
+	type ASTAlpha,
+	type ASTAssignmentExpression,
+	type ASTBinaryExpression,
+	type ASTExpression,
+	type ASTString,
+	type ASTNumber,
+	type ASTFloat,
+	type ASTArray,
+	type ASTProgram,
+	type ASTStatement,
+	type ASTVariableDeclaration,
+	type LexerToken,
+} from "@/types";
+
+import { tokenize } from "@/src/lexer";
+import { InvalidTokenError } from "@/src/errs";
 
 const additiveOperators: Set<string> = new Set<string>(['+', '-']);
 const multiplicativeOperators: Set<string> = new Set<string>(['%', '*', '/']);
@@ -97,6 +113,13 @@ export default class Parser {
           // @ts-ignore
           value: +this.#tokens.shift()?.value,
         };
+			case LexerTokenType.Float:
+				return <ASTFloat>{
+					type: ASTNodeType.Float,
+					// TODO: Correct typing
+					// @ts-ignore
+					value: +this.#tokens.shift()?.value,
+				};
       case LexerTokenType.OpeningParenthesis: {
         this.#tokens.shift();
 
