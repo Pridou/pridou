@@ -139,17 +139,4 @@ export interface InterpreterBoolean extends InterpreterValue {
 	type: InterpreterValueType.Boolean;
 	value: number;
 }
-<<<<<<< HEAD
 export {Config} from "@/types/config"
-=======
-
-export interface InterpreterArray extends InterpreterValue {
-  type: InterpreterValueType.Array;
-  elements: InterpreterValue[];
-}
-
-export interface InterpreterString extends InterpreterValue {
-	type: InterpreterValueType.String;
-	value: String;
-}
->>>>>>> 2725173b9c80ced0ca5f7adf4b1c7dd2c226e104

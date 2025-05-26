@@ -221,24 +221,6 @@ export default class Parser {
     }
   }
 
-<<<<<<< HEAD
-		return program;
-	}
-	
-=======
-  public toAST(sourceCode: string): ASTProgram {
-    this.#tokens = tokenize(sourceCode);
-
-    const program: ASTProgram = {
-      type: ASTNodeType.Program,
-      body: [],
-    };
-
-    while (this.peek().type !== LexerTokenType.EOF) {
-      program.body.push(this.parseExpression());
-    }
-
-    return program;
-  }
->>>>>>> 2725173b9c80ced0ca5f7adf4b1c7dd2c226e104
 }
+	
+ 
