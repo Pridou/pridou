@@ -4,7 +4,7 @@ import { InvalidTokenError } from "@/src/errs";
 import { isAlpha, isNumber } from "@/src/utils";
 
 function toToken(type: LexerTokenType, value?: string): LexerToken {
-	if (!value) {
+	if (!value && value !== "") {
 		throw new InvalidTokenError("Invalid or missing token value");
 	}
 
@@ -44,6 +44,7 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				source.shift();
 				if (bool) {
 					tokens.push(toToken(LexerTokenType.String, str));
+					str = "";
 				}
 
 				bool = !bool;

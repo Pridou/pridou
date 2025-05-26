@@ -1,5 +1,5 @@
 import type Environment from '@/src/environment';
-import {InvalidNodeError} from '@/src/errs';
+import {InvalidNodeError, InvalidTokenError} from '@/src/errs';
 import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, ASTNodeType, type ASTNumber, type ASTProgram,
 
         type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterNull, type InterpreterNumber, type InterpreterString, type InterpreterValue, InterpreterValueType,} from '@/types';
@@ -51,18 +51,32 @@ export function evaluate(
           evaluate((<ASTBinaryExpression>node).rightExpression, environment);
       const operator = (<ASTBinaryExpression>node).binaryOperator;
 
+      if (operator === '+' &&
+          leftHandSide.type === InterpreterValueType.String &&
+          rightHandSide.type === InterpreterValueType.String) {
+        return <InterpreterString>{
+          type: InterpreterValueType.String,
+          value: (<InterpreterString>leftHandSide).value.concat((<InterpreterString>rightHandSide).value)
+        };
+      }
+
       if (operator === '*' &&
           ((leftHandSide.type === InterpreterValueType.String &&
             rightHandSide.type === InterpreterValueType.Number) ||
            (leftHandSide.type === InterpreterValueType.Number &&
             rightHandSide.type === InterpreterValueType.String))) {
         const str = leftHandSide.type === InterpreterValueType.String ?
-            (<InterpreterString>leftHandSide).value.toString() :
-            (<InterpreterString>rightHandSide).value.toString();
+            (<InterpreterString>leftHandSide).value :
+            (<InterpreterString>rightHandSide).value;
 
         const count = leftHandSide.type === InterpreterValueType.Number ?
             (<InterpreterNumber>leftHandSide).value :
             (<InterpreterNumber>rightHandSide).value;
+
+        if (count < 0) {
+          throw new InvalidTokenError(
+              'Cannot multiply a string by a negative number');
+        }
 
         return <InterpreterString>{
           type: InterpreterValueType.String,
@@ -72,9 +86,8 @@ export function evaluate(
 
       if (leftHandSide.type === InterpreterValueType.Number &&
           rightHandSide.type === InterpreterValueType.Number) {
-		
-		const leftValue = (<InterpreterNumber>leftHandSide).value;
-    	const rightValue = (<InterpreterNumber>rightHandSide).value;
+        const leftValue = (<InterpreterNumber>leftHandSide).value;
+        const rightValue = (<InterpreterNumber>rightHandSide).value;
         let value = 0;
 
         switch ((<ASTBinaryExpression>node).binaryOperator) {

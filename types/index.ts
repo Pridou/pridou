@@ -147,5 +147,5 @@ export interface InterpreterArray extends InterpreterValue {
 
 export interface InterpreterString extends InterpreterValue {
 	type: InterpreterValueType.String;
-	value: String;
+	value: string;
 }
