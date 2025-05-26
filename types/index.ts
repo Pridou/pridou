@@ -1,18 +1,18 @@
 export enum TokenType {
-    Alpha,
-    Number,
+  Alpha = 0,
+  Number = 1,
 
-    Equals,
-    BinaryOperator,
+  Equals = 2,
+  BinaryOperator = 3,
 
-    OpeningParenthesis,
-    ClosingParenthesis,
+  OpeningParenthesis = 4,
+  ClosingParenthesis = 5,
 
-    Let,
-    Const,
+  Let = 6,
+  Const = 7,
 }
 
 export interface Token {
-    type: TokenType;
-    value: string;
+  type: TokenType;
+  value: string;
 }
