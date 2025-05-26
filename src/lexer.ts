@@ -1,7 +1,7 @@
-import { LexerTokenType, type LexerToken } from "@/types";
+import {type LexerToken, LexerTokenType} from "@/types";
 
-import { InvalidTokenError } from "@/src/errs";
-import { isAlpha, isNumber } from "@/src/utils";
+import {InvalidTokenError} from "@/src/errs";
+import {isAlpha, isNumber} from "@/src/utils";
 
 function toToken(type: LexerTokenType, value?: string): LexerToken {
 	if (!value && value !== "") {
@@ -12,8 +12,9 @@ function toToken(type: LexerTokenType, value?: string): LexerToken {
 }
 
 const reservedKeywords: { [key: string]: LexerTokenType } = {
-	let: LexerTokenType.Let,
 	const: LexerTokenType.Const,
+	function: LexerTokenType.Function,
+	let: LexerTokenType.Let,
 };
 
 // TODO: Support unicode and hex

@@ -40,6 +40,8 @@ import { tokenize } from "./src/lexer";
 			process.exit(0);
 		}
 
+		console.log(tokenize(input));
+
 		const program: ASTProgram = parser.toAST(input);
 
 		console.log(JSON.stringify(program, null, 4));
