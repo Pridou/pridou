@@ -5,6 +5,7 @@ import {
 	type ASTAssignmentExpression,
 	type ASTBinaryExpression,
 	type ASTExpression,
+	type ASTFloat,
 	type ASTNumber,
 	type ASTProgram,
 	type ASTStatement,
@@ -84,7 +85,7 @@ export default class Parser {
 			};
 
 			if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-				throw new InvalidTokenError("E;xpected ';' after assignment expression");
+				throw new InvalidTokenError("Expected ';' after assignment expression");
 			}
 
 			return assignment;
@@ -109,6 +110,14 @@ export default class Parser {
 					// @ts-ignore
 					value: +this.#tokens.shift()?.value,
 				};
+			case LexerTokenType.Float:
+				return <ASTFloat>{
+					type: ASTNodeType.Float,
+					// TODO: Correct typing
+					// @ts-ignore
+					value: +this.#tokens.shift()?.value,
+				};
+
 			case LexerTokenType.OpeningParenthesis: {
 				this.#tokens.shift();
 

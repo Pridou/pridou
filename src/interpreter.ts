@@ -50,6 +50,12 @@ export function evaluate(
 				type: InterpreterValueType.Number,
 				value: (<ASTNumber>node).value,
 			};
+		case ASTNodeType.Float:
+			return <InterpreterNumber>{
+				type: InterpreterValueType.Number,
+				value: (<ASTNumber>node).value,
+			};
+
 		case ASTNodeType.BinaryExpression: {
 			const leftHandSide: InterpreterNumber = <InterpreterNumber>(
 				evaluate((<ASTBinaryExpression>node).leftExpression, environment)

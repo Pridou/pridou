@@ -95,17 +95,26 @@ export function tokenize(sourceCode: string): LexerToken[] {
 					let number = "";
 
 					while (source.length > 0 && isNumber(source[0])) {
-						number += source.shift();
+						number += source.shift(); 
 					}
+					if (source[0] === ".") {
+						number += source.shift() ;
 
-					tokens.push(toToken(LexerTokenType.Number, number));
-
-					break;
+						while (source.length > 0 && isNumber(source[0])) {
+							number += source.shift();
+						}
+						tokens.push(toToken(LexerTokenType.Float, number));
+						break;
+					} 
+					
+					else {
+						tokens.push(toToken(LexerTokenType.Number, number));
+						break;
+					}
 				}
 
 				if (shouldBeSkipped(source[0])) {
 					source.shift();
-
 					break;
 				}
 

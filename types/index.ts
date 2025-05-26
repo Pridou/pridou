@@ -3,6 +3,7 @@
 export enum LexerTokenType {
 	Alpha =  "Alpha",
 	Number = "Number",
+	Float = "Float",
 
 	Let = "Let",
 	Const = "Const",
@@ -39,6 +40,7 @@ export enum ASTNodeType {
 	
 	Alpha = "Alpha",
 	Number = "Number",
+	Float = "Float",
 	
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
@@ -72,6 +74,11 @@ export interface ASTAlpha extends ASTStatement {
 export interface ASTNumber extends ASTStatement {
 	type: ASTNodeType.Number;
 	value: number;
+}
+
+export interface ASTFloat extends ASTStatement {
+	type: ASTNodeType.Float;
+	value: number ;
 }
 
 export interface ASTBinaryExpression extends ASTStatement {
