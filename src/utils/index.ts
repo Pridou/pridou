@@ -1,5 +1,3 @@
-// Lexer
-
 export function isAlpha(value: string): boolean {
   return /^[A-Z]$/i.test(value);
 }
