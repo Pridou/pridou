@@ -1,0 +1,17 @@
+{
+  "name": "Bun Dev Environment",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "biomejs.biome",
+        "vitest.explorer",
+        "streetsidesoftware.code-spell-checker",
+        "aaron-bond.better-comments"
+      ]
+    }
+  },
+  "postCreateCommand": "bun install"
+}

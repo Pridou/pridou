@@ -1,91 +1,108 @@
-import { type Token, TokenType } from "@/types";
+enum TokenType {
+  Alpha = 0,
+  Number = 1,
 
-import { TokenError } from "@/src/exceptions/TokenError";
+  Equals = 2,
+  BinaryOperator = 3,
 
-function toToken(type: TokenType, value?: string): Token {
-	if (!value) {
-		throw new TokenError("Invalid token : " + value);
-	}
+  OpeningParenthesis = 4,
+  ClosingParenthesis = 5,
 
-	return { type, value };
+  Let = 6,
+  Const = 7,
+}
+
+interface Token {
+  type: TokenType;
+  value: string;
+}
+
+function toToken(type: TokenType, value: string): Token {
+  return { type, value };
 }
 
 function isAlpha(value: string): boolean {
-	return /^[A-Z]$/i.test(value);
+  return /^[A-Z]$/i.test(value);
 }
 
 function isNumber(value: string): boolean {
-	return /^[0-9]$/.test(value);
+  return /^[0-9]$/.test(value);
 }
 
 const canBeSkippedValues: string[] = [" ", "\n", "\t"];
 
 function shouldBeSkipped(value: string): boolean {
-	return canBeSkippedValues.includes(value);
+  return canBeSkippedValues.includes(value);
 }
 
 const reservedKeywordsMap: { [key: string]: TokenType } = {
-	let: TokenType.Let,
-	const: TokenType.Const,
+  let: TokenType.Let,
+  const: TokenType.Const,
 };
 
 function tokenize(sourceCode: string): Token[] {
-	const tokens: Token[] = [];
-	const source: string[] = sourceCode.split("");
+  const tokens: Token[] = [];
+  const source: string[] = sourceCode.split("");
 
-	while (source.length > 0) {
-		switch (source[0]) {
-			case "=":
-				tokens.push(toToken(TokenType.Equals, source.shift()));
-				break;
-			case "*":
-			case "+":
-			case "-":
-			case "/":
-				tokens.push(toToken(TokenType.BinaryOperator, source.shift()));
-				break;
-			case "(":
-				tokens.push(toToken(TokenType.OpeningParenthesis, source.shift()));
-				break;
-			case ")":
-				tokens.push(toToken(TokenType.ClosingParenthesis, source.shift()));
-				break;
-			default:
-				if (isAlpha(source[0])) {
-					let a: string = "";
+  while (source.length > 0) {
+    switch (source[0]) {
+      case "=":
+        // biome-ignore lint/style/noNonNullAssertion: temporary
+        tokens.push(toToken(TokenType.Equals, source.shift()!));
+        break;
+      case "*":
+      case "+":
+      case "-":
+      case "/":
+        // biome-ignore lint/style/noNonNullAssertion: temporary
+        tokens.push(toToken(TokenType.BinaryOperator, source.shift()!));
+        break;
+      case "(":
+        // biome-ignore lint/style/noNonNullAssertion: temporary
+        tokens.push(toToken(TokenType.OpeningParenthesis, source.shift()!));
+        break;
+      case ")":
+        // biome-ignore lint/style/noNonNullAssertion: temporary
+        tokens.push(toToken(TokenType.ClosingParenthesis, source.shift()!));
+        break;
+      default:
+        if (isAlpha(source[0])) {
+          let a = "";
 
-					while (source.length > 0 && isAlpha(source[0])) {
-						a += source.shift();
-					}
+          while (source.length > 0 && isAlpha(source[0])) {
+            a += source.shift();
+          }
 
-					tokens.push(toToken(reservedKeywordsMap[a] ?? TokenType.Alpha, a));
+          tokens.push(toToken(reservedKeywordsMap[a] ?? TokenType.Alpha, a));
 
-					break;
-				}
+          break;
+        }
 
-				if (isNumber(source[0])) {
-					let n: string = "";
+        if (isNumber(source[0])) {
+          let n = "";
 
-					while (source.length > 0 && isNumber(source[0])) {
-						n += source.shift();
-					}
+          while (source.length > 0 && isNumber(source[0])) {
+            n += source.shift();
+          }
 
-					tokens.push(toToken(TokenType.Number, n));
+          tokens.push(toToken(TokenType.Number, n));
 
-					break;
-				}
+          break;
+        }
 
-				if (shouldBeSkipped(source[0])) {
-					source.shift();
+        if (shouldBeSkipped(source[0])) {
+          source.shift();
 
-					break;
-				}
+          break;
+        }
 
-				throw new TokenError("Invalid token : " + source[0]);
-		}
-	}
+        console.error(`Found something weird: ${source[0]}`);
 
-	return tokens;
+      // TODO: Exit process
+    }
+  }
+
+  return tokens;
 }
 
-console.log(tokenize("const x = 5"));
+export { tokenize };
