@@ -54,8 +54,10 @@ export default class Environment {
 	public getVariable(name: string): InterpreterValue {
 		const environment: Environment = this.getEnvironment(name);
 
-		// TODO: Upgrade
-		return environment.#variables.get(name)!;
+		return environment.#variables.get(name) ?? <InterpreterValue>{
+			type: InterpreterValueType.Null,
+			value: null,
+		};
 	}
 
 	public setVariable(name: string, value: InterpreterValue): InterpreterValue {
