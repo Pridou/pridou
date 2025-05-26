@@ -12,9 +12,14 @@ export enum LexerTokenType {
 	Equals = "Equals",
 	BinaryOperator = "BinaryOperator",
 
+	If = "If",
+	Else = "Else",
+	Return = "Return",
+
 	Comma = "Comma",
 	Colon = "Colon",
 	Semicolon = "Semicolon",
+
 
 	OpeningParenthesis = "OpeningParenthesis",
 	ClosingParenthesis = "ClosingParenthesis",
@@ -47,9 +52,14 @@ export enum ASTNodeType {
 	Float = "Float",
 	Array = "Array",
 
+	If = "If",
+	Else = "Else",
+	Return = "Return",
+
 	
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
+	
 }
 
 export interface ASTStatement {
@@ -57,6 +67,8 @@ export interface ASTStatement {
 }
 
 export interface ASTExpression extends ASTStatement {}
+
+
 
 export interface ASTProgram extends ASTStatement {
 	type: ASTNodeType.Program;
@@ -109,6 +121,19 @@ export interface ASTString extends ASTStatement {
 	type: ASTNodeType.String;
 	value: String;
 }
+
+export interface ASTIfStatement extends ASTStatement  {
+	type:ASTNodeType.If;
+	condition:ASTExpression;
+	trueCase:ASTStatement;
+	falseCase:ASTStatement;
+}
+
+export interface ASTReturnStatement extends ASTStatement {
+	type: ASTNodeType.Return;
+	value: ASTExpression;
+}
+
 
 
 // Interpreter

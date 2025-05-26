@@ -9,8 +9,9 @@ import {
 	type ASTProgram,
 	type ASTString,
 	type InterpreterString,
-
 	type ASTStatement,
+	type ASTIfStatement,
+	type ASTReturnStatement,
 	type ASTVariableDeclaration,
 	type InterpreterArray,
 	type InterpreterNull,
@@ -129,6 +130,26 @@ export function evaluate(
 				type: InterpreterValueType.Array,
 				elements
 			};
+		}
+
+		case ASTNodeType.If: {
+			const condition = evaluate((<ASTIfStatement>node).condition, environment);
+
+			if (condition.type !== InterpreterValueType.Boolean) {
+				throw new Error("Condition in if must be a boolean");
+			}
+
+			if (condition.value) {
+				return evaluate((<ASTIfStatement>node).trueCase, environment);
+			} else {
+				return evaluate((<ASTIfStatement>node).falseCase, environment);
+			}
+		}
+
+
+		case ASTNodeType.Return:{
+			return evaluate((<ASTReturnStatement>node).value, environment);
+
 		}
 
 		default:

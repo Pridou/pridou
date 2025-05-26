@@ -14,6 +14,9 @@ function toToken(type: LexerTokenType, value?: string): LexerToken {
 const reservedKeywords: { [key: string]: LexerTokenType } = {
 	let: LexerTokenType.Let,
 	const: LexerTokenType.Const,
+	if:LexerTokenType.If,
+	else:LexerTokenType.Else,
+	return:LexerTokenType.Return,
 };
 
 // TODO: Support unicode and hex
