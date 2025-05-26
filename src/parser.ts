@@ -24,7 +24,7 @@ const multiplicativeOperators: Set<string> = new Set<string>(["%", "*", "/"]);
 export default class Parser {
 	#tokens: LexerToken[] = [];
 
-	private peek(offset = 0): LexerToken {
+	private peek(offset: number = 0): LexerToken {
 		return this.#tokens[offset];
 	}
 
