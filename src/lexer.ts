@@ -136,13 +136,14 @@ export function tokenize(sourceCode: string): LexerToken[] {
 							while (source.length > 0 && isNumber(source[0])) {
 								number += source.shift();
 							}
-							tokens.push(toToken(LexerTokenType.Float, number));
-						} else {
+
 							tokens.push(toToken(LexerTokenType.Number, number));
+
+							break;
 						}
-					} else {
-						tokens.push(toToken(LexerTokenType.Number, number));
 					}
+
+					tokens.push(toToken(LexerTokenType.Number, number));
 
 					break;
 				}
