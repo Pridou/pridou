@@ -25,7 +25,7 @@ test("1 + 1", (): void => {
 	]);
 });
 
-test("2", (): void => {
+test("const a = 1;", (): void => {
 	expect(tokenize("const a = 1;")).toEqual([
 		{
 			type: LexerTokenType.Const,
