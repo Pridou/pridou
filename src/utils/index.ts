@@ -3,5 +3,5 @@ export function isAlpha(value: string): boolean {
 }
 
 export function isNumber(value: string): boolean {
-  return /^[0-9]$/.test(value);
+  return !Number.isNaN(Number.parseInt(value));
 }

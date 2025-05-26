@@ -1,12 +1,15 @@
 import {
   type ASTAlpha,
+  type ASTArray,
   type ASTAssignmentExpression,
   type ASTBinaryExpression,
   type ASTExpression,
+  type ASTFloat,
   ASTNodeType,
   type ASTNumber,
   type ASTProgram,
   type ASTStatement,
+  type ASTString,
   type ASTVariableDeclaration,
   type LexerToken,
   LexerTokenType,
@@ -84,9 +87,7 @@ export default class Parser {
       };
 
       if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-        throw new InvalidTokenError(
-          "E;xpected ';' after assignment expression",
-        );
+        throw new InvalidTokenError("Expected ';' after assignment expression");
       }
 
       return assignment;
@@ -111,6 +112,13 @@ export default class Parser {
           // @ts-ignore
           value: +this.#tokens.shift()?.value,
         };
+      case LexerTokenType.Float:
+        return <ASTFloat>{
+          type: ASTNodeType.Float,
+          // TODO: Correct typing
+          // @ts-ignore
+          value: +this.#tokens.shift()?.value,
+        };
       case LexerTokenType.OpeningParenthesis: {
         this.#tokens.shift();
 
@@ -126,6 +134,34 @@ export default class Parser {
 
         return expression;
       }
+      case LexerTokenType.String:
+        return <ASTString>{
+          type: ASTNodeType.String,
+          value: this.#tokens.shift()?.value,
+        };
+
+      case LexerTokenType.OpeningSquareBracket: {
+        this.#tokens.shift();
+        const body: ASTExpression[] = [];
+        while (this.peek().type !== LexerTokenType.ClosingSquareBracket) {
+          body.push(this.parseExpression());
+
+          if (this.peek().type === LexerTokenType.Comma) {
+            this.#tokens.shift();
+          } else if (this.peek().type !== LexerTokenType.ClosingSquareBracket) {
+            throw new InvalidTokenError(
+              "Expected ',' or ']' in array expression",
+            );
+          }
+        }
+        if (
+          this.#tokens.shift()?.type !== LexerTokenType.ClosingSquareBracket
+        ) {
+          throw new InvalidTokenError("Expected ']' after array elements");
+        }
+        return <ASTArray>{ type: ASTNodeType.Array, body };
+      }
+
       default:
         throw new InvalidTokenError(
           `Unexpected token '${this.peek().value}' in expression`,

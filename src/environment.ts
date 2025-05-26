@@ -1,4 +1,8 @@
-import type { InterpreterValue } from "@/types";
+import {
+  type InterpreterBoolean,
+  type InterpreterValue,
+  InterpreterValueType,
+} from "@/types";
 
 import { InvalidAssignmentError, InvalidVariableError } from "./errors";
 
@@ -11,6 +15,24 @@ export default class Environment {
     this.#parent = parent;
     this.#constants = [];
     this.#variables = new Map<string, InterpreterValue>();
+
+    this.addVariable(
+      "false",
+      <InterpreterBoolean>{
+        type: InterpreterValueType.Boolean,
+        value: 0,
+      },
+      true,
+    );
+
+    this.addVariable(
+      "true",
+      <InterpreterBoolean>{
+        type: InterpreterValueType.Boolean,
+        value: 1,
+      },
+      true,
+    );
   }
 
   private getEnvironment(name: string): Environment {

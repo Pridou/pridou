@@ -1,6 +1,10 @@
 export enum LexerTokenType {
   Alpha = "Alpha",
   Number = "Number",
+  Float = "Float",
+  String = "String",
+
+  Function = "Function",
 
   Let = "Let",
   Const = "Const",

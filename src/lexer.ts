@@ -3,14 +3,6 @@ import { type LexerToken, LexerTokenType } from "@/types";
 import { InvalidTokenError } from "@/errors";
 import { isAlpha, isNumber } from "@/utils";
 
-function toToken(type: LexerTokenType, value?: string): LexerToken {
-  if (!value) {
-    throw new InvalidTokenError("Invalid or missing token value");
-  }
-
-  return { type, value };
-}
-
 const reservedKeywords: { [key: string]: LexerTokenType } = {
   let: LexerTokenType.Let,
   const: LexerTokenType.Const,
@@ -26,10 +18,16 @@ const canBeSkippedValues: Set<string> = new Set<string>([
   "\r",
   "\t",
   "\v",
-  "'",
-  '"',
   "\\",
 ]);
+
+function toToken(type: LexerTokenType, value?: string): LexerToken {
+  if (!value) {
+    throw new InvalidTokenError("Invalid or missing token value");
+  }
+
+  return { type, value };
+}
 
 function shouldBeSkipped(value: string): boolean {
   return canBeSkippedValues.has(value);
@@ -38,9 +36,25 @@ function shouldBeSkipped(value: string): boolean {
 export function tokenize(sourceCode: string): LexerToken[] {
   const tokens: LexerToken[] = [];
   const source: string[] = <string[]>sourceCode.split("");
+  let str = "";
+  let isBuildStr = false;
 
   while (source.length > 0) {
     switch (source[0]) {
+      case "'":
+      case '"':
+        if (isBuildStr && source[0] === "'") continue;
+
+        source.shift();
+        if (isBuildStr) {
+          tokens.push(toToken(LexerTokenType.String, str));
+          str = "";
+        }
+
+        isBuildStr = !isBuildStr;
+
+        break;
+
       case "=":
         tokens.push(toToken(LexerTokenType.Equals, source.shift()));
         break;
@@ -87,6 +101,12 @@ export function tokenize(sourceCode: string): LexerToken[] {
         );
         break;
       default:
+        if (isBuildStr) {
+          str += source.shift();
+
+          break;
+        }
+
         if (isAlpha(source[0])) {
           let alpha = "";
 
@@ -107,15 +127,22 @@ export function tokenize(sourceCode: string): LexerToken[] {
           while (source.length > 0 && isNumber(source[0])) {
             number += source.shift();
           }
+          if (source[0] === ".") {
+            number += source.shift();
+
+            while (source.length > 0 && isNumber(source[0])) {
+              number += source.shift();
+            }
+            tokens.push(toToken(LexerTokenType.Float, number));
+            break;
+          }
 
           tokens.push(toToken(LexerTokenType.Number, number));
-
           break;
         }
 
         if (shouldBeSkipped(source[0])) {
           source.shift();
-
           break;
         }
 

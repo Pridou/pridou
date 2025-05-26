@@ -4,7 +4,12 @@ export enum ASTNodeType {
   VariableDeclaration = "VariableDeclaration",
 
   Alpha = "Alpha",
+  String = "String",
+
   Number = "Number",
+  Float = "Float",
+
+  Array = "Array",
 
   BinaryExpression = "BinaryExpression",
   AssignmentExpression = "AssignmentExpression",
@@ -18,6 +23,11 @@ export interface ASTExpression extends ASTStatement {}
 
 export interface ASTProgram extends ASTStatement {
   type: ASTNodeType.Program;
+  body: ASTStatement[];
+}
+
+export interface ASTArray extends ASTStatement {
+  type: ASTNodeType.Array;
   body: ASTStatement[];
 }
 
@@ -35,8 +45,18 @@ export interface ASTAlpha extends ASTStatement {
   value: string;
 }
 
+export interface ASTString extends ASTStatement {
+  type: ASTNodeType.String;
+  value: string;
+}
+
 export interface ASTNumber extends ASTStatement {
   type: ASTNodeType.Number;
+  value: number;
+}
+
+export interface ASTFloat extends ASTStatement {
+  type: ASTNodeType.Float;
   value: number;
 }
 
