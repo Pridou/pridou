@@ -80,7 +80,7 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				break;
 			default:
 				if (isAlpha(source[0])) {
-					let alpha = "";
+					let alpha: string = "";
 
 					while (source.length > 0 && isAlpha(source[0])) {
 						alpha += source.shift();
@@ -92,7 +92,7 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				}
 
 				if (isNumber(source[0])) {
-					let number = "";
+					let number: string = "";
 
 					while (source.length > 0 && isNumber(source[0])) {
 						number += source.shift(); 
