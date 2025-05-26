@@ -14,7 +14,7 @@ import { tokenize } from "./src/lexer";
 	const parser: Parser = new Parser();
 	const environment: Environment = new Environment();
 
-/* 	environment.addVariable("x", <InterpreterNumber>{
+	/* 	environment.addVariable("x", <InterpreterNumber>{
 		type: InterpreterValueType.Number,
 		value: 5,
 	}, true);
@@ -31,7 +31,7 @@ import { tokenize } from "./src/lexer";
 
 	// Bun.file("./src/demos/index.pri").text().then(v => console.log(parser.toAST(v)));
 
-console.log(tokenize('const x = "bonjour";'));
+	console.log(tokenize('const x = "bonjour";'));
 
 	while (true) {
 		const input: string | null = prompt();

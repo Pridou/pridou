@@ -36,7 +36,7 @@ function shouldBeSkipped(value: string): boolean {
 export function tokenize(sourceCode: string): LexerToken[] {
 	const tokens: LexerToken[] = [];
 	const source: string[] = <string[]>sourceCode.split("");
-	let str="";
+	let str = "";
 	let bool = false;
 	while (source.length > 0) {
 		switch (source[0]) {
@@ -76,16 +76,24 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				tokens.push(toToken(LexerTokenType.ClosingParenthesis, source.shift()));
 				break;
 			case "{":
-				tokens.push(toToken(LexerTokenType.OpeningCurlyBracket, source.shift()));
+				tokens.push(
+					toToken(LexerTokenType.OpeningCurlyBracket, source.shift()),
+				);
 				break;
 			case "}":
-				tokens.push(toToken(LexerTokenType.ClosingCurlyBracket, source.shift()));
+				tokens.push(
+					toToken(LexerTokenType.ClosingCurlyBracket, source.shift()),
+				);
 				break;
 			case "[":
-				tokens.push(toToken(LexerTokenType.OpeningSquareBracket, source.shift()));
+				tokens.push(
+					toToken(LexerTokenType.OpeningSquareBracket, source.shift()),
+				);
 				break;
 			case "]":
-				tokens.push(toToken(LexerTokenType.ClosingSquareBracket, source.shift()));
+				tokens.push(
+					toToken(LexerTokenType.ClosingSquareBracket, source.shift()),
+				);
 				break;
 			default:
 				if (bool) {
@@ -95,37 +103,37 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				}
 
 				if (isAlpha(source[0])) {
-					let alpha: string = "";
+					let alpha = "";
 
 					while (source.length > 0 && isAlpha(source[0])) {
 						alpha += source.shift();
 					}
 
-					tokens.push(toToken(reservedKeywords[alpha] ?? LexerTokenType.Alpha, alpha));
+					tokens.push(
+						toToken(reservedKeywords[alpha] ?? LexerTokenType.Alpha, alpha),
+					);
 
 					break;
 				}
 
 				if (isNumber(source[0])) {
-					let number: string = "";
+					let number = "";
 
 					while (source.length > 0 && isNumber(source[0])) {
-						number += source.shift(); 
+						number += source.shift();
 					}
 					if (source[0] === ".") {
-						number += source.shift() ;
+						number += source.shift();
 
 						while (source.length > 0 && isNumber(source[0])) {
 							number += source.shift();
 						}
 						tokens.push(toToken(LexerTokenType.Float, number));
 						break;
-					} 
-					
-					else {
-						tokens.push(toToken(LexerTokenType.Number, number));
-						break;
 					}
+
+					tokens.push(toToken(LexerTokenType.Number, number));
+					break;
 				}
 
 				if (shouldBeSkipped(source[0])) {

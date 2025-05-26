@@ -1,8 +1,8 @@
-import {expect, test} from "bun:test";
+import { expect, test } from "bun:test";
 
-import {LexerTokenType} from "@/types";
+import { LexerTokenType } from "@/types";
 
-import {tokenize} from "@/src/lexer";
+import { tokenize } from "@/src/lexer";
 
 test("1 + 1", (): void => {
 	expect(tokenize("1 + 1")).toEqual([
@@ -21,7 +21,7 @@ test("1 + 1", (): void => {
 		{
 			type: LexerTokenType.EOF,
 			value: "EOF",
-		}
+		},
 	]);
 });
 
@@ -53,5 +53,3 @@ test("const a = 1;", (): void => {
 		},
 	]);
 });
-
-
