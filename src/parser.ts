@@ -1,6 +1,23 @@
+<<<<<<< HEAD
 import {InvalidTokenError} from '@/src/errs';
 import {tokenize} from '@/src/lexer';
 import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, ASTNodeType, type ASTNumber, type ASTProgram, type ASTStatement, type ASTVariableDeclaration, type LexerToken, LexerTokenType,} from '@/types';
+=======
+import {
+	ASTNodeType,
+	LexerTokenType,
+	type ASTAlpha,
+	type ASTAssignmentExpression,
+	type ASTBinaryExpression,
+	type ASTExpression,
+	type ASTFloat,
+	type ASTNumber,
+	type ASTProgram,
+	type ASTStatement,
+	type ASTVariableDeclaration,
+	type LexerToken,
+} from "@/types";
+>>>>>>> 73bc23ebbd8fd679be2439303e2c43cdbb3924fa
 
 const additiveOperators: Set<string> = new Set<string>(['+', '-']);
 const multiplicativeOperators: Set<string> = new Set<string>(['%', '*', '/']);
@@ -64,11 +81,17 @@ export default class Parser {
     if (this.peek().type === LexerTokenType.Equals) {
       this.#tokens.shift();
 
+<<<<<<< HEAD
       const assignment: ASTAssignmentExpression = {
         type: ASTNodeType.AssignmentExpression,
         value: this.parsePrimitiveExpression(),
         assignee: leftExpression,
       };
+=======
+			if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+				throw new InvalidTokenError("Expected ';' after assignment expression");
+			}
+>>>>>>> 73bc23ebbd8fd679be2439303e2c43cdbb3924fa
 
       if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
         throw new InvalidTokenError(
@@ -81,8 +104,34 @@ export default class Parser {
     return leftExpression;
   }
 
+<<<<<<< HEAD
   private parsePrimitiveExpression(): ASTExpression {
     const tokenType: LexerTokenType = this.peek().type;
+=======
+		switch (tokenType) {
+			case LexerTokenType.Alpha:
+				return <ASTAlpha>{
+					type: ASTNodeType.Alpha,
+					value: this.#tokens.shift()?.value,
+				};
+			case LexerTokenType.Number:
+				return <ASTNumber>{
+					type: ASTNodeType.Number,
+					// TODO: Correct typing
+					// @ts-ignore
+					value: +this.#tokens.shift()?.value,
+				};
+			case LexerTokenType.Float:
+				return <ASTFloat>{
+					type: ASTNodeType.Float,
+					// TODO: Correct typing
+					// @ts-ignore
+					value: +this.#tokens.shift()?.value,
+				};
+
+			case LexerTokenType.OpeningParenthesis: {
+				this.#tokens.shift();
+>>>>>>> 73bc23ebbd8fd679be2439303e2c43cdbb3924fa
 
     switch (tokenType) {
       case LexerTokenType.Alpha:
