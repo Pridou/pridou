@@ -1,5 +1,5 @@
 import { LexerTokenType, type LexerToken } from "@/types";
-
+import config from "./config";
 import { InvalidTokenError } from "@/src/errs";
 import { isAlpha, isNumber } from "@/src/utils";
 
@@ -40,45 +40,13 @@ export function tokenize(sourceCode: string): LexerToken[] {
 	const source: string[] = <string[]>sourceCode.split("");
 
 	while (source.length > 0) {
-		switch (source[0]) {
-			case "=":
-				tokens.push(toToken(LexerTokenType.Equals, source.shift()));
-				break;
-			case "%":
-			case "*":
-			case "+":
-			case "-":
-			case "/":
-				tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
-				break;
-			case ",":
-				tokens.push(toToken(LexerTokenType.Comma, source.shift()));
-				break;
-			case ":":
-				tokens.push(toToken(LexerTokenType.Colon, source.shift()));
-				break;
-			case ";":
-				tokens.push(toToken(LexerTokenType.Semicolon, source.shift()));
-				break;
-			case "(":
-				tokens.push(toToken(LexerTokenType.OpeningParenthesis, source.shift()));
-				break;
-			case ")":
-				tokens.push(toToken(LexerTokenType.ClosingParenthesis, source.shift()));
-				break;
-			case "{":
-				tokens.push(toToken(LexerTokenType.OpeningCurlyBracket, source.shift()));
-				break;
-			case "}":
-				tokens.push(toToken(LexerTokenType.ClosingCurlyBracket, source.shift()));
-				break;
-			case "[":
-				tokens.push(toToken(LexerTokenType.OpeningSquareBracket, source.shift()));
-				break;
-			case "]":
-				tokens.push(toToken(LexerTokenType.ClosingSquareBracket, source.shift()));
-				break;
-			default:
+		const token = source[0]
+		const keys = Object.keys(config);
+		const type = config[token];
+		if(keys.includes(token)){
+			tokens.push(toToken(type, token));
+			continue;
+		}
 				if (isAlpha(source[0])) {
 					let alpha: string = "";
 
@@ -110,10 +78,14 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				}
 
 				throw new InvalidTokenError(`Unrecognized token: '${source[0]}'`);
-		}
+		
 	}
 
 	tokens.push(toToken(LexerTokenType.EOF, LexerTokenType.EOF.toString()));
 
 	return tokens;
 }
+
+
+
+		

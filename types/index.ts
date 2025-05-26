@@ -114,3 +114,4 @@ export interface InterpreterBoolean extends InterpreterValue {
 	type: InterpreterValueType.Boolean;
 	value: number;
 }
+export {Config} from "@/types/config"
