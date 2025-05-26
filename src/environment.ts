@@ -1,6 +1,10 @@
-import {type InterpreterBoolean, type InterpreterValue, InterpreterValueType} from "@/types";
+import {
+	type InterpreterBoolean,
+	type InterpreterValue,
+	InterpreterValueType,
+} from "@/types";
 
-import {InvalidAssignmentError, InvalidVariableError} from "@/src/errs";
+import { InvalidAssignmentError, InvalidVariableError } from "@/src/errs";
 
 export default class Environment {
 	readonly #parent?: Environment;
@@ -12,15 +16,23 @@ export default class Environment {
 		this.#constants = [];
 		this.#variables = new Map<string, InterpreterValue>();
 
-		this.addVariable("false", <InterpreterBoolean>{
-			type: InterpreterValueType.Boolean,
-			value: 0,
-		}, true);
+		this.addVariable(
+			"false",
+			<InterpreterBoolean>{
+				type: InterpreterValueType.Boolean,
+				value: 0,
+			},
+			true,
+		);
 
-		this.addVariable("true", <InterpreterBoolean>{
-			type: InterpreterValueType.Boolean,
-			value: 1,
-		}, true);
+		this.addVariable(
+			"true",
+			<InterpreterBoolean>{
+				type: InterpreterValueType.Boolean,
+				value: 1,
+			},
+			true,
+		);
 	}
 
 	private getEnvironment(name: string): Environment {
@@ -35,7 +47,11 @@ export default class Environment {
 		return this.#parent.getEnvironment(name);
 	}
 
-	public addVariable(name: string, value: InterpreterValue, isConstant: boolean): InterpreterValue {
+	public addVariable(
+		name: string,
+		value: InterpreterValue,
+		isConstant: boolean,
+	): InterpreterValue {
 		if (Object.keys(this.#variables).includes(name)) {
 			throw new InvalidVariableError(
 				`Variable "${name}" has already been declared`,
@@ -54,15 +70,22 @@ export default class Environment {
 	public getVariable(name: string): InterpreterValue {
 		const environment: Environment = this.getEnvironment(name);
 
-		// TODO: Upgrade
-		return environment.#variables.get(name)!;
+		return (
+			environment.#variables.get(name) ??
+			<InterpreterValue>{
+				type: InterpreterValueType.Null,
+				value: null,
+			}
+		);
 	}
 
 	public setVariable(name: string, value: InterpreterValue): InterpreterValue {
 		const environment: Environment = this.getEnvironment(name);
 
 		if (environment.#constants.includes(name)) {
-			throw new InvalidAssignmentError(`Cannot reassign variable ${name} as it is a constant.`);
+			throw new InvalidAssignmentError(
+				`Cannot reassign variable ${name} as it is a constant.`,
+			);
 		}
 
 		environment.#variables.set(name, value);

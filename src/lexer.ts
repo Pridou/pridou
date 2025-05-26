@@ -1,10 +1,10 @@
-import { LexerTokenType, type LexerToken } from "@/types";
+import {type LexerToken, LexerTokenType} from "@/types";
 
-import { InvalidTokenError } from "@/src/errs";
-import { isAlpha, isNumber } from "@/src/utils";
+import {InvalidTokenError} from "@/src/errs";
+import {isAlpha, isNumber} from "@/src/utils";
 
 function toToken(type: LexerTokenType, value?: string): LexerToken {
-	if (!value) {
+	if (!value && value !== "") {
 		throw new InvalidTokenError("Invalid or missing token value");
 	}
 
@@ -12,11 +12,15 @@ function toToken(type: LexerTokenType, value?: string): LexerToken {
 }
 
 const reservedKeywords: { [key: string]: LexerTokenType } = {
-	let: LexerTokenType.Let,
 	const: LexerTokenType.Const,
+<<<<<<< HEAD
 	if:LexerTokenType.If,
 	else:LexerTokenType.Else,
 	return:LexerTokenType.Return,
+=======
+	function: LexerTokenType.Function,
+	let: LexerTokenType.Let,
+>>>>>>> d5da2b8e78e30632d64a7cd6396c01d591e396ee
 };
 
 // TODO: Support unicode and hex
@@ -39,17 +43,22 @@ function shouldBeSkipped(value: string): boolean {
 export function tokenize(sourceCode: string): LexerToken[] {
 	const tokens: LexerToken[] = [];
 	const source: string[] = <string[]>sourceCode.split("");
-	let str="";
-	let bool = false;
+
+	let temporaryString: string = "";
+	let isBuildingString: boolean = false;
+
 	while (source.length > 0) {
 		switch (source[0]) {
+			case "'":
 			case '"':
 				source.shift();
-				if (bool) {
-					tokens.push(toToken(LexerTokenType.String, str));
+
+				if (isBuildingString) {
+					tokens.push(toToken(LexerTokenType.String, temporaryString));
+					temporaryString = "";
 				}
 
-				bool = !bool;
+				isBuildingString = !isBuildingString;
 
 				break;
 
@@ -79,20 +88,28 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				tokens.push(toToken(LexerTokenType.ClosingParenthesis, source.shift()));
 				break;
 			case "{":
-				tokens.push(toToken(LexerTokenType.OpeningCurlyBracket, source.shift()));
+				tokens.push(
+					toToken(LexerTokenType.OpeningCurlyBracket, source.shift()),
+				);
 				break;
 			case "}":
-				tokens.push(toToken(LexerTokenType.ClosingCurlyBracket, source.shift()));
+				tokens.push(
+					toToken(LexerTokenType.ClosingCurlyBracket, source.shift()),
+				);
 				break;
 			case "[":
-				tokens.push(toToken(LexerTokenType.OpeningSquareBracket, source.shift()));
+				tokens.push(
+					toToken(LexerTokenType.OpeningSquareBracket, source.shift()),
+				);
 				break;
 			case "]":
-				tokens.push(toToken(LexerTokenType.ClosingSquareBracket, source.shift()));
+				tokens.push(
+					toToken(LexerTokenType.ClosingSquareBracket, source.shift()),
+				);
 				break;
 			default:
-				if (bool) {
-					str += source.shift();
+				if (isBuildingString) {
+					temporaryString += source.shift();
 
 					break;
 				}
@@ -104,7 +121,9 @@ export function tokenize(sourceCode: string): LexerToken[] {
 						alpha += source.shift();
 					}
 
-					tokens.push(toToken(reservedKeywords[alpha] ?? LexerTokenType.Alpha, alpha));
+					tokens.push(
+						toToken(reservedKeywords[alpha] ?? LexerTokenType.Alpha, alpha),
+					);
 
 					break;
 				}
@@ -113,22 +132,26 @@ export function tokenize(sourceCode: string): LexerToken[] {
 					let number: string = "";
 
 					while (source.length > 0 && isNumber(source[0])) {
-						number += source.shift(); 
+						number += source.shift();
 					}
-					if (source[0] === ".") {
-						number += source.shift() ;
 
-						while (source.length > 0 && isNumber(source[0])) {
-							number += source.shift();
+					if (source[0] === ".") {
+						number += source.shift();
+
+						if (isNumber(source[0])) {
+							while (source.length > 0 && isNumber(source[0])) {
+								number += source.shift();
+							}
+
+							tokens.push(toToken(LexerTokenType.Number, number));
+
+							break;
 						}
-						tokens.push(toToken(LexerTokenType.Float, number));
-						break;
-					} 
-					
-					else {
-						tokens.push(toToken(LexerTokenType.Number, number));
-						break;
 					}
+
+					tokens.push(toToken(LexerTokenType.Number, number));
+
+					break;
 				}
 
 				if (shouldBeSkipped(source[0])) {

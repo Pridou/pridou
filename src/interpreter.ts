@@ -1,26 +1,25 @@
+import type Environment from "@/src/environment";
+import { InvalidNodeError , InvalidTokenError} from "@/src/errs";
 import {
-	ASTNodeType,
-	InterpreterValueType,
 	type ASTAlpha,
 	type ASTArray,
 	type ASTAssignmentExpression,
 	type ASTBinaryExpression,
+	ASTNodeType,
 	type ASTNumber,
 	type ASTProgram,
 	type ASTString,
 	type InterpreterString,
+
 	type ASTStatement,
-	type ASTIfStatement,
-	type ASTReturnStatement,
 	type ASTVariableDeclaration,
 	type InterpreterArray,
 	type InterpreterNull,
 	type InterpreterNumber,
+	type InterpreterString,
 	type InterpreterValue,
+	InterpreterValueType,
 } from "@/types";
-
-import { InvalidNodeError } from "@/src/errs";
-import type Environment from "@/src/environment";
 
 export function evaluate(
 	node: ASTStatement,
@@ -42,12 +41,13 @@ export function evaluate(
 		case ASTNodeType.VariableDeclaration:
 			return environment.addVariable(
 				(<ASTVariableDeclaration>node).alpha,
+				// FIXME:
 				evaluate((<ASTVariableDeclaration>node).value!, environment) ??
 					<InterpreterNull>{
 						type: InterpreterValueType.Null,
 						value: null,
 					},
-					(<ASTVariableDeclaration>node).metadata.isConstant,
+				(<ASTVariableDeclaration>node).metadata.isConstant,
 			);
 		case ASTNodeType.Alpha:
 			return environment.getVariable((<ASTAlpha>node).value);
@@ -56,41 +56,69 @@ export function evaluate(
 				type: InterpreterValueType.Number,
 				value: (<ASTNumber>node).value,
 			};
-		case ASTNodeType.Float:
-			return <InterpreterNumber>{
-				type: InterpreterValueType.Number,
-				value: (<ASTNumber>node).value,
-			};
 
-		case ASTNodeType.BinaryExpression: {
-			const leftHandSide: InterpreterNumber = <InterpreterNumber>(
-				evaluate((<ASTBinaryExpression>node).leftExpression, environment)
-			);
-			const rightHandSide: InterpreterNumber = <InterpreterNumber>(
-				evaluate((<ASTBinaryExpression>node).rightExpression, environment)
-			);
+    case ASTNodeType.BinaryExpression: {
+      const leftHandSide =
+          evaluate((<ASTBinaryExpression>node).leftExpression, environment);
+      const rightHandSide =
+          evaluate((<ASTBinaryExpression>node).rightExpression, environment);
+      const operator = (<ASTBinaryExpression>node).binaryOperator;
 
-			if (
-				leftHandSide.type === InterpreterValueType.Number &&
-				rightHandSide.type === InterpreterValueType.Number
-			) {
-				let value = 0;
+      if (operator === '+' &&
+          leftHandSide.type === InterpreterValueType.String &&
+          rightHandSide.type === InterpreterValueType.String) {
+        return <InterpreterString>{
+          type: InterpreterValueType.String,
+          value: (<InterpreterString>leftHandSide).value.concat((<InterpreterString>rightHandSide).value)
+        };
+      }
+
+      if (operator === '*' &&
+          ((leftHandSide.type === InterpreterValueType.String &&
+            rightHandSide.type === InterpreterValueType.Number) ||
+           (leftHandSide.type === InterpreterValueType.Number &&
+            rightHandSide.type === InterpreterValueType.String))) {
+        const str = leftHandSide.type === InterpreterValueType.String ?
+            (<InterpreterString>leftHandSide).value :
+            (<InterpreterString>rightHandSide).value;
+
+				const count =
+					leftHandSide.type === InterpreterValueType.Number
+						? (<InterpreterNumber>leftHandSide).value
+						: (<InterpreterNumber>rightHandSide).value;
+
+        if (count < 0) {
+          throw new InvalidTokenError(
+              'Cannot multiply a string by a negative number');
+        }
+
+        return <InterpreterString>{
+          type: InterpreterValueType.String,
+          value: str.repeat(count)
+        };
+      }
+
+      if (leftHandSide.type === InterpreterValueType.Number &&
+          rightHandSide.type === InterpreterValueType.Number) {
+        const leftValue = (<InterpreterNumber>leftHandSide).value;
+        const rightValue = (<InterpreterNumber>rightHandSide).value;
+        let value = 0;
 
 				switch ((<ASTBinaryExpression>node).binaryOperator) {
 					case "%":
-						value = leftHandSide.value % rightHandSide.value;
+						value = leftValue % rightValue;
 						break;
 					case "*":
-						value = leftHandSide.value * rightHandSide.value;
+						value = leftValue * rightValue;
 						break;
 					case "+":
-						value = leftHandSide.value + rightHandSide.value;
+						value = leftValue + rightValue;
 						break;
 					case "-":
-						value = leftHandSide.value - rightHandSide.value;
+						value = leftValue - rightValue;
 						break;
 					case "/":
-						value = leftHandSide.value / rightHandSide.value;
+						value = leftValue / rightValue;
 						break;
 				}
 
@@ -115,21 +143,17 @@ export function evaluate(
 
 		case ASTNodeType.String:
 			return <InterpreterString>{
-			type: InterpreterValueType.String,
-			value: (<ASTString>node).value,
-	};
-
+				type: InterpreterValueType.String,
+				value: (<ASTString>node).value,
+			};
 
 		case ASTNodeType.Array: {
 			const elements: InterpreterValue[] = [];
-			for(const expression of (<ASTArray>node).body){
-				elements.push(evaluate(expression,environment));
+			for (const expression of (<ASTArray>node).body) {
+				elements.push(evaluate(expression, environment));
 			}
 
-			return <InterpreterArray>{
-				type: InterpreterValueType.Array,
-				elements
-			};
+			return <InterpreterArray>{ type: InterpreterValueType.Array, elements };
 		}
 
 		case ASTNodeType.If: {

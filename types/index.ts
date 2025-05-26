@@ -1,14 +1,15 @@
 // Lexer
 
 export enum LexerTokenType {
-	Alpha =  "Alpha",
+	Alpha = "Alpha",
 	Number = "Number",
-	Float = "Float",
 
 	Let = "Let",
 	Const = "Const",
-	String= "String",
-	
+	Function = "Function",
+
+	String = "String",
+
 	Equals = "Equals",
 	BinaryOperator = "BinaryOperator",
 
@@ -42,19 +43,15 @@ export interface LexerToken {
 export enum ASTNodeType {
 	Program = "Program",
 
+	FunctionDeclaration = "FunctionDeclaration",
 	VariableDeclaration = "VariableDeclaration",
-	
+
 	Alpha = "Alpha",
 	Number = "Number",
 
 	String = "String",
 
-	Float = "Float",
 	Array = "Array",
-
-	If = "If",
-	Else = "Else",
-	Return = "Return",
 
 	
 	BinaryExpression = "BinaryExpression",
@@ -80,6 +77,10 @@ export interface ASTArray extends ASTStatement {
 	body: ASTStatement[];
 }
 
+export interface ASTFunctionDeclaration extends ASTStatement {
+	type: ASTNodeType.FunctionDeclaration;
+}
+
 export interface ASTVariableDeclaration extends ASTStatement {
 	type: ASTNodeType.VariableDeclaration;
 	alpha: string;
@@ -99,11 +100,6 @@ export interface ASTNumber extends ASTStatement {
 	value: number;
 }
 
-export interface ASTFloat extends ASTStatement {
-	type: ASTNodeType.Float;
-	value: number ;
-}
-
 export interface ASTBinaryExpression extends ASTStatement {
 	type: ASTNodeType.BinaryExpression;
 	binaryOperator: string;
@@ -113,27 +109,14 @@ export interface ASTBinaryExpression extends ASTStatement {
 
 export interface ASTAssignmentExpression extends ASTStatement {
 	type: ASTNodeType.AssignmentExpression;
-	value: ASTExpression,
-	assignee: ASTExpression,
+	value: ASTExpression;
+	assignee: ASTExpression;
 }
 
 export interface ASTString extends ASTStatement {
 	type: ASTNodeType.String;
-	value: String;
+	value: string;
 }
-
-export interface ASTIfStatement extends ASTStatement  {
-	type:ASTNodeType.If;
-	condition:ASTExpression;
-	trueCase:ASTStatement;
-	falseCase:ASTStatement;
-}
-
-export interface ASTReturnStatement extends ASTStatement {
-	type: ASTNodeType.Return;
-	value: ASTExpression;
-}
-
 
 
 // Interpreter
@@ -166,11 +149,11 @@ export interface InterpreterBoolean extends InterpreterValue {
 }
 
 export interface InterpreterArray extends InterpreterValue {
-  type: InterpreterValueType.Array;
-  elements: InterpreterValue[];
+	type: InterpreterValueType.Array;
+	elements: InterpreterValue[];
 }
 
 export interface InterpreterString extends InterpreterValue {
 	type: InterpreterValueType.String;
-	value: String;
+	value: string;
 }

@@ -7,7 +7,7 @@ import {
 	type ASTExpression,
 	type ASTString,
 	type ASTNumber,
-	type ASTFloat,
+	type ASTArray,
 	type ASTProgram,
 	type ASTStatement,
 	type ASTVariableDeclaration,
@@ -26,10 +26,10 @@ const comparatorOperators: Set<string> = new Set<string>([">", ">=", "<","<="]);
 export default class Parser {
 	#tokens: LexerToken[] = [];
 
-	private peek(offset = 0): LexerToken {
+	private peek(offset: number = 0): LexerToken {
 		return this.#tokens[offset];
 	}
-	
+
 	private parseVariableDeclaration(): ASTStatement {
 		const isConstant: boolean =
 			this.#tokens.shift()?.type === LexerTokenType.Const;
@@ -89,7 +89,9 @@ export default class Parser {
 			};
 
 			if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-				throw new InvalidTokenError("E;xpected ';' after assignment expression");
+				throw new InvalidTokenError(
+					"E;xpected ';' after assignment expression",
+				);
 			}
 
 			return assignment;
@@ -114,13 +116,6 @@ export default class Parser {
 					// @ts-ignore
 					value: +this.#tokens.shift()?.value,
 				};
-			case LexerTokenType.Float:
-				return <ASTFloat>{
-					type: ASTNodeType.Float,
-					// TODO: Correct typing
-					// @ts-ignore
-					value: +this.#tokens.shift()?.value,
-				};
 			case LexerTokenType.OpeningParenthesis: {
 				this.#tokens.shift();
 
@@ -141,9 +136,33 @@ export default class Parser {
 					type: ASTNodeType.String,
 					value: this.#tokens.shift()?.value,
 				};
-	
+
+			case LexerTokenType.OpeningSquareBracket: {
+				this.#tokens.shift();
+				const body: ASTExpression[] = [];
+				while (this.peek().type !== LexerTokenType.ClosingSquareBracket) {
+					body.push(this.parseExpression());
+
+					if (this.peek().type === LexerTokenType.Comma) {
+						this.#tokens.shift();
+					} else if (this.peek().type !== LexerTokenType.ClosingSquareBracket) {
+						throw new InvalidTokenError(
+							"Expected ',' or ']' in array expression",
+						);
+					}
+				}
+				if (
+					this.#tokens.shift()?.type !== LexerTokenType.ClosingSquareBracket
+				) {
+					throw new InvalidTokenError("Expected ']' after array elements");
+				}
+				return <ASTArray>{ type: ASTNodeType.Array, body };
+			}
+
 			default:
-				throw new InvalidTokenError(`Unexpected token '${this.peek().value}' in expression`);
+				throw new InvalidTokenError(
+					`Unexpected token '${this.peek().value}' in expression`,
+				);
 		}
 	}
 
