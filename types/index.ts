@@ -5,7 +5,6 @@ import type Environment from "@/src/environment";
 export enum LexerTokenType {
 	Alpha = "Alpha",
 	Number = "Number",
-	Float = "Float",
 
 	Let = "Let",
 	Const = "Const",
@@ -42,6 +41,7 @@ export interface LexerToken {
 export enum ASTNodeType {
 	Program = "Program",
 
+	FunctionDeclaration = "FunctionDeclaration",
 	VariableDeclaration = "VariableDeclaration",
 
 	Alpha = "Alpha",
@@ -49,7 +49,6 @@ export enum ASTNodeType {
 
 	String = "String",
 
-	Float = "Float",
 	Array = "Array",
 
 	BinaryExpression = "BinaryExpression",
@@ -76,6 +75,10 @@ export interface ASTArray extends ASTStatement {
 	body: ASTStatement[];
 }
 
+export interface ASTFunctionDeclaration extends ASTStatement {
+	type: ASTNodeType.FunctionDeclaration;
+}
+
 export interface ASTVariableDeclaration extends ASTStatement {
 	type: ASTNodeType.VariableDeclaration;
 	alpha: string;
@@ -92,11 +95,6 @@ export interface ASTAlpha extends ASTStatement {
 
 export interface ASTNumber extends ASTStatement {
 	type: ASTNodeType.Number;
-	value: number;
-}
-
-export interface ASTFloat extends ASTStatement {
-	type: ASTNodeType.Float;
 	value: number;
 }
 

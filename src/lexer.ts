@@ -37,18 +37,22 @@ function shouldBeSkipped(value: string): boolean {
 export function tokenize(sourceCode: string): LexerToken[] {
 	const tokens: LexerToken[] = [];
 	const source: string[] = <string[]>sourceCode.split("");
-	let str = "";
-	let bool = false;
+
+	let temporaryString: string = "";
+	let isBuildingString: boolean = false;
+
 	while (source.length > 0) {
 		switch (source[0]) {
+			case "'":
 			case '"':
 				source.shift();
-				if (bool) {
-					tokens.push(toToken(LexerTokenType.String, str));
-					str = "";
+
+				if (isBuildingString) {
+					tokens.push(toToken(LexerTokenType.String, temporaryString));
+					temporaryString = "";
 				}
 
-				bool = !bool;
+				isBuildingString = !isBuildingString;
 
 				break;
 
@@ -101,8 +105,8 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				);
 				break;
 			default:
-				if (bool) {
-					str += source.shift();
+				if (isBuildingString) {
+					temporaryString += source.shift();
 
 					break;
 				}
@@ -124,17 +128,10 @@ export function tokenize(sourceCode: string): LexerToken[] {
 				if (isNumber(source[0])) {
 					let number: string = "";
 
-					while (source.length > 0 && isNumber(source[0])) {
-						number += source.shift();
-					}
-					if (source[0] === ".") {
-						number += source.shift();
-
-						while (source.length > 0 && isNumber(source[0])) {
+					while (source.length > 0 && (isNumber(source[0]) || source[0] === ".")) {
+						if (!(source[0] === "." && number.includes("."))) {
 							number += source.shift();
 						}
-						tokens.push(toToken(LexerTokenType.Float, number));
-						break;
 					}
 
 					tokens.push(toToken(LexerTokenType.Number, number));

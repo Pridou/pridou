@@ -1,6 +1,6 @@
 import {InvalidTokenError} from '@/src/errs';
 import {tokenize} from '@/src/lexer';
-import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, type ASTFloat, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type LexerToken, LexerTokenType,} from '@/types';
+import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type LexerToken, LexerTokenType,} from '@/types';
 
 const additiveOperators: Set<string> = new Set<string>(['+', '-']);
 const multiplicativeOperators: Set<string> = new Set<string>(['%', '*', '/']);
@@ -74,6 +74,11 @@ export default class Parser {
         throw new InvalidTokenError(
             'Expected \';\' after assignment expression');
       }
+      if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+        throw new InvalidTokenError(
+            'Expected \';\' after assignment expression',
+        );
+      }
 
       return assignment;
     }
@@ -85,19 +90,28 @@ export default class Parser {
     let expression: ASTExpression;
 
     switch (this.peek().type) {
+      case LexerTokenType.BinaryOperator:
+        if (this.peek().value === '-' &&
+            (this.#tokens[1]?.type === LexerTokenType.Number ||
+             this.#tokens[1]?.type === LexerTokenType.OpeningParenthesis ||
+             this.#tokens[1]?.type === LexerTokenType.Alpha)) {
+          this.#tokens.shift();
+          const expr = this.parsePrimitiveExpression();
+          return <ASTBinaryExpression>{
+            type: ASTNodeType.BinaryExpression,
+            binaryOperator: '-',
+            leftExpression: <ASTNumber>{type: ASTNodeType.Number, value: 0},
+            rightExpression: expr,
+          };
+        }
+        throw new InvalidTokenError(
+            `Unexpected binary operator: ${this.peek().value}`);
+			
       case LexerTokenType.Number:
         const numberToken = this.#tokens.shift();
         expression = <ASTNumber>{
           type: ASTNodeType.Number,
           value: Number(numberToken?.value)
-        };
-        break;
-
-      case LexerTokenType.Float:
-        const floatToken = this.#tokens.shift();
-        expression = <ASTFloat>{
-          type: ASTNodeType.Float,
-          value: Number(floatToken?.value)
         };
         break;
 
