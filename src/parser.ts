@@ -12,7 +12,9 @@ import {
 	type ASTProgram,
 	type ASTStatement,
 	type ASTVariableDeclaration,
+	type ASTForStatement,
 	type LexerToken,
+	
 } from "@/types";
 
 import { tokenize } from "@/src/lexer";
@@ -73,7 +75,38 @@ export default class Parser {
 
 		return variableDeclaration;
 	}
+	private parseForStatement(): ASTForStatement {
+    this.#tokens.shift(); 
+    this.#tokens.shift(); 
 
+    
+    const initializer = this.parseVariableDeclaration();
+
+    
+    const condition = this.parseExpression();
+    this.#tokens.shift(); 
+
+    
+    const increment = this.parseExpression();
+    this.#tokens.shift(); 
+
+    
+    this.#tokens.shift(); 
+    const body: ASTStatement[] = [];
+    
+    while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+        body.push(this.parseExpression());
+    }
+    this.#tokens.shift(); 
+
+    return {
+        type: ASTNodeType.ForStatement,
+        initializer,
+        condition,
+        increment,
+        body
+    };
+}
 	private parseAssignmentExpression(): ASTExpression {
 		const leftExpression: ASTExpression = this.parseAdditiveExpression();
 
@@ -88,7 +121,7 @@ export default class Parser {
 
 			if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
 				throw new InvalidTokenError(
-					"E;xpected ';' after assignment expression",
+					"Expected ';' after assignment expression",
 				);
 			}
 
@@ -222,10 +255,15 @@ export default class Parser {
 			case LexerTokenType.Let:
 			case LexerTokenType.Const:
 				return this.parseVariableDeclaration();
+			case LexerTokenType.For:
+				return this.parseForStatement();
+				
+			
 			default:
 				return this.parseAssignmentExpression();
 		}
 	}
+
 
 	public toAST(sourceCode: string): ASTProgram {
 		this.#tokens = tokenize(sourceCode);

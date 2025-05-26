@@ -10,6 +10,7 @@ export enum LexerTokenType {
 	Function = "Function",
 
 	String = "String",
+	For = "For",
 
 	Equals = "Equals",
 	BinaryOperator = "BinaryOperator",
@@ -45,12 +46,14 @@ export enum ASTNodeType {
 	Number = "Number",
 
 	String = "String",
+	For = "For",
 
 	Float = "Float",
 	Array = "Array",
 
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
+	ForStatement = "ForStatement"
 }
 
 export interface ASTStatement {
@@ -62,6 +65,13 @@ export interface ASTExpression extends ASTStatement {}
 export interface ASTProgram extends ASTStatement {
 	type: ASTNodeType.Program;
 	body: ASTStatement[];
+}
+export interface ASTForStatement extends ASTStatement {
+    type: ASTNodeType.ForStatement;
+    initializer: ASTStatement; 
+    condition: ASTExpression;
+    increment: ASTExpression;
+    body: ASTStatement[];
 }
 
 export interface ASTArray extends ASTStatement {
@@ -119,6 +129,7 @@ export enum InterpreterValueType {
 	Number = "Number",
 	Boolean = "Boolean",
 	String = "String",
+	For = "For",
 }
 
 export interface InterpreterValue {

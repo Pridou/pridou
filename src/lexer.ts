@@ -3,6 +3,7 @@ import {type LexerToken, LexerTokenType} from "@/types";
 import {InvalidTokenError} from "@/src/errs";
 import {isAlpha, isNumber} from "@/src/utils";
 
+
 function toToken(type: LexerTokenType, value?: string): LexerToken {
 	if (!value && value !== "") {
 		throw new InvalidTokenError("Invalid or missing token value");
@@ -15,6 +16,7 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
 	const: LexerTokenType.Const,
 	function: LexerTokenType.Function,
 	let: LexerTokenType.Let,
+	For: LexerTokenType.For,
 };
 
 // TODO: Support unicode and hex
@@ -101,6 +103,13 @@ export function tokenize(sourceCode: string): LexerToken[] {
 					toToken(LexerTokenType.ClosingSquareBracket, source.shift()),
 				);
 				break;
+			case "<":
+   				 tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
+   				 break;
+			case ".":
+   				 tokens.push(toToken(LexerTokenType.Semicolon, source.shift()));
+   				 break;
+			
 			default:
 				if (isBuildingString) {
 					temporaryString += source.shift();

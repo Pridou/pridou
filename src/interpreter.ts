@@ -24,6 +24,7 @@ export function evaluate(
 	environment: Environment,
 ): InterpreterValue {
 	switch (node.type) {
+
 		case ASTNodeType.Program: {
 			let lastEvaluatedValue: InterpreterValue = {
 				type: InterpreterValueType.Null,
@@ -159,6 +160,7 @@ export function evaluate(
 			return <InterpreterArray>{ type: InterpreterValueType.Array, elements };
 		}
 
+		
 		default:
 			throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);
 	}
