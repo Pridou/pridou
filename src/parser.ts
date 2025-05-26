@@ -87,7 +87,7 @@ export default class Parser {
 
 			if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
 				throw new InvalidTokenError(
-					"E;xpected ';' after assignment expression",
+					"Expected ';' after assignment expression",
 				);
 			}
 
@@ -99,6 +99,24 @@ export default class Parser {
 
 	private parsePrimitiveExpression(): ASTExpression {
 		const tokenType: LexerTokenType = this.peek().type;
+
+		if (
+			tokenType === LexerTokenType.BinaryOperator && this.peek().value === "-" &&
+			(
+				this.#tokens[1]?.type === LexerTokenType.Number ||
+				this.#tokens[1]?.type === LexerTokenType.OpeningParenthesis ||
+				this.#tokens[1]?.type === LexerTokenType.Alpha
+			)
+		) {
+			this.#tokens.shift(); 
+			const expr = this.parsePrimitiveExpression();
+			return <ASTBinaryExpression>{
+				type: ASTNodeType.BinaryExpression,
+				binaryOperator: "-",
+				leftExpression: <ASTNumber>{ type: ASTNodeType.Number, value: 0 },
+				rightExpression: expr,
+			};
+		}
 
 		switch (tokenType) {
 			case LexerTokenType.Alpha:

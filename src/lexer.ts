@@ -129,22 +129,15 @@ export function tokenize(sourceCode: string): LexerToken[] {
 						number += source.shift();
 					}
 
-					if (source[0] === ".") {
+					if (source[0] === "." && float === true) {
 						number += source.shift();
+					}
 
-						if (isNumber(source[0])) {
-							while (source.length > 0 && isNumber(source[0])) {
-								number += source.shift();
-							}
-
-							tokens.push(toToken(LexerTokenType.Number, number));
-
-							break;
-						}
+					while (source.length > 0 && isNumber(source[0])) {
+							number += source.shift();
 					}
 
 					tokens.push(toToken(LexerTokenType.Number, number));
-
 					break;
 				}
 
