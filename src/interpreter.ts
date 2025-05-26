@@ -1,6 +1,28 @@
 import Environment from '@/src/environment';
 import {InvalidNodeError, InvalidTokenError} from '@/src/errs';
-import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterNull, type InterpreterNumber, type InterpreterObject, type InterpreterString, type InterpreterValue, InterpreterValueType,} from '@/types';
+import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, type ASTIndex, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterNull, type InterpreterNumber, type InterpreterObject, type InterpreterString, type InterpreterValue, InterpreterValueType,} from '@/types';
+
+function getArrayIndex(
+    array: InterpreterArray, indexNode: ASTExpression,
+    environment: Environment): number {
+  const index = evaluate(indexNode, environment);
+  if (index.type !== InterpreterValueType.Number) {
+    throw new InvalidTokenError('Array index must be a number');
+  }
+
+  const arrayLength = array.elements.length;
+  let actualIndex = (<InterpreterNumber>index).value;
+
+  if (actualIndex < 0) {
+    actualIndex = arrayLength + actualIndex;
+  }
+
+  if (actualIndex < 0 || actualIndex >= arrayLength) {
+    throw new InvalidTokenError('Array index out of bounds');
+  }
+
+  return actualIndex;
+}
 
 export function evaluate(
     node: ASTStatement,
@@ -134,6 +156,22 @@ export function evaluate(
         return value;
       }
 
+      if (assignee.type === ASTNodeType.Index) {
+        const array = evaluate((<ASTIndex>assignee).array, environment);
+        if (array.type !== InterpreterValueType.Array) {
+          throw new InvalidTokenError(
+              'Cannot assign to index of non-array value');
+        }
+
+        const value =
+            evaluate((<ASTAssignmentExpression>node).value, environment);
+        const actualIndex = getArrayIndex(
+            <InterpreterArray>array, (<ASTIndex>assignee).index, environment);
+
+        (<InterpreterArray>array).elements[actualIndex] = value;
+        return value;
+      }
+
       if (assignee.type === ASTNodeType.Alpha) {
         return environment.setVariable(
             (<ASTAlpha>assignee).value,
@@ -156,6 +194,18 @@ export function evaluate(
       }
 
       return <InterpreterArray>{type: InterpreterValueType.Array, elements};
+    }
+
+    case ASTNodeType.Index: {
+      const array = evaluate((<ASTIndex>node).array, environment);
+      if (array.type !== InterpreterValueType.Array) {
+        throw new InvalidTokenError(
+            'Cannot use index operator on non-array value');
+      }
+
+      const actualIndex = getArrayIndex(
+          <InterpreterArray>array, (<ASTIndex>node).index, environment);
+      return (<InterpreterArray>array).elements[actualIndex];
     }
 
     case ASTNodeType.Object: {
@@ -192,6 +242,18 @@ export function evaluate(
       }
 
       return property;
+    }
+
+    case ASTNodeType.Index: {
+      const array = evaluate((<ASTIndex>node).array, environment);
+      if (array.type !== InterpreterValueType.Array) {
+        throw new InvalidTokenError(
+            'Cannot use index operator on non-array value');
+      }
+
+      const actualIndex = getArrayIndex(
+          <InterpreterArray>array, (<ASTIndex>node).index, environment);
+      return (<InterpreterArray>array).elements[actualIndex];
     }
 
     default:

@@ -1,6 +1,6 @@
 import {InvalidTokenError} from '@/src/errs';
 import {tokenize} from '@/src/lexer';
-import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type LexerToken, LexerTokenType,} from '@/types';
+import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, type ASTIndex, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type LexerToken, LexerTokenType,} from '@/types';
 
 const additiveOperators: Set<string> = new Set<string>(['+', '-']);
 const multiplicativeOperators: Set<string> = new Set<string>(['%', '*', '/']);
@@ -74,11 +74,6 @@ export default class Parser {
         throw new InvalidTokenError(
             'Expected \';\' after assignment expression');
       }
-      if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-        throw new InvalidTokenError(
-            'Expected \';\' after assignment expression',
-        );
-      }
 
       return assignment;
     }
@@ -106,7 +101,7 @@ export default class Parser {
         }
         throw new InvalidTokenError(
             `Unexpected binary operator: ${this.peek().value}`);
-			
+
       case LexerTokenType.Number:
         const numberToken = this.#tokens.shift();
         expression = <ASTNumber>{
@@ -185,6 +180,22 @@ export default class Parser {
         property: <ASTAlpha> {
           type: ASTNodeType.Alpha, value: property.value
         }
+      };
+    }
+
+    while (this.peek().type === LexerTokenType.OpeningSquareBracket) {
+      this.#tokens.shift();
+      const index = this.parseExpression();
+
+      if (this.peek().type !== LexerTokenType.ClosingSquareBracket) {
+        throw new InvalidTokenError('Expected \']\' after array index');
+      }
+      this.#tokens.shift();
+
+      expression = <ASTIndex>{
+        type: ASTNodeType.Index,
+        array: expression,
+        index
       };
     }
 

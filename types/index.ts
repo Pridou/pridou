@@ -50,6 +50,8 @@ export enum ASTNodeType {
 	String = "String",
 
 	Array = "Array",
+	Index = "Index",
+
 
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
@@ -73,6 +75,12 @@ export interface ASTProgram extends ASTStatement {
 export interface ASTArray extends ASTStatement {
 	type: ASTNodeType.Array;
 	body: ASTStatement[];
+}
+
+export interface ASTIndex extends ASTStatement {
+  type: ASTNodeType.Index;
+  array: ASTExpression;
+  index: ASTExpression;
 }
 
 export interface ASTFunctionDeclaration extends ASTStatement {
