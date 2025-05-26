@@ -21,6 +21,7 @@
     "test:watch": "vitest dev",
     "test:coverage": "vitest run --coverage",
     "build": "tsc && tsc-alias",
+    "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
     "check": "biome check",
     "check:fix": "biome check --fix",
     "format": "biome format",
