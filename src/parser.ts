@@ -7,6 +7,7 @@ import {
 	type ASTExpression,
 	type ASTString,
 	type ASTNumber,
+	type ASTFloat,
 	type ASTProgram,
 	type ASTStatement,
 	type ASTVariableDeclaration,
@@ -106,6 +107,13 @@ export default class Parser {
 			case LexerTokenType.Number:
 				return <ASTNumber>{
 					type: ASTNodeType.Number,
+					// TODO: Correct typing
+					// @ts-ignore
+					value: +this.#tokens.shift()?.value,
+				};
+			case LexerTokenType.Float:
+				return <ASTFloat>{
+					type: ASTNodeType.Float,
 					// TODO: Correct typing
 					// @ts-ignore
 					value: +this.#tokens.shift()?.value,
