@@ -10,16 +10,19 @@ import {
 	type ASTWhileStatement,
 	type ASTProgram,
 	type ASTStatement,
+	type ASTBlockStatement,
 	type ASTVariableDeclaration,
 	type InterpreterNull,
 	type InterpreterNumber,
 	type InterpreterValue,
+	type InterpreterBoolean,
 	
 	
 } from "@/types";
 
 import { InvalidNodeError } from "@/src/errs";
-import type Environment from "@/src/environment";
+import Environment from "@/src/environment";
+//import type Environment from "@/src/environment";
 
 import RuntimeError from "@/src/errs/RuntimeError";
 
@@ -32,13 +35,11 @@ export function evaluate(
 			const { test, body } = node as ASTWhileStatement;
 
 			while (true) {
-				const condition = evaluate(test, environment);
+				const condition: InterpreterBoolean = <InterpreterBoolean>evaluate(test, environment);
 
-				if (condition.type !== InterpreterValueType.Boolean) {
-					throw new RuntimeError("Condition in 'while' must be a boolean");
-		}
+				
+				if (!condition.value) break;
 
-				if (!(condition as any).value) break;
 
 
 				evaluate(body, environment);
@@ -52,6 +53,19 @@ export function evaluate(
 
 		
 
+		case ASTNodeType.BlockStatement: {
+			const blockEnv = new Environment(environment); 
+			let result: InterpreterValue = <InterpreterNull>{
+				type: InterpreterValueType.Null,
+				value: null,
+			};
+			const blockNode = node as ASTBlockStatement;
+			for (const statement of blockNode.body) {
+				result = evaluate(statement, blockEnv);
+			}
+
+			return result;
+}
 
 		case ASTNodeType.Program: {
 			let lastEvaluatedValue: InterpreterValue = {

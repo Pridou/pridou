@@ -1,6 +1,18 @@
 // Lexer
 
 export enum LexerTokenType {
+
+	
+	
+	And = "And",
+	Or = "Or",
+	
+	BlockStatement = "BlockStatement",
+
+
+	
+
+
 	Alpha =  "Alpha",
 	Number = "Number",
 
@@ -13,7 +25,7 @@ export enum LexerTokenType {
 	Comma = "Comma",
 	Colon = "Colon",
 	Semicolon = "Semicolon",
-	//String ="String",
+	
 	While = "While",
 
 	OpeningParenthesis = "OpeningParenthesis",
@@ -43,8 +55,9 @@ export enum ASTNodeType {
 	
 	Alpha = "Alpha",
 	Number = "Number",
-	//String ="String",
+	
 	WhileStatement = "WhileStatement",
+	BlockStatement = "BlockStatement",
 	
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
@@ -61,6 +74,8 @@ export interface ASTProgram extends ASTStatement {
 	body: ASTStatement[];
 }
 
+
+
 export interface ASTVariableDeclaration extends ASTStatement {
 	type: ASTNodeType.VariableDeclaration;
 	alpha: string;
@@ -74,6 +89,12 @@ export interface ASTWhileStatement extends ASTStatement{
 	test: ASTExpression;
 	body: ASTStatement;
 }
+
+export interface ASTBlockStatement extends ASTStatement{
+	type: ASTNodeType.BlockStatement;
+	body: ASTStatement;
+}
+
 
 export interface ASTAlpha extends ASTStatement {
 	type: ASTNodeType.Alpha;

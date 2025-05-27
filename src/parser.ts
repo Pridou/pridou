@@ -9,6 +9,7 @@ import {
 	type ASTProgram,
 	type ASTStatement,
 	type ASTWhileStatement,
+	type ASTBlockStatement,
 	type ASTVariableDeclaration,
 	type LexerToken,
 } from "@/types";
@@ -71,7 +72,7 @@ export default class Parser {
 
 		return variableDeclaration;
 	}
-	private parseWhileStatement(): ASTWhileStatement {
+	/*private parseWhileStatement(): ASTWhileStatement {
 	this.#tokens.shift(); 
 
 	if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
@@ -84,17 +85,88 @@ export default class Parser {
 		throw new InvalidTokenError("Expected ')' after condition in 'while'");
 	}
 
-	const body = this.parseExpression(); 
+	const body = this.peek().type === LexerTokenType.OpeningCurlyBracket
+		? this.parseBlockStatement()
+		: this.parseExpression();
+
 
 	return {
 		type: ASTNodeType.WhileStatement,
 		test,
 		body,
 	};
+
+	
+}*/
+	private parseWhileStatement(): ASTWhileStatement {
+		this.#tokens.shift(); 
+
+		if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
+			throw new InvalidTokenError("Expected '(' after 'while'");
+		}
+
+		const test = this.parseExpression();
+
+		if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+			throw new InvalidTokenError("Expected ')' after condition");
+		}
+
+		let body: ASTStatement;
+
+		
+		if (this.peek().type === LexerTokenType.OpeningCurlyBracket) {
+			this.#tokens.shift(); 
+
+			const statements: ASTStatement[] = [];
+
+			while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+				statements.push(this.parseExpression());
+			}
+
+			if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+				throw new InvalidTokenError("Expected '}' after block");
+			}
+
+			body = <ASTBlockStatement>{
+				type: ASTNodeType.BlockStatement,
+				body: statements,
+			} ;
+		} else {
+			
+			body = this.parseExpression();
+		}
+
+		return {
+			type: ASTNodeType.WhileStatement,
+			test,
+			body,
+		};
 }
 
 
+	/*private parseBlockStatement(): ASTBlockStatement {
+		if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
+			throw new InvalidTokenError("Expected '{' at start of block");
+		}
 
+		const body: ASTStatement[] = [];
+
+		while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+			body.push(this.parseExpression());
+		}
+
+		if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+			throw new InvalidTokenError("Expected '}' at end of block");
+		}
+
+		return {
+			type: ASTNodeType.BlockStatement,
+			body,
+		};
+}*/
+
+
+	
 	public toAST(sourceCode: string): ASTProgram {
 		this.#tokens = tokenize(sourceCode);
 
@@ -120,12 +192,12 @@ export default class Parser {
 
 			const assignment: ASTAssignmentExpression = {
 				type: ASTNodeType.AssignmentExpression,
-				value: this.parsePrimitiveExpression(),
+				value: this.parseAdditiveExpression(),
 				assignee: leftExpression,
 			};
 
 			if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-				throw new InvalidTokenError("E;xpected ';' after assignment expression");
+				throw new InvalidTokenError("Expected ';' after assignment expression");
 			}
 
 			return assignment;
