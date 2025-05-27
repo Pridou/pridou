@@ -404,12 +404,12 @@ export default class Parser {
     throw new InvalidTokenError("Expected ')' after condition");
   }
 
-  const trueCase = this.parseBlockStatement(); // ✅ bloc {}
+  const trueCase = this.parseBlockStatement();
 
   let falseCase: ASTStatement | undefined = undefined;
   if (this.peek()?.type === LexerTokenType.Alpha && this.peek().value === "else") {
     this.#tokens.shift(); // consume "else"
-    falseCase = this.parseBlockStatement(); // ✅ bloc {}
+    falseCase = this.parseBlockStatement(); 
   }
 
   return {
