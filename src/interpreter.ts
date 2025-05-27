@@ -15,9 +15,9 @@ import {
   type ASTProgram,
   type ASTStatement,
   type ASTString,
+  type ASTUnaryExpression,
   type ASTVariableDeclaration,
   type InterpreterArray,
-  type InterpreterBoolean,
   type InterpreterNull,
   type InterpreterNumber,
   type InterpreterObject,
@@ -197,6 +197,31 @@ export function evaluate(
         };
       }
     }
+
+    case ASTNodeType.UnaryExpression: {
+      const value = evaluate(
+        (<ASTUnaryExpression>node).expression,
+        environment
+      );
+
+      if ((<ASTUnaryExpression>node).operator === "!") {
+        const boolValue =
+          value.type === InterpreterValueType.String
+            ? true
+            : isNumeric(value)
+            ? getNumber(value) !== 0
+            : false;
+        return <InterpreterNumber>{
+          type: InterpreterValueType.Number,
+          value: boolValue ? 0 : 1,
+        };
+      }
+
+      throw new InvalidTokenError(
+        `Unknown unary operator: ${(<ASTUnaryExpression>node).operator}`
+      );
+    }
+
     case ASTNodeType.AssignmentExpression: {
       const assignee = (<ASTAssignmentExpression>node).assignee;
 

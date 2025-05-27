@@ -19,9 +19,9 @@ function consume(source: string[], count: number = 1): string {
 }
 
 const reservedKeywords: { [key: string]: LexerTokenType } = {
-  const: LexerTokenType.Const,
+  immut: LexerTokenType.Const,
   function: LexerTokenType.Function,
-  let: LexerTokenType.Let,
+  mut: LexerTokenType.Let,
   and: LexerTokenType.And,
   or: LexerTokenType.Or,
 };
@@ -45,24 +45,28 @@ function shouldBeSkipped(value: string): boolean {
 
 export function tokenize(sourceCode: string): LexerToken[] {
   const tokens: LexerToken[] = [];
-  const source: string[] = <string[]>sourceCode.split("");
-
+  const source: string[] = sourceCode.split("");
   let temporaryString: string = "";
   let isBuildingString: boolean = false;
 
   while (source.length > 0) {
-    switch (source[0]) {
-      case "'":
-      case '"':
+    if (isBuildingString) {
+      if (source[0] === '"' || source[0] === "'") {
+        tokens.push(toToken(LexerTokenType.String, temporaryString));
+        temporaryString = "";
+        isBuildingString = false;
         source.shift();
+        continue;
+      }
+      temporaryString += source.shift();
+      continue;
+    }
 
-        if (isBuildingString) {
-          tokens.push(toToken(LexerTokenType.String, temporaryString));
-          temporaryString = "";
-        }
-
-        isBuildingString = !isBuildingString;
-
+    switch (source[0]) {
+      case '"':
+      case "'":
+        source.shift();
+        isBuildingString = true;
         break;
 
       case "=":
@@ -106,7 +110,7 @@ export function tokenize(sourceCode: string): LexerToken[] {
             );
           }
         } else {
-          tokens.push(toToken(LexerTokenType.Equals, source.shift()));
+          tokens.push(toToken(LexerTokenType.Not, source.shift()));
         }
         break;
 
@@ -201,7 +205,10 @@ export function tokenize(sourceCode: string): LexerToken[] {
     }
   }
 
-  tokens.push(toToken(LexerTokenType.EOF, LexerTokenType.EOF.toString()));
+  if (isBuildingString) {
+    throw new InvalidTokenError("Unterminated string literal");
+  }
 
+  tokens.push(toToken(LexerTokenType.EOF, LexerTokenType.EOF.toString()));
   return tokens;
 }

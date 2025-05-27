@@ -11,6 +11,7 @@ import {
   type ASTNumber,
   type ASTObject,
   type ASTObjectAttribute,
+  type ASTUnaryExpression,
   type ASTProgram,
   type ASTStatement,
   type ASTString,
@@ -177,6 +178,14 @@ export default class Parser {
           value: stringToken?.value,
         };
         break;
+      
+      case LexerTokenType.Not:
+      this.#tokens.shift();
+      return <ASTUnaryExpression>{
+        type: ASTNodeType.UnaryExpression,
+        operator: "!",
+        expression: this.parsePrimitiveExpression()
+      };
 
       case LexerTokenType.OpeningParenthesis: {
         this.#tokens.shift();

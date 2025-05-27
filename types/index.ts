@@ -7,6 +7,7 @@ export enum LexerTokenType {
 	Number = "Number",
 	And = "And",
 	Or = "Or",
+	Not = "Not",
 
 	Let = "Let",
 	Const = "Const",
@@ -58,6 +59,7 @@ export enum ASTNodeType {
 
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
+	UnaryExpression = "UnaryExpression",
 
 	Object = "Object",
 	ObjectProperty = "ObjectProperty",
@@ -114,6 +116,12 @@ export interface ASTBinaryExpression extends ASTStatement {
 	binaryOperator: string;
 	leftExpression: ASTExpression;
 	rightExpression: ASTExpression;
+}
+
+export interface ASTUnaryExpression extends ASTStatement {
+  type: ASTNodeType.UnaryExpression;
+  operator: string;
+  expression: ASTExpression;
 }
 
 export interface ASTAssignmentExpression extends ASTStatement {
