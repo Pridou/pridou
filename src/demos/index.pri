@@ -11,7 +11,4 @@ if (!5 < 4) {
 
 mut z = "oui";
 mut az = {Nom : "Prenom"};
-mut azb = !true;
-mut azc = azb < 5;
-
-y
+mut azb = true;

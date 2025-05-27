@@ -31,6 +31,9 @@ export enum LexerTokenType {
 	OpeningSquareBracket = "OpeningSquareBracket",
 	ClosingSquareBracket = "ClosingSquareBracket",
 
+	Import = "Import",
+    Export = "Export", 
+    Module = "Module",
 	EOF = "EOF",
 }
 
@@ -65,7 +68,11 @@ export enum ASTNodeType {
 
 	Object = "Object",
 	ObjectProperty = "ObjectProperty",
-	ObjectAttribute = "Attribute"
+	ObjectAttribute = "Attribute",
+
+	Import = "Import",
+    Export = "Export",
+    Module = "Module"
 }
 
 export interface ASTStatement {
@@ -164,6 +171,23 @@ export interface ASTIfStatement extends ASTStatement {
 export interface ASTBlock extends ASTStatement {
   type: ASTNodeType.Program;
   body: ASTStatement[];
+}
+
+export interface ASTImport extends ASTStatement {
+    type: ASTNodeType.Import;
+    path: string;
+    imports: string[];
+}
+
+export interface ASTExport extends ASTStatement {
+    type: ASTNodeType.Export;
+    declaration: ASTStatement;
+}
+
+export interface ASTModule extends ASTStatement {
+    type: ASTNodeType.Module;
+    name: string;
+    body: ASTStatement[];
 }
 
 

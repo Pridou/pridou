@@ -16,6 +16,8 @@ import {
   type ASTStatement,
   type ASTString,
   type ASTVariableDeclaration,
+  type ASTModule,
+  type ASTImport,
   type LexerToken,
   LexerTokenType,
 type ASTIfStatement} from "@/types";
@@ -318,6 +320,79 @@ export default class Parser {
 
     return leftExpression;
   }
+
+  private parseModuleDeclaration(): ASTModule {
+  this.#tokens.shift();
+  
+  const name = this.#tokens.shift();
+  if (!name || name.type !== LexerTokenType.Alpha) {
+    throw new InvalidTokenError("Expected module name");
+  }
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
+    throw new InvalidTokenError("Expected '{' after module name");
+  }
+
+  const body: ASTStatement[] = [];
+  while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+    body.push(this.parseExpression());
+  }
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+    throw new InvalidTokenError("Expected '}' after module body");
+  }
+
+  return {
+    type: ASTNodeType.Module,
+    name: name.value,
+    body
+  };
+}
+
+private parseImportDeclaration(): ASTImport {
+  this.#tokens.shift();
+  
+  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
+    throw new InvalidTokenError("Expected '{' after import");
+  }
+
+  const imports: string[] = [];
+  while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+    const name = this.#tokens.shift();
+    if (!name || name.type !== LexerTokenType.Alpha) {
+      throw new InvalidTokenError("Expected identifier in import statement");
+    }
+    imports.push(name.value);
+
+    if (this.peek().type === LexerTokenType.Comma) {
+      this.#tokens.shift();
+    }
+  }
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+    throw new InvalidTokenError("Expected '}' after import list");
+  }
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.Alpha || 
+      this.peek(-1).value !== "from") {
+    throw new InvalidTokenError("Expected 'from' after import list");
+  }
+
+  const path = this.#tokens.shift();
+  if (!path || path.type !== LexerTokenType.String) {
+    throw new InvalidTokenError("Expected module path");
+  }
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+    throw new InvalidTokenError("Expected ';' after import statement");
+  }
+
+  return {
+    type: ASTNodeType.Import,
+    path: path.value,
+    imports
+  };
+}
 
   private parseExpression(): ASTExpression {
   const token = this.peek();

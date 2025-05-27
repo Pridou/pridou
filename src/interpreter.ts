@@ -24,8 +24,10 @@ import {
   type InterpreterString,
   type InterpreterValue,
   InterpreterValueType,
-type ASTIfStatement,type InterpreterBoolean,
-type InterpreterComparison} from "@/types";
+  type ASTIfStatement,
+  type InterpreterBoolean,
+  type InterpreterComparison,
+} from "@/types";
 
 function getArrayIndex(
   array: InterpreterArray,
@@ -375,25 +377,23 @@ export function evaluate(
 
       const conditionValue = evaluate(condition, environment);
       if (!isNumeric(conditionValue)) {
-        console.log(conditionValue.type)
+        console.log(conditionValue.type);
         throw new Error("Condition in 'if' must evaluate to a boolean");
       }
 
       const scopedEnv = new Environment(environment);
 
-     if ((conditionValue as InterpreterBoolean).value === 1){
+      if ((conditionValue as InterpreterBoolean).value === 1) {
         return evaluate(trueCase, scopedEnv);
       } else if (falseCase) {
         return evaluate(falseCase, scopedEnv);
       } else {
-       return {
+        return {
           type: InterpreterValueType.Null,
           value: null,
         } as InterpreterNull;
-
       }
-}
-
+    }
 
     default:
       throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);

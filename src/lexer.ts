@@ -27,6 +27,9 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
 
   and: LexerTokenType.And,
   or: LexerTokenType.Or,
+  import: LexerTokenType.Import,
+  export: LexerTokenType.Export,
+  module: LexerTokenType.Module,
 };
 
 // TODO: Support unicode and hex
