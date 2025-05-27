@@ -43,11 +43,10 @@ function isCommentStart(source: string[], offset: number = 0): boolean {
 }
 
 function skipSingleLineComment(source: string[]): void {
-    // Avance jusqu'au prochain saut de ligne ou fin de fichier
     while (source.length > 0 && source[0] !== '\n') {
         source.shift();
     }
-    // Consomme le saut de ligne s'il existe
+    //pour le saut de ligne
     if (source[0] === '\n') source.shift();
 }
 
@@ -71,7 +70,7 @@ export function tokenize(sourceCode: string): LexerToken[] {
 	let temporaryString: string = "";
 	let isBuildingString: boolean = false;
 	// pour les commentaires
-	
+
 	while (source.length > 0) {
         if (isCommentStart(source)) {
             source.shift();

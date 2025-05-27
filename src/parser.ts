@@ -73,51 +73,51 @@ export default class Parser {
 		};
 
 		if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-			throw new InvalidTokenError("Expected ';' after variable declaration");
+			throw new InvalidTokenError("sans ';' apres declaration");
 		}
 		
  
 
 		return variableDeclaration;
-	}private parseForStatement(): ASTForStatement {
-  this.#tokens.shift(); // For
-  this.#tokens.shift(); // (
-  const beforeInit = [...this.#tokens]; // Copie du tableau de tokens avant l'init
+	}
+	private parseForStatement(): ASTForStatement {
+  		this.#tokens.shift(); 
+  		this.#tokens.shift(); 
+  		const beforeInit = [...this.#tokens]; 
 
-  const initializer = this.parseVariableDeclaration();
+  		const initializer = this.parseVariableDeclaration();
 
-  // Si parseVariableDeclaration a déjà consommé le point-virgule, on ne fait rien
-  // Sinon, on doit consommer le point-virgule ici
-  if (this.peek().type === LexerTokenType.Semicolon) {
-    this.#tokens.shift();
-  }
+  
+  		if (this.peek().type === LexerTokenType.Semicolon) {
+    		this.#tokens.shift();
+ 		}
 
-  const condition = this.parseExpression();
+  		const condition = this.parseExpression();
 
-  if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-    throw new InvalidTokenError("Expected ';' after for condition");
-  }
+  		if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+    		throw new InvalidTokenError("Expected ';' after for condition");
+  		}
 
-  const increment = this.parseExpression();
+  		const increment = this.parseExpression();
 
-  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
-    throw new InvalidTokenError("Expected ')' after for increment");
-  }
+  		if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+    		throw new InvalidTokenError("Expected ')' after for increment");
+  		}
 
-  this.#tokens.shift(); // Consomme '{'
-  const body: ASTStatement[] = [];
-  while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
-    body.push(this.parseExpression());
-  }
-  this.#tokens.shift(); // Consomme '}'
+  		this.#tokens.shift(); 
+  		const body: ASTStatement[] = [];
+  		while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+    		body.push(this.parseExpression());
+ 		 }
+  			this.#tokens.shift(); 
 
-  return {
-    type: ASTNodeType.ForStatement,
-    initializer,
-    condition,
-    increment,
-    body,
-  };
+  		return {
+    		type: ASTNodeType.ForStatement,
+    		initializer,
+    		condition,
+    		increment,
+    		body,
+  		};
 }
 
 	private parseAssignmentExpression(): ASTExpression {
