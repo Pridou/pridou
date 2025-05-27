@@ -2,7 +2,7 @@ mut x = 3;
 
 mut y = 0;
 
-if (true) {
+if (x > y) {
   mut x = 7;
 
   y = x;
@@ -15,5 +15,5 @@ mut azb = !true;
 mut azc = azb < 5;
 
 
-azc
+y
 
