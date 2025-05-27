@@ -10,10 +10,20 @@ function toToken(type: LexerTokenType, value?: string): LexerToken {
   return {type, value};
 }
 
+function consume(source: string[], count: number = 1): string {
+  let result = '';
+  for (let i = 0; i < count; i++) {
+    result += source.shift();
+  }
+  return result;
+}
+
 const reservedKeywords: {[key: string]: LexerTokenType} = {
   const : LexerTokenType.Const,
   function: LexerTokenType.Function,
   let : LexerTokenType.Let,
+  and: LexerTokenType.And,
+  or: LexerTokenType.Or,
 };
 
 // TODO: Support unicode and hex
@@ -58,14 +68,11 @@ export function tokenize(sourceCode: string): LexerToken[] {
       case '=':
         if (source[1] == '=') {
           if (source[2] == '=') {
-            tokens.push(toToken(LexerTokenType.ComparisonOperator, '==='));
-            source.shift();
-            source.shift();
-            source.shift();
+            tokens.push(
+                toToken(LexerTokenType.ComparisonOperator, consume(source, 3)));
           } else {
-            tokens.push(toToken(LexerTokenType.ComparisonOperator, '=='))
-            source.shift();
-            source.shift();
+            tokens.push(
+                toToken(LexerTokenType.ComparisonOperator, consume(source, 2)))
           }
         } else {
           tokens.push(toToken(LexerTokenType.Equals, source.shift()));
@@ -76,23 +83,21 @@ export function tokenize(sourceCode: string): LexerToken[] {
       case '>':
         if (source[1] == '=') {
           tokens.push(
-              toToken(LexerTokenType.ComparisonOperator, source.shift() + '='));
-          source.shift();
+              toToken(LexerTokenType.ComparisonOperator, consume(source,2)));
+        } else {
+          tokens.push(
+              toToken(LexerTokenType.ComparisonOperator, source.shift()));
         }
-        tokens.push(toToken(LexerTokenType.ComparisonOperator, source.shift()));
         break;
 
       case '!':
         if (source[1] == '=') {
           if (source[2] == '=') {
-            tokens.push(toToken(LexerTokenType.ComparisonOperator, '!=='));
-            source.shift();
-            source.shift();
-            source.shift();
+            tokens.push(
+                toToken(LexerTokenType.ComparisonOperator, consume(source, 3)));
           } else {
-            tokens.push(toToken(LexerTokenType.ComparisonOperator, '!='))
-            source.shift();
-            source.shift();
+            tokens.push(
+                toToken(LexerTokenType.ComparisonOperator, consume(source, 2)))
           }
         } else {
           tokens.push(toToken(LexerTokenType.Equals, source.shift()));

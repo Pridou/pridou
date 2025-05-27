@@ -1,6 +1,6 @@
 import Environment from '@/src/environment';
 import {InvalidNodeError, InvalidTokenError} from '@/src/errs';
-import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, type ASTIndex, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterNull, type InterpreterNumber, type InterpreterObject, type InterpreterString, type InterpreterValue, InterpreterValueType,} from '@/types';
+import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, type ASTIndex, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterBoolean, type InterpreterNull, type InterpreterNumber, type InterpreterObject, type InterpreterString, type InterpreterValue, InterpreterValueType,} from '@/types';
 
 function getArrayIndex(
     array: InterpreterArray, indexNode: ASTExpression,
@@ -123,6 +123,38 @@ export function evaluate(
           case '/':
             value = leftValue / rightValue;
             break;
+          case '<':
+            value = +(leftValue < rightValue);
+            break;
+          
+          case '>':
+            value = +(leftValue > rightValue); 
+            break;
+                  
+          case '>=':
+            value = +(leftValue >= rightValue);     
+            break ;
+          
+          case '<=':
+            value = +(leftValue <= rightValue);     
+            break ;
+          
+          case '!=':
+            value = +(leftValue != rightValue);
+            break;
+          
+          case '!==':
+            value = +(leftValue !== rightValue);
+            break;
+          
+          case '==':
+            value = +(leftValue == rightValue); 
+            break;
+
+          case '===':
+            value = +(leftValue === rightValue); 
+            break;
+          
         }
 
         return <InterpreterNumber>{

@@ -4,7 +4,8 @@ import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBina
 
 const additiveOperators: Set<string> = new Set<string>(['+', '-']);
 const multiplicativeOperators: Set<string> = new Set<string>(['%', '*', '/']);
-const comparisonOperators: Set<string> = new Set<string>(['>', '<', '==',"===","<=",">=","!=","!=="]);
+const comparisonOperators: Set<string> = new Set<string>(
+    ['>', '<', '==', '===', '<=', '>=', '!=', '!==', 'and', 'or']);
 
 export default class Parser {
   #tokens: LexerToken[] = [];
@@ -60,7 +61,7 @@ export default class Parser {
   }
 
   private parseAssignmentExpression(): ASTExpression {
-    const leftExpression: ASTExpression = this.parseAdditiveExpression();
+    const leftExpression: ASTExpression = this.parseComparisonExpression();
 
     if (this.peek().type === LexerTokenType.Equals) {
       this.#tokens.shift();
@@ -77,6 +78,29 @@ export default class Parser {
       }
 
       return assignment;
+    }
+
+    return leftExpression;
+  }
+
+  private parseComparisonExpression(): ASTExpression {
+    let leftExpression: ASTExpression = this.parseAdditiveExpression();
+    ;
+
+    while (comparisonOperators.has(this.peek()?.value)) {
+      const binaryOperator: string|undefined = this.#tokens.shift()?.value;
+      if (!binaryOperator) {
+        throw new InvalidTokenError('Expected comparison operator');
+      }
+      
+      const rightExpression: ASTExpression = this.parsePrimitiveExpression();
+
+      leftExpression = <ASTBinaryExpression>{
+        type: ASTNodeType.BinaryExpression,
+        binaryOperator,
+        leftExpression,
+        rightExpression,
+      };
     }
 
     return leftExpression;
@@ -193,11 +217,8 @@ export default class Parser {
       }
       this.#tokens.shift();
 
-      expression = <ASTIndex>{
-        type: ASTNodeType.Index,
-        array: expression,
-        index
-      };
+      expression =
+          <ASTIndex>{type: ASTNodeType.Index, array: expression, index};
     }
 
     return expression;
@@ -254,6 +275,9 @@ export default class Parser {
       case LexerTokenType.Let:
       case LexerTokenType.Const:
         return this.parseVariableDeclaration();
+      case LexerTokenType.And:
+      case LexerTokenType.Or:
+        return this.parseComparisonExpression();
       default:
         return this.parseAssignmentExpression();
     }
@@ -266,7 +290,7 @@ export default class Parser {
 
     while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
       const key = this.#tokens.shift();
-      // Accepter les clés de type Alpha ou String
+      // Accepter les clefs de type Alpha ou String
       if (key?.type !== LexerTokenType.Alpha &&
           key?.type !== LexerTokenType.String) {
         throw new InvalidTokenError(
