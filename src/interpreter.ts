@@ -15,6 +15,7 @@ import {
   type ASTProgram,
   type ASTStatement,
   type ASTString,
+  type ASTWhileStatement,
   type ASTUnaryExpression,
   type ASTVariableDeclaration,
   type InterpreterArray,
@@ -26,7 +27,6 @@ import {
   InterpreterValueType,
   type ASTIfStatement,
   type InterpreterBoolean,
-  type InterpreterComparison,
 } from "@/types";
 
 function getArrayIndex(
@@ -377,7 +377,6 @@ export function evaluate(
 
       const conditionValue = evaluate(condition, environment);
       if (!isNumeric(conditionValue)) {
-        console.log(conditionValue.type);
         throw new Error("Condition in 'if' must evaluate to a boolean");
       }
 
@@ -393,6 +392,27 @@ export function evaluate(
           value: null,
         } as InterpreterNull;
       }
+    }
+
+    case ASTNodeType.WhileStatement: {
+      const { test, body } = node as ASTWhileStatement;
+
+      while (true) {
+        const condition = evaluate(test, environment);
+
+        if ((!isNumeric(condition))) {
+          throw new Error("Condition in 'while' must be a boolean");
+        }
+
+        if (!(condition as any).value) break;
+
+        evaluate(body, environment);
+      }
+
+      return {
+        type: InterpreterValueType.Null,
+        value: null,
+      } as InterpreterNull;
     }
 
     default:

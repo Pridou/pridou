@@ -8,7 +8,8 @@ if (!5 < 4) {
   y = x;
 }
 
+mut a = 0;
+while(0):
+  a = a + 1;
 
-mut z = "oui";
-mut az = {Nom : "Prenom"};
-mut azb = true;
+a

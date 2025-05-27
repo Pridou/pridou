@@ -3,92 +3,92 @@ import type Environment from "@/src/environment";
 // Lexer
 
 export enum LexerTokenType {
-	Alpha = "Alpha",
-	Number = "Number",
-	And = "And",
-	Or = "Or",
-	Not = "Not",
+  Alpha = "Alpha",
+  Number = "Number",
+  And = "And",
+  Or = "Or",
+  Not = "Not",
 
-	Let = "Let",
-	Const = "Const",
-	Function = "Function",
+  Let = "Let",
+  Const = "Const",
+  Function = "Function",
+  While = "While",
 
-	String = "String",
+  String = "String",
 
-	Equals = "Equals",
-	BinaryOperator = "BinaryOperator",
-	ComparisonOperator = "ComparisonOperator",
+  Equals = "Equals",
+  BinaryOperator = "BinaryOperator",
+  ComparisonOperator = "ComparisonOperator",
 
-	Comma = "Comma",
-	Colon = "Colon",
-	Semicolon = "Semicolon",
-	Dot = "Dot",
+  Comma = "Comma",
+  Colon = "Colon",
+  Semicolon = "Semicolon",
+  Dot = "Dot",
 
-	OpeningParenthesis = "OpeningParenthesis",
-	ClosingParenthesis = "ClosingParenthesis",
-	OpeningCurlyBracket = "OpeningCurlyBracket",
-	ClosingCurlyBracket = "ClosingCurlyBracket",
-	OpeningSquareBracket = "OpeningSquareBracket",
-	ClosingSquareBracket = "ClosingSquareBracket",
+  OpeningParenthesis = "OpeningParenthesis",
+  ClosingParenthesis = "ClosingParenthesis",
+  OpeningCurlyBracket = "OpeningCurlyBracket",
+  ClosingCurlyBracket = "ClosingCurlyBracket",
+  OpeningSquareBracket = "OpeningSquareBracket",
+  ClosingSquareBracket = "ClosingSquareBracket",
 
-	Import = "Import",
-    Export = "Export", 
-    Module = "Module",
-	EOF = "EOF",
+  Import = "Import",
+  Export = "Export",
+  Module = "Module",
+  EOF = "EOF",
 }
 
 export interface LexerToken {
-	type: LexerTokenType;
-	value: string;
+  type: LexerTokenType;
+  value: string;
 }
 
 // AST
 // Parser
 
 export enum ASTNodeType {
-	Program = "Program",
+  Program = "Program",
 
-	FunctionDeclaration = "FunctionDeclaration",
-	VariableDeclaration = "VariableDeclaration",
+  FunctionDeclaration = "FunctionDeclaration",
+  VariableDeclaration = "VariableDeclaration",
 
-	Alpha = "Alpha",
-	Number = "Number",
+  Alpha = "Alpha",
+  Number = "Number",
 
-	String = "String",
-	If = "If",
+  String = "String",
+  If = "If",
+  WhileStatement = "WhileStatement",
 
+  Array = "Array",
+  Index = "Index",
 
-	Array = "Array",
-	Index = "Index",
+  BinaryExpression = "BinaryExpression",
+  AssignmentExpression = "AssignmentExpression",
+  UnaryExpression = "UnaryExpression",
 
+  Object = "Object",
+  ObjectProperty = "ObjectProperty",
+  ObjectAttribute = "Attribute",
 
-	BinaryExpression = "BinaryExpression",
-	AssignmentExpression = "AssignmentExpression",
-	UnaryExpression = "UnaryExpression",
-
-	Object = "Object",
-	ObjectProperty = "ObjectProperty",
-	ObjectAttribute = "Attribute",
-
-	Import = "Import",
-    Export = "Export",
-    Module = "Module"
+  Import = "Import",
+  Export = "Export",
+  Module = "Module",
 }
 
 export interface ASTStatement {
-	type: ASTNodeType;
+  type: ASTNodeType;
 }
 
 export interface ASTExpression extends ASTStatement {}
 
 export interface ASTProgram extends ASTStatement {
-	type: ASTNodeType.Program;
-	body: ASTStatement[];
+  type: ASTNodeType.Program;
+  body: ASTStatement[];
 }
 
 export interface ASTArray extends ASTStatement {
-	type: ASTNodeType.Array;
-	body: ASTStatement[];
+  type: ASTNodeType.Array;
+  body: ASTStatement[];
 }
 
 export interface ASTIndex extends ASTStatement {
@@ -98,33 +98,33 @@ export interface ASTIndex extends ASTStatement {
 }
 
 export interface ASTFunctionDeclaration extends ASTStatement {
-	type: ASTNodeType.FunctionDeclaration;
+  type: ASTNodeType.FunctionDeclaration;
 }
 
 export interface ASTVariableDeclaration extends ASTStatement {
-	type: ASTNodeType.VariableDeclaration;
-	alpha: string;
-	value?: ASTExpression;
-	metadata: {
-		isConstant: boolean;
-	};
+  type: ASTNodeType.VariableDeclaration;
+  alpha: string;
+  value?: ASTExpression;
+  metadata: {
+    isConstant: boolean;
+  };
 }
 
 export interface ASTAlpha extends ASTStatement {
-	type: ASTNodeType.Alpha;
-	value: string;
+  type: ASTNodeType.Alpha;
+  value: string;
 }
 
 export interface ASTNumber extends ASTStatement {
-	type: ASTNodeType.Number;
-	value: number;
+  type: ASTNodeType.Number;
+  value: number;
 }
 
 export interface ASTBinaryExpression extends ASTStatement {
-	type: ASTNodeType.BinaryExpression;
-	binaryOperator: string;
-	leftExpression: ASTExpression;
-	rightExpression: ASTExpression;
+  type: ASTNodeType.BinaryExpression;
+  binaryOperator: string;
+  leftExpression: ASTExpression;
+  rightExpression: ASTExpression;
 }
 
 export interface ASTUnaryExpression extends ASTStatement {
@@ -134,14 +134,14 @@ export interface ASTUnaryExpression extends ASTStatement {
 }
 
 export interface ASTAssignmentExpression extends ASTStatement {
-	type: ASTNodeType.AssignmentExpression;
-	value: ASTExpression;
-	assignee: ASTExpression;
+  type: ASTNodeType.AssignmentExpression;
+  value: ASTExpression;
+  assignee: ASTExpression;
 }
 
 export interface ASTString extends ASTStatement {
-	type: ASTNodeType.String;
-	value: string;
+  type: ASTNodeType.String;
+  value: string;
 }
 
 export interface ASTObject extends ASTStatement {
@@ -174,63 +174,67 @@ export interface ASTBlock extends ASTStatement {
 }
 
 export interface ASTImport extends ASTStatement {
-    type: ASTNodeType.Import;
-    path: string;
-    imports: string[];
+  type: ASTNodeType.Import;
+  path: string;
+  imports: string[];
 }
 
 export interface ASTExport extends ASTStatement {
-    type: ASTNodeType.Export;
-    declaration: ASTStatement;
+  type: ASTNodeType.Export;
+  declaration: ASTStatement;
 }
 
 export interface ASTModule extends ASTStatement {
-    type: ASTNodeType.Module;
-    name: string;
-    body: ASTStatement[];
+  type: ASTNodeType.Module;
+  name: string;
+  body: ASTStatement[];
 }
 
-
+export interface ASTWhileStatement extends ASTStatement {
+  type: ASTNodeType.WhileStatement;
+  test: ASTExpression;
+  body: ASTStatement;
+}
 
 // Interpreter
 
 export enum InterpreterValueType {
-	Null = "Null",
-	Array = "Array",
-	Number = "Number",
-	Boolean = "Boolean",
-	String = "String",
-	Object = "Object",
-	Comparison = "Comparison"
+  Null = "Null",
+  Array = "Array",
+  Number = "Number",
+  Boolean = "Boolean",
+  String = "String",
+  Object = "Object",
+  Comparison = "Comparison",
 }
 
 export interface InterpreterValue {
-	type: InterpreterValueType;
+  type: InterpreterValueType;
 }
 
 export interface InterpreterNull extends InterpreterValue {
-	type: InterpreterValueType.Null;
-	value: null;
+  type: InterpreterValueType.Null;
+  value: null;
 }
 
 export interface InterpreterNumber extends InterpreterValue {
-	type: InterpreterValueType.Number;
-	value: number;
+  type: InterpreterValueType.Number;
+  value: number;
 }
 
 export interface InterpreterBoolean extends InterpreterValue {
-	type: InterpreterValueType.Boolean;
-	value: number;
+  type: InterpreterValueType.Boolean;
+  value: number;
 }
 
 export interface InterpreterArray extends InterpreterValue {
-	type: InterpreterValueType.Array;
-	elements: InterpreterValue[];
+  type: InterpreterValueType.Array;
+  elements: InterpreterValue[];
 }
 
 export interface InterpreterString extends InterpreterValue {
-	type: InterpreterValueType.String;
-	value: string;
+  type: InterpreterValueType.String;
+  value: string;
 }
 
 export interface InterpreterObject extends InterpreterValue {
@@ -240,6 +244,6 @@ export interface InterpreterObject extends InterpreterValue {
 }
 
 export interface InterpreterComparison extends InterpreterValue {
-	type: InterpreterValueType.Comparison;
-	value: number;
+  type: InterpreterValueType.Comparison;
+  value: number;
 }
