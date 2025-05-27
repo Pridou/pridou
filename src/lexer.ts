@@ -42,6 +42,23 @@ export function tokenize(sourceCode: string): LexerToken[] {
 
 	while (source.length > 0) {
 		switch (source[0]) {
+			
+			
+			case "&":
+				if (source[1] === "&") {
+					source.shift(); source.shift();
+					tokens.push(toToken(LexerTokenType.And, "&&"));
+				}
+				break;
+			case "|":
+				if (source[1] === "|") {
+					source.shift(); source.shift();
+					tokens.push(toToken(LexerTokenType.Or, "||"));
+				}
+				break;
+			
+			
+
 			case "=":
 				tokens.push(toToken(LexerTokenType.Equals, source.shift()));
 				break;
@@ -110,23 +127,12 @@ export function tokenize(sourceCode: string): LexerToken[] {
 					break;
 				}
 
-				/*if (source[0] === '"') {
-					source.shift(); // Remove opening quote
 
-					let str = "";
-					while (source.length > 0 && source[0] !== '"') {
-					str += source.shift();
-					}
 
-					if (source[0] === '"') {
-					source.shift(); // Remove closing quote
-					tokens.push(toToken(LexerTokenType.String, str));
-					} else {
-					throw new InvalidTokenError("Unterminated string literal");
-					}
 
-					break;
-				}*/
+				
+
+				
 
 
 				throw new InvalidTokenError(`Unrecognized token: '${source[0]}'`);

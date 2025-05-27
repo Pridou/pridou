@@ -111,7 +111,9 @@ export default class Parser {
 	}
 
 	private parseAssignmentExpression(): ASTExpression {
-		const leftExpression: ASTExpression = this.parseAdditiveExpression();
+		//const leftExpression: ASTExpression = this.parseAdditiveExpression();
+		const leftExpression: ASTExpression = this.parseLogicalExpression();
+
 
 		if (this.peek().type === LexerTokenType.Equals) {
 			this.#tokens.shift();
@@ -148,13 +150,7 @@ export default class Parser {
 					// @ts-ignore
 					value: +this.#tokens.shift()?.value,
 				};
-			/*case LexerTokenType.String:
-				return <ASTString> {
-				type: ASTNodeType.String,
-				value: this.#tokens.shift()?.value,
-				
-				};*/
-
+			
 			case LexerTokenType.OpeningParenthesis: {
 				this.#tokens.shift();
 
@@ -235,6 +231,32 @@ export default class Parser {
 				return this.parseAssignmentExpression();
 		}
 	}
+
+	private parseLogicalExpression(): ASTExpression {
+		let leftExpression = this.parseAdditiveExpression();
+
+		while (
+			this.peek().type === LexerTokenType.And ||
+			this.peek().type === LexerTokenType.Or
+		) {
+			const operatorToken = this.#tokens.shift()!;
+			const binaryOperator = operatorToken.value;
+
+			const rightExpression = this.parseAdditiveExpression();
+
+			leftExpression = <ASTBinaryExpression>{
+				type: ASTNodeType.BinaryExpression,
+				binaryOperator,
+				leftExpression,
+				rightExpression,
+			};
+	}
+
+	return leftExpression;
+}
+
+
+
 
 	
 }

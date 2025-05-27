@@ -14,7 +14,7 @@ import {
 	type InterpreterNull,
 	type InterpreterNumber,
 	type InterpreterValue,
-	//type InterpreterString,
+	
 	
 } from "@/types";
 
@@ -91,8 +91,8 @@ export function evaluate(
 			);
 
 			if (
-				leftHandSide.type === InterpreterValueType.Number &&
-				rightHandSide.type === InterpreterValueType.Number
+				true
+				
 			) {
 				let value = 0;
 
@@ -112,7 +112,17 @@ export function evaluate(
 					case "/":
 						value = leftHandSide.value / rightHandSide.value;
 						break;
-				}
+					case "&&":
+						value = leftHandSide.value && rightHandSide.value;
+						break;
+						
+					case "||":
+						value = leftHandSide.value || rightHandSide.value;
+						break;
+					
+	
+
+						}
 
 				return <InterpreterNumber>{
 					type: InterpreterValueType.Number,
