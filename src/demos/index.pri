@@ -1,10 +1,19 @@
-let x = 3;
+mut x = 3;
 
-let y = 0;
+mut y = 0;
 
 if (true) {
-  let x = 7;
+  mut x = 7;
 
   y = x;
 }
-y
+
+
+mut z = "oui";
+mut az = {Nom : "Prenom"};
+mut azb = !true;
+mut azc = azb < 5;
+
+
+azc
+

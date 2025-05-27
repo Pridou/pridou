@@ -5,6 +5,9 @@ import type Environment from "@/src/environment";
 export enum LexerTokenType {
 	Alpha = "Alpha",
 	Number = "Number",
+	And = "And",
+	Or = "Or",
+	Not = "Not",
 
 	Let = "Let",
 	Const = "Const",
@@ -58,6 +61,7 @@ export enum ASTNodeType {
 
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
+	UnaryExpression = "UnaryExpression",
 
 	Object = "Object",
 	ObjectProperty = "ObjectProperty",
@@ -116,6 +120,12 @@ export interface ASTBinaryExpression extends ASTStatement {
 	rightExpression: ASTExpression;
 }
 
+export interface ASTUnaryExpression extends ASTStatement {
+  type: ASTNodeType.UnaryExpression;
+  operator: string;
+  expression: ASTExpression;
+}
+
 export interface ASTAssignmentExpression extends ASTStatement {
 	type: ASTNodeType.AssignmentExpression;
 	value: ASTExpression;
@@ -166,7 +176,8 @@ export enum InterpreterValueType {
 	Number = "Number",
 	Boolean = "Boolean",
 	String = "String",
-	Object = "Object"
+	Object = "Object",
+	Comparison = "Comparison"
 }
 
 export interface InterpreterValue {
@@ -202,4 +213,9 @@ export interface InterpreterObject extends InterpreterValue {
   type: InterpreterValueType.Object;
   properties: { [key: string]: InterpreterValue };
   environment: Environment;
+}
+
+export interface InterpreterComparison extends InterpreterValue {
+	type: InterpreterValueType.Comparison;
+	value: number;
 }
