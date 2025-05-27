@@ -49,6 +49,8 @@ export enum ASTNodeType {
 	Number = "Number",
 
 	String = "String",
+	If = "If",
+
 
 	Array = "Array",
 	Index = "Index",
@@ -141,6 +143,20 @@ export interface ASTObjectAttribute extends ASTStatement {
   object: ASTExpression;
   property: ASTExpression;
 }
+
+export interface ASTIfStatement extends ASTStatement {
+  type: ASTNodeType.If;
+  condition: ASTExpression;
+  trueCase: ASTStatement;
+  falseCase?: ASTStatement;
+}
+
+export interface ASTBlock extends ASTStatement {
+  type: ASTNodeType.Program;
+  body: ASTStatement[];
+}
+
+
 
 // Interpreter
 

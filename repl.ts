@@ -10,7 +10,7 @@ import {
 
 import { tokenize } from "./src/lexer";
 
-((): void => {
+(async (): Promise<void> => {
 	const parser: Parser = new Parser();
 	const environment: Environment = new Environment();
 
@@ -30,6 +30,12 @@ import { tokenize } from "./src/lexer";
 	}, true); */
 
 	// Bun.file("./src/demos/index.pri").text().then(v => console.log(parser.toAST(v)));
+
+	const program = await Bun.file("./src/demos/index.pri").text();
+
+	console.log(JSON.stringify(evaluate(new Parser().toAST(program), new Environment()), null, 4));
+
+	return;
 
 	console.log(tokenize('const x = "bonjour";'));
 

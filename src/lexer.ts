@@ -14,6 +14,9 @@ const reservedKeywords: {[key: string]: LexerTokenType} = {
   const : LexerTokenType.Const,
   function: LexerTokenType.Function,
   let : LexerTokenType.Let,
+  if: LexerTokenType.Alpha,
+  else: LexerTokenType.Alpha,
+
 };
 
 // TODO: Support unicode and hex

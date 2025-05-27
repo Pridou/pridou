@@ -1,6 +1,6 @@
 import Environment from '@/src/environment';
 import {InvalidNodeError, InvalidTokenError} from '@/src/errs';
-import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, type ASTIndex, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterNull, type InterpreterNumber, type InterpreterObject, type InterpreterString, type InterpreterValue, InterpreterValueType,} from '@/types';
+import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, type ASTIndex, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterNull, type InterpreterNumber, type InterpreterObject, type InterpreterString, type InterpreterValue, InterpreterValueType,type ASTIfStatement,type InterpreterBoolean} from '@/types';
 
 function getArrayIndex(
     array: InterpreterArray, indexNode: ASTExpression,
@@ -255,6 +255,30 @@ export function evaluate(
           <InterpreterArray>array, (<ASTIndex>node).index, environment);
       return (<InterpreterArray>array).elements[actualIndex];
     }
+
+    case ASTNodeType.If: {
+      const { condition, trueCase, falseCase } = node as ASTIfStatement;
+
+      const conditionValue = evaluate(condition, environment);
+      if (conditionValue.type !== InterpreterValueType.Boolean) {
+        throw new Error("Condition in 'if' must evaluate to a boolean");
+      }
+
+      const scopedEnv = new Environment(environment);
+
+     if ((conditionValue as InterpreterBoolean).value === 1){
+        return evaluate(trueCase, scopedEnv);
+      } else if (falseCase) {
+        return evaluate(falseCase, scopedEnv);
+      } else {
+       return {
+          type: InterpreterValueType.Null,
+          value: null,
+        } as InterpreterNull;
+
+      }
+}
+
 
     default:
       throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);
