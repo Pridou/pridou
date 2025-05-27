@@ -1,13 +1,39 @@
-import Environment from '@/src/environment';
-import {InvalidNodeError, InvalidTokenError} from '@/src/errs';
-import {type ASTAlpha, type ASTArray, type ASTAssignmentExpression, type ASTBinaryExpression, type ASTExpression, type ASTIndex, ASTNodeType, type ASTNumber, type ASTObject, type ASTObjectAttribute, type ASTProgram, type ASTStatement, type ASTString, type ASTVariableDeclaration, type InterpreterArray, type InterpreterBoolean, type InterpreterNull, type InterpreterNumber, type InterpreterObject, type InterpreterString, type InterpreterValue, InterpreterValueType,} from '@/types';
+import Environment from "@/src/environment";
+import { InvalidNodeError, InvalidTokenError } from "@/src/errs";
+import { getNumber, getString, isNumeric, isString } from "@/src/utils";
+import {
+  type ASTAlpha,
+  type ASTArray,
+  type ASTAssignmentExpression,
+  type ASTBinaryExpression,
+  type ASTExpression,
+  type ASTIndex,
+  ASTNodeType,
+  type ASTNumber,
+  type ASTObject,
+  type ASTObjectAttribute,
+  type ASTProgram,
+  type ASTStatement,
+  type ASTString,
+  type ASTVariableDeclaration,
+  type InterpreterArray,
+  type InterpreterBoolean,
+  type InterpreterNull,
+  type InterpreterNumber,
+  type InterpreterObject,
+  type InterpreterString,
+  type InterpreterValue,
+  InterpreterValueType,
+} from "@/types";
 
 function getArrayIndex(
-    array: InterpreterArray, indexNode: ASTExpression,
-    environment: Environment): number {
+  array: InterpreterArray,
+  indexNode: ASTExpression,
+  environment: Environment
+): number {
   const index = evaluate(indexNode, environment);
   if (index.type !== InterpreterValueType.Number) {
-    throw new InvalidTokenError('Array index must be a number');
+    throw new InvalidTokenError("Array index must be a number");
   }
 
   const arrayLength = array.elements.length;
@@ -18,16 +44,16 @@ function getArrayIndex(
   }
 
   if (actualIndex < 0 || actualIndex >= arrayLength) {
-    throw new InvalidTokenError('Array index out of bounds');
+    throw new InvalidTokenError("Array index out of bounds");
   }
 
   return actualIndex;
 }
 
 export function evaluate(
-    node: ASTStatement,
-    environment: Environment,
-    ): InterpreterValue {
+  node: ASTStatement,
+  environment: Environment
+): InterpreterValue {
   switch (node.type) {
     case ASTNodeType.Program: {
       let lastEvaluatedValue: InterpreterValue = {
@@ -43,14 +69,14 @@ export function evaluate(
     }
     case ASTNodeType.VariableDeclaration:
       return environment.addVariable(
-          (<ASTVariableDeclaration>node).alpha,
-          // FIXME:
-          evaluate((<ASTVariableDeclaration>node).value!, environment) ??
-              <InterpreterNull>{
-                type: InterpreterValueType.Null,
-                value: null,
-              },
-          (<ASTVariableDeclaration>node).metadata.isConstant,
+        (<ASTVariableDeclaration>node).alpha,
+        // FIXME:
+        evaluate((<ASTVariableDeclaration>node).value!, environment) ??
+          <InterpreterNull>{
+            type: InterpreterValueType.Null,
+            value: null,
+          },
+        (<ASTVariableDeclaration>node).metadata.isConstant
       );
     case ASTNodeType.Alpha:
       return environment.getVariable((<ASTAlpha>node).value);
@@ -61,129 +87,142 @@ export function evaluate(
       };
 
     case ASTNodeType.BinaryExpression: {
-      const leftHandSide =
-          evaluate((<ASTBinaryExpression>node).leftExpression, environment);
-      const rightHandSide =
-          evaluate((<ASTBinaryExpression>node).rightExpression, environment);
+      const leftHandSide = evaluate(
+        (<ASTBinaryExpression>node).leftExpression,
+        environment
+      );
+      const rightHandSide = evaluate(
+        (<ASTBinaryExpression>node).rightExpression,
+        environment
+      );
       const operator = (<ASTBinaryExpression>node).binaryOperator;
 
-      if (operator === '+' &&
-          leftHandSide.type === InterpreterValueType.String &&
-          rightHandSide.type === InterpreterValueType.String) {
+      if (
+        operator === "+" &&
+        isString(leftHandSide) &&
+        isString(rightHandSide)
+      ) {
         return <InterpreterString>{
           type: InterpreterValueType.String,
-          value: (<InterpreterString>leftHandSide)
-                     .value.concat((<InterpreterString>rightHandSide).value)
+          value: getString(leftHandSide).concat(getString(rightHandSide)),
         };
       }
 
-      if (operator === '*' &&
-          ((leftHandSide.type === InterpreterValueType.String &&
-            rightHandSide.type === InterpreterValueType.Number) ||
-           (leftHandSide.type === InterpreterValueType.Number &&
-            rightHandSide.type === InterpreterValueType.String))) {
-        const str = leftHandSide.type === InterpreterValueType.String ?
-            (<InterpreterString>leftHandSide).value :
-            (<InterpreterString>rightHandSide).value;
-
-        const count = leftHandSide.type === InterpreterValueType.Number ?
-            (<InterpreterNumber>leftHandSide).value :
-            (<InterpreterNumber>rightHandSide).value;
+      if (
+        operator === "*" &&
+        ((isString(leftHandSide) && isNumeric(rightHandSide)) ||
+          (isNumeric(leftHandSide) && isString(rightHandSide)))
+      ) {
+        const str = isString(leftHandSide)
+          ? getString(leftHandSide)
+          : getString(rightHandSide);
+        const count = isNumeric(leftHandSide)
+          ? getNumber(leftHandSide)
+          : getNumber(rightHandSide);
 
         if (count < 0) {
           throw new InvalidTokenError(
-              'Cannot multiply a string by a negative number');
+            "Cannot multiply a string by a negative number"
+          );
         }
 
         return <InterpreterString>{
           type: InterpreterValueType.String,
-          value: str.repeat(count)
+          value: str.repeat(count),
         };
       }
 
-      if (leftHandSide.type === InterpreterValueType.Number &&
-          rightHandSide.type === InterpreterValueType.Number) {
-        const leftValue = (<InterpreterNumber>leftHandSide).value;
-        const rightValue = (<InterpreterNumber>rightHandSide).value;
+      try {
+        const leftValue = getNumber(leftHandSide);
+        const rightValue = getNumber(rightHandSide);
         let value = 0;
 
         switch ((<ASTBinaryExpression>node).binaryOperator) {
-          case '%':
+          case "%":
             value = leftValue % rightValue;
             break;
-          case '*':
+          case "*":
             value = leftValue * rightValue;
             break;
-          case '+':
+          case "+":
             value = leftValue + rightValue;
             break;
-          case '-':
+          case "-":
             value = leftValue - rightValue;
             break;
-          case '/':
+          case "/":
             value = leftValue / rightValue;
             break;
-          case '<':
+          case "<":
             value = +(leftValue < rightValue);
             break;
-          
-          case '>':
-            value = +(leftValue > rightValue); 
-            break;
-                  
-          case '>=':
-            value = +(leftValue >= rightValue);     
-            break ;
-          
-          case '<=':
-            value = +(leftValue <= rightValue);     
-            break ;
-          
-          case '!=':
-            value = +(leftValue != rightValue);
-            break;
-          
-          case '!==':
-            value = +(leftValue !== rightValue);
-            break;
-          
-          case '==':
-            value = +(leftValue == rightValue); 
+
+          case ">":
+            value = +(leftValue > rightValue);
             break;
 
-          case '===':
-            value = +(leftValue === rightValue); 
+          case ">=":
+            value = +(leftValue >= rightValue);
             break;
-          
+
+          case "<=":
+            value = +(leftValue <= rightValue);
+            break;
+
+          case "!=":
+            value = +(leftValue != rightValue);
+            break;
+
+          case "!==":
+            value = +(leftValue !== rightValue);
+            break;
+
+          case "==":
+            value = +(leftValue == rightValue);
+            break;
+
+          case "===":
+            value = +(leftValue === rightValue);
+            break;
         }
 
         return <InterpreterNumber>{
           type: InterpreterValueType.Number,
           value,
         };
+      } catch (error) {
+        return <InterpreterNull>{
+          type: InterpreterValueType.Null,
+          value: null,
+        };
       }
-
-      return <InterpreterNull>{type: InterpreterValueType.Null, value: null};
     }
     case ASTNodeType.AssignmentExpression: {
       const assignee = (<ASTAssignmentExpression>node).assignee;
 
       if (assignee.type === ASTNodeType.ObjectAttribute) {
-        const object =
-            evaluate((<ASTObjectAttribute>assignee).object, environment);
+        const object = evaluate(
+          (<ASTObjectAttribute>assignee).object,
+          environment
+        );
         if (object.type !== InterpreterValueType.Object) {
           throw new InvalidTokenError(
-              'Cannot assign to property of non-object value');
+            "Cannot assign to property of non-object value"
+          );
         }
 
-        const propertyName =
-            (<ASTAlpha>(<ASTObjectAttribute>assignee).property).value;
-        const value =
-            evaluate((<ASTAssignmentExpression>node).value, environment);
+        const propertyName = (<ASTAlpha>(<ASTObjectAttribute>assignee).property)
+          .value;
+        const value = evaluate(
+          (<ASTAssignmentExpression>node).value,
+          environment
+        );
 
         (<InterpreterObject>object).properties[propertyName] = value;
-        (<InterpreterObject>object)
-            .environment.setVariable(propertyName, value);
+        (<InterpreterObject>object).environment.setVariable(
+          propertyName,
+          value
+        );
 
         return value;
       }
@@ -192,13 +231,19 @@ export function evaluate(
         const array = evaluate((<ASTIndex>assignee).array, environment);
         if (array.type !== InterpreterValueType.Array) {
           throw new InvalidTokenError(
-              'Cannot assign to index of non-array value');
+            "Cannot assign to index of non-array value"
+          );
         }
 
-        const value =
-            evaluate((<ASTAssignmentExpression>node).value, environment);
+        const value = evaluate(
+          (<ASTAssignmentExpression>node).value,
+          environment
+        );
         const actualIndex = getArrayIndex(
-            <InterpreterArray>array, (<ASTIndex>assignee).index, environment);
+          <InterpreterArray>array,
+          (<ASTIndex>assignee).index,
+          environment
+        );
 
         (<InterpreterArray>array).elements[actualIndex] = value;
         return value;
@@ -206,11 +251,12 @@ export function evaluate(
 
       if (assignee.type === ASTNodeType.Alpha) {
         return environment.setVariable(
-            (<ASTAlpha>assignee).value,
-            evaluate((<ASTAssignmentExpression>node).value, environment));
+          (<ASTAlpha>assignee).value,
+          evaluate((<ASTAssignmentExpression>node).value, environment)
+        );
       }
 
-      throw new InvalidTokenError('Invalid assignment target');
+      throw new InvalidTokenError("Invalid assignment target");
     }
 
     case ASTNodeType.String:
@@ -225,23 +271,27 @@ export function evaluate(
         elements.push(evaluate(expression, environment));
       }
 
-      return <InterpreterArray>{type: InterpreterValueType.Array, elements};
+      return <InterpreterArray>{ type: InterpreterValueType.Array, elements };
     }
 
     case ASTNodeType.Index: {
       const array = evaluate((<ASTIndex>node).array, environment);
       if (array.type !== InterpreterValueType.Array) {
         throw new InvalidTokenError(
-            'Cannot use index operator on non-array value');
+          "Cannot use index operator on non-array value"
+        );
       }
 
       const actualIndex = getArrayIndex(
-          <InterpreterArray>array, (<ASTIndex>node).index, environment);
+        <InterpreterArray>array,
+        (<ASTIndex>node).index,
+        environment
+      );
       return (<InterpreterArray>array).elements[actualIndex];
     }
 
     case ASTNodeType.Object: {
-      const properties: {[key: string]: InterpreterValue} = {};
+      const properties: { [key: string]: InterpreterValue } = {};
       const objectEnv = new Environment(environment);
 
       for (const [key, expr] of Object.entries((<ASTObject>node).properties)) {
@@ -253,7 +303,7 @@ export function evaluate(
       return <InterpreterObject>{
         type: InterpreterValueType.Object,
         properties,
-        environment: objectEnv
+        environment: objectEnv,
       };
     }
 
@@ -261,16 +311,18 @@ export function evaluate(
       const object = evaluate((<ASTObjectAttribute>node).object, environment);
       if (object.type !== InterpreterValueType.Object) {
         throw new InvalidTokenError(
-            'Cannot access property of non-object value');
+          "Cannot access property of non-object value"
+        );
       }
 
-      const propertyName =
-          (<ASTAlpha>(<ASTObjectAttribute>node).property).value;
+      const propertyName = (<ASTAlpha>(<ASTObjectAttribute>node).property)
+        .value;
       const property = (<InterpreterObject>object).properties[propertyName];
 
       if (!property) {
         throw new InvalidTokenError(
-            `Property '${propertyName}' does not exist`);
+          `Property '${propertyName}' does not exist`
+        );
       }
 
       return property;
@@ -280,11 +332,15 @@ export function evaluate(
       const array = evaluate((<ASTIndex>node).array, environment);
       if (array.type !== InterpreterValueType.Array) {
         throw new InvalidTokenError(
-            'Cannot use index operator on non-array value');
+          "Cannot use index operator on non-array value"
+        );
       }
 
       const actualIndex = getArrayIndex(
-          <InterpreterArray>array, (<ASTIndex>node).index, environment);
+        <InterpreterArray>array,
+        (<ASTIndex>node).index,
+        environment
+      );
       return (<InterpreterArray>array).elements[actualIndex];
     }
 
