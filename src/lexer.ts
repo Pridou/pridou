@@ -14,15 +14,11 @@ function toToken(type: LexerTokenType, value?: string): LexerToken {
 
 const reservedKeywords: { [key: string]: LexerTokenType } = {
 	const: LexerTokenType.Const,
-<<<<<<< HEAD
-	if:LexerTokenType.If,
-	else:LexerTokenType.Else,
-	return:LexerTokenType.Return,
-=======
+
 	function: LexerTokenType.Function,
 	let: LexerTokenType.Let,
->>>>>>> d5da2b8e78e30632d64a7cd6396c01d591e396ee
-	For: LexerTokenType.For,
+
+	for: LexerTokenType.For,
 };
 
 // TODO: Support unicode and hex
@@ -42,14 +38,50 @@ function shouldBeSkipped(value: string): boolean {
 	return canBeSkippedValues.has(value);
 }
 
+function isCommentStart(source: string[], offset: number = 0): boolean {
+    return source[offset] === '/' && (source[offset + 1] === '/' || source[offset + 1] === '*');
+}
+
+function skipSingleLineComment(source: string[]): void {
+    // Avance jusqu'au prochain saut de ligne ou fin de fichier
+    while (source.length > 0 && source[0] !== '\n') {
+        source.shift();
+    }
+    // Consomme le saut de ligne s'il existe
+    if (source[0] === '\n') source.shift();
+}
+
+function skipMultiLineComment(source: string[]): void {
+    // Avance jusqu'à trouver '*/'
+    while (source.length > 1) {
+        if (source[0] === '*' && source[1] === '/') {
+            source.shift(); // *
+            source.shift(); // /
+            return;
+        }
+        source.shift();
+    }
+    throw new InvalidTokenError("Unterminated multi-line comment");
+}
+
 export function tokenize(sourceCode: string): LexerToken[] {
 	const tokens: LexerToken[] = [];
 	const source: string[] = <string[]>sourceCode.split("");
 
 	let temporaryString: string = "";
 	let isBuildingString: boolean = false;
-
+	// pour les commentaires
+	
 	while (source.length > 0) {
+        if (isCommentStart(source)) {
+            source.shift();
+            if (source[0] === '/') {
+                skipSingleLineComment(source);
+            } else if (source[0] === '*') {
+                skipMultiLineComment(source);
+            }
+            continue;
+        }
 		switch (source[0]) {
 			case "'":
 			case '"':

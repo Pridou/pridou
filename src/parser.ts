@@ -13,6 +13,10 @@ import {
 	type ASTVariableDeclaration,
 	type ASTForStatement,
 	type LexerToken,
+
+	//type ASTIfStatement,
+	//type ASTReturnStatement,
+
 } from "@/types";
 
 import { tokenize } from "@/src/lexer";
@@ -71,41 +75,51 @@ export default class Parser {
 		if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
 			throw new InvalidTokenError("Expected ';' after variable declaration");
 		}
+		
+ 
 
 		return variableDeclaration;
-	}
-	private parseForStatement(): ASTForStatement {
-    this.#tokens.shift(); 
-    this.#tokens.shift(); 
+	}private parseForStatement(): ASTForStatement {
+  this.#tokens.shift(); // For
+  this.#tokens.shift(); // (
+  const beforeInit = [...this.#tokens]; // Copie du tableau de tokens avant l'init
 
-    
-    const initializer = this.parseVariableDeclaration();
+  const initializer = this.parseVariableDeclaration();
 
-    
-    const condition = this.parseExpression();
-    this.#tokens.shift(); 
+  // Si parseVariableDeclaration a déjà consommé le point-virgule, on ne fait rien
+  // Sinon, on doit consommer le point-virgule ici
+  if (this.peek().type === LexerTokenType.Semicolon) {
+    this.#tokens.shift();
+  }
 
-    
-    const increment = this.parseExpression();
-    this.#tokens.shift(); 
+  const condition = this.parseExpression();
 
-    
-    this.#tokens.shift(); 
-    const body: ASTStatement[] = [];
-    
-    while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
-        body.push(this.parseExpression());
-    }
-    this.#tokens.shift(); 
+  if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+    throw new InvalidTokenError("Expected ';' after for condition");
+  }
 
-    return {
-        type: ASTNodeType.ForStatement,
-        initializer,
-        condition,
-        increment,
-        body
-    };
+  const increment = this.parseExpression();
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+    throw new InvalidTokenError("Expected ')' after for increment");
+  }
+
+  this.#tokens.shift(); // Consomme '{'
+  const body: ASTStatement[] = [];
+  while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+    body.push(this.parseExpression());
+  }
+  this.#tokens.shift(); // Consomme '}'
+
+  return {
+    type: ASTNodeType.ForStatement,
+    initializer,
+    condition,
+    increment,
+    body,
+  };
 }
+
 	private parseAssignmentExpression(): ASTExpression {
 		const leftExpression: ASTExpression = this.parseAdditiveExpression();
 
@@ -242,7 +256,29 @@ export default class Parser {
 		return leftExpression;
 	}
 
-	private parseIfStatement(): ASTIfStatement{
+
+	private parseExpression(): ASTExpression {
+		switch (this.peek().type) {
+			case LexerTokenType.Let:
+			case LexerTokenType.Const:
+				return this.parseVariableDeclaration();
+			case LexerTokenType.For:
+				return this.parseForStatement();
+			case LexerTokenType.If:
+				break;
+				//return this.parseIfStatement() as ASTExpression;
+			case LexerTokenType.Return:
+				break;
+				//return this.parseReturnStatement() as ASTExpression;
+				
+			
+			default:
+				return this.parseAssignmentExpression();
+		}
+	}
+
+/**
+ * 	private parseIfStatement(): ASTIfStatement{
 	this.#tokens.shift(); // consume 'if'
 
 	if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
@@ -272,8 +308,10 @@ export default class Parser {
 		falseCase,
 	};
 }
+ */
 
-private parseReturnStatement(): ASTReturnStatement {
+/**
+ * private parseReturnStatement(): ASTReturnStatement {
 	this.#tokens.shift(); // consume 'return'
 	const value = this.parseExpression();
 
@@ -286,19 +324,11 @@ private parseReturnStatement(): ASTReturnStatement {
 		value,
 	};
 }
+ */
 
 
 
 
-	private parseExpression(): ASTExpression {
-		switch (this.peek().type) {
-			case LexerTokenType.Let:
-			case LexerTokenType.Const:
-				return this.parseVariableDeclaration();
-			default:
-				return this.parseAssignmentExpression();
-		}
-	}
 
 	public toAST(sourceCode: string): ASTProgram {
 		this.#tokens = tokenize(sourceCode);

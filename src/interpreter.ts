@@ -16,7 +16,7 @@ import {
 	type InterpreterArray,
 	type InterpreterNull,
 	type InterpreterNumber,
-	type InterpreterString,
+	type ASTForStatement,
 	type InterpreterValue,
 	InterpreterValueType,
 } from "@/types";
@@ -157,7 +157,8 @@ export function evaluate(
 			return <InterpreterArray>{ type: InterpreterValueType.Array, elements };
 		}
 
-		case ASTNodeType.If: {
+		/**
+		 * case ASTNodeType.If: {
 			const condition = evaluate((<ASTIfStatement>node).condition, environment);
 
 			if (condition.type !== InterpreterValueType.Boolean) {
@@ -176,6 +177,7 @@ export function evaluate(
 			return evaluate((<ASTReturnStatement>node).value, environment);
 
 		}
+		 */
 
 		default:
 			throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);
