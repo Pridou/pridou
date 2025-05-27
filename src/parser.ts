@@ -20,7 +20,8 @@ import {
   type ASTImport,
   type LexerToken,
   LexerTokenType,
-type ASTIfStatement} from "@/types";
+  type ASTIfStatement,
+} from "@/types";
 
 const additiveOperators: Set<string> = new Set<string>(["+", "-"]);
 const multiplicativeOperators: Set<string> = new Set<string>(["%", "*", "/"]);
@@ -180,14 +181,14 @@ export default class Parser {
           value: stringToken?.value,
         };
         break;
-      
+
       case LexerTokenType.Not:
-      this.#tokens.shift();
-      return <ASTUnaryExpression>{
-        type: ASTNodeType.UnaryExpression,
-        operator: "!",
-        expression: this.parsePrimitiveExpression()
-      };
+        this.#tokens.shift();
+        return <ASTUnaryExpression>{
+          type: ASTNodeType.UnaryExpression,
+          operator: "!",
+          expression: this.parsePrimitiveExpression(),
+        };
 
       case LexerTokenType.OpeningParenthesis: {
         this.#tokens.shift();
@@ -321,98 +322,152 @@ export default class Parser {
     return leftExpression;
   }
 
+  private parseIfStatement(): ASTIfStatement {
+    this.#tokens.shift();
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
+      throw new InvalidTokenError("Expected '(' after 'if'");
+    }
+
+    const condition = this.parseExpression();
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+      throw new InvalidTokenError("Expected ')' after condition");
+    }
+
+    const trueCase = this.parseBlockStatement();
+
+    let falseCase: ASTStatement | undefined = undefined;
+    if (
+      this.peek()?.type === LexerTokenType.Alpha &&
+      this.peek().value === "else"
+    ) {
+      this.#tokens.shift();
+      falseCase = this.parseBlockStatement();
+    }
+
+    return {
+      type: ASTNodeType.If,
+      condition,
+      trueCase,
+      falseCase,
+    };
+  }
+
+  private parseBlockStatement(): ASTProgram {
+    if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
+      throw new InvalidTokenError("Expected '{' at the start of block");
+    }
+
+    const body: ASTStatement[] = [];
+
+    while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+      body.push(this.parseExpression());
+    }
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+      throw new InvalidTokenError("Expected '}' at the end of block");
+    }
+
+    return {
+      type: ASTNodeType.Program,
+      body,
+    };
+  }
+
   private parseModuleDeclaration(): ASTModule {
-  this.#tokens.shift();
-  
-  const name = this.#tokens.shift();
-  if (!name || name.type !== LexerTokenType.Alpha) {
-    throw new InvalidTokenError("Expected module name");
-  }
+    this.#tokens.shift();
 
-  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
-    throw new InvalidTokenError("Expected '{' after module name");
-  }
-
-  const body: ASTStatement[] = [];
-  while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
-    body.push(this.parseExpression());
-  }
-
-  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
-    throw new InvalidTokenError("Expected '}' after module body");
-  }
-
-  return {
-    type: ASTNodeType.Module,
-    name: name.value,
-    body
-  };
-}
-
-private parseImportDeclaration(): ASTImport {
-  this.#tokens.shift();
-  
-  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
-    throw new InvalidTokenError("Expected '{' after import");
-  }
-
-  const imports: string[] = [];
-  while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
     const name = this.#tokens.shift();
     if (!name || name.type !== LexerTokenType.Alpha) {
-      throw new InvalidTokenError("Expected identifier in import statement");
+      throw new InvalidTokenError("Expected module name");
     }
-    imports.push(name.value);
 
-    if (this.peek().type === LexerTokenType.Comma) {
-      this.#tokens.shift();
+    if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
+      throw new InvalidTokenError("Expected '{' after module name");
     }
+
+    const body: ASTStatement[] = [];
+    while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+      body.push(this.parseExpression());
+    }
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+      throw new InvalidTokenError("Expected '}' after module body");
+    }
+
+    return {
+      type: ASTNodeType.Module,
+      name: name.value,
+      body,
+    };
   }
 
-  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
-    throw new InvalidTokenError("Expected '}' after import list");
-  }
+  private parseImportDeclaration(): ASTImport {
+    this.#tokens.shift();
 
-  if (this.#tokens.shift()?.type !== LexerTokenType.Alpha || 
-      this.peek(-1).value !== "from") {
-    throw new InvalidTokenError("Expected 'from' after import list");
-  }
+    if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
+      throw new InvalidTokenError("Expected '{' after import");
+    }
 
-  const path = this.#tokens.shift();
-  if (!path || path.type !== LexerTokenType.String) {
-    throw new InvalidTokenError("Expected module path");
-  }
+    const imports: string[] = [];
+    while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+      const name = this.#tokens.shift();
+      if (!name || name.type !== LexerTokenType.Alpha) {
+        throw new InvalidTokenError("Expected identifier in import statement");
+      }
+      imports.push(name.value);
 
-  if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-    throw new InvalidTokenError("Expected ';' after import statement");
-  }
+      if (this.peek().type === LexerTokenType.Comma) {
+        this.#tokens.shift();
+      }
+    }
 
-  return {
-    type: ASTNodeType.Import,
-    path: path.value,
-    imports
-  };
-}
+    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+      throw new InvalidTokenError("Expected '}' after import list");
+    }
+
+    if (
+      this.#tokens.shift()?.type !== LexerTokenType.Alpha ||
+      this.peek(-1).value !== "from"
+    ) {
+      throw new InvalidTokenError("Expected 'from' after import list");
+    }
+
+    const path = this.#tokens.shift();
+    if (!path || path.type !== LexerTokenType.String) {
+      throw new InvalidTokenError("Expected module path");
+    }
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+      throw new InvalidTokenError("Expected ';' after import statement");
+    }
+
+    return {
+      type: ASTNodeType.Import,
+      path: path.value,
+      imports,
+    };
+  }
 
   private parseExpression(): ASTExpression {
-  const token = this.peek();
+    const token = this.peek();
 
-  if (token.type === LexerTokenType.Alpha && token.value === "if") {
-    return this.parseIfStatement();
-  }
+    if (token.type === LexerTokenType.Alpha && token.value === "if") {
+      return this.parseIfStatement();
+    }
 
-  switch (token.type) {
-    case LexerTokenType.Let:
-    case LexerTokenType.Const:
-      return this.parseVariableDeclaration();
+    switch (token.type) {
+      case LexerTokenType.Let:
+      case LexerTokenType.Const:
+        return this.parseVariableDeclaration();
       case LexerTokenType.And:
       case LexerTokenType.Or:
         return this.parseComparisonExpression();
-    default:
-      return this.parseAssignmentExpression();
+      default:
+        return this.parseAssignmentExpression();
+    }
   }
-}
-
 
   private parseObjectExpression(): ASTObject {
     this.#tokens.shift();
@@ -465,56 +520,4 @@ private parseImportDeclaration(): ASTImport {
 
     return program;
   }
-
-  private parseIfStatement(): ASTIfStatement {
-  this.#tokens.shift(); // consume "if"
-
-  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
-    throw new InvalidTokenError("Expected '(' after 'if'");
-  }
-
-  const condition = this.parseExpression();
-
-  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
-    throw new InvalidTokenError("Expected ')' after condition");
-  }
-
-  const trueCase = this.parseBlockStatement();
-
-  let falseCase: ASTStatement | undefined = undefined;
-  if (this.peek()?.type === LexerTokenType.Alpha && this.peek().value === "else") {
-    this.#tokens.shift(); // consume "else"
-    falseCase = this.parseBlockStatement(); 
-  }
-
-  return {
-    type: ASTNodeType.If,
-    condition,
-    trueCase,
-    falseCase,
-  };
-}
-
-private parseBlockStatement(): ASTProgram {
-  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
-    throw new InvalidTokenError("Expected '{' at the start of block");
-  }
-
-  const body: ASTStatement[] = [];
-
-  while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
-    body.push(this.parseExpression());
-  }
-
-  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
-    throw new InvalidTokenError("Expected '}' at the end of block");
-  }
-
-  return {
-    type: ASTNodeType.Program,
-    body,
-  };
-}
-
-
 }

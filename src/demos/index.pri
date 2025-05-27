@@ -8,8 +8,5 @@ if (!5 < 4) {
   y = x;
 }
 
-mut a = 0;
-while(0):
-  a = a + 1;
 
-a
+y
