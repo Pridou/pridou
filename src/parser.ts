@@ -75,39 +75,44 @@ export default class Parser {
     return variableDeclaration;
   }
 
-  private parseRepeatStatement(): ASTRepeatStatement{
-	this.#tokens.shift(); 
+  private parseRepeatStatement(): ASTRepeatStatement {
+    this.#tokens.shift(); 
 
-	if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
-		throw new InvalidTokenError("Expected '(' after repeat");
-	}
+    
+    if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
+      throw new InvalidTokenError("Expected '(' after 'repeat'");
+    }
 
-	const times = this.parseExpression();
+    
+    const times = this.parseExpression();
 
-	if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
-		throw new InvalidTokenError("Expected ')' after repeat count");
-	}
+    
+    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+      throw new InvalidTokenError("Expected ')' after repeat count");
+    }
 
-	if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
-		throw new InvalidTokenError("Expected '{' to start repeat block");
-	}
+    
+    if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
+      throw new InvalidTokenError("Expected '{' after repeat(...)");
+    }
 
-	const body: ASTStatement[] = [];
+    const body: ASTStatement[] = [];
+    while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+      body.push(this.parseExpression());
+    }
 
-	while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
-		body.push(this.parseExpression() as ASTStatement);
-	}
+    
+    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
+      throw new InvalidTokenError("Expected '}' at end of repeat block");
+    }
 
-	if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
-		throw new InvalidTokenError("Expected '}' to close repeat block");
-	}
-
-	return {
-		type: ASTNodeType.RepeatStatement,
-		times,
-		body,
-	};
+    return {
+      type: ASTNodeType.RepeatStatement,
+      times,
+      body,
+    };
   }
+
 
   private parseAssignmentExpression(): ASTExpression {
     const leftExpression: ASTExpression = this.parseAdditiveExpression();
@@ -258,6 +263,20 @@ export default class Parser {
     }
   }
 
+  public toAST(sourceCode: string): ASTProgram {
+    this.#tokens = tokenize(sourceCode);
+
+    const program: ASTProgram = {
+      type: ASTNodeType.Program,
+      body: [],
+    };
+
+    while (this.peek().type !== LexerTokenType.EOF) {
+      program.body.push(this.parseExpression());
+    }
+
+    return program;
+  }
 }
 	
  

@@ -41,7 +41,7 @@ export enum ASTNodeType {
 	Program = "Program",
 
 	VariableDeclaration = "VariableDeclaration",
-	RepeatStatement = "RepeatStatment",
+	RepeatStatement = "RepeatStatement",
 	
 	Alpha = "Alpha",
 	Number = "Number",

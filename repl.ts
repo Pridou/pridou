@@ -31,8 +31,9 @@ import { tokenize } from "./src/lexer";
 
 	// Bun.file("./src/demos/index.pri").text().then(v => console.log(parser.toAST(v)));
 
-console.log(tokenize('const x = "bonjour";'));
+console.log(tokenize('const x = "bonjour"; let y = 3 ;'));
 
+return;
 	while (true) {
 		const input: string | null = prompt();
 
