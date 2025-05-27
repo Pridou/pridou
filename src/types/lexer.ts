@@ -1,20 +1,14 @@
 export enum LexerTokenType {
-  Alpha = "Alpha",
-  Number = "Number",
-  Float = "Float",
-  String = "String",
-
-  Function = "Function",
-
-  Let = "Let",
-  Const = "Const",
-
   Equals = "Equals",
   BinaryOperator = "BinaryOperator",
+  ComparisonOperator = "ComparisonOperator",
 
+  Dot = "Dot",
   Comma = "Comma",
   Colon = "Colon",
-  Semicolon = "Semicolon",
+  Semicolon = "SemiColon",
+  // SingleQuote = "SingleQuote",
+  // DoubleQuote = 'SingleQuote',
 
   OpeningParenthesis = "OpeningParenthesis",
   ClosingParenthesis = "ClosingParenthesis",
@@ -23,7 +17,21 @@ export enum LexerTokenType {
   OpeningSquareBracket = "OpeningSquareBracket",
   ClosingSquareBracket = "ClosingSquareBracket",
 
-  EOF = "EOF",
+  Number = "Number",
+  Identifier = "Identifier",
+
+  String = "String",
+
+  If = "If",
+  For = "For",
+  Let = "Let",
+  Else = "Else",
+  Const = "Const",
+  While = "While",
+  Return = "Return",
+  Function = "Function",
+
+  EndOfFile = "EndOfFile",
 }
 
 export interface LexerToken {

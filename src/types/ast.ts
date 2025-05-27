@@ -1,74 +1,77 @@
+import type Environment from "@/environment";
+
 export enum ASTNodeType {
   Program = "Program",
 
-  VariableDeclaration = "VariableDeclaration",
+  Number = "Number",
+  Identifier = "Identifier",
 
-  Alpha = "Alpha",
   String = "String",
 
-  Number = "Number",
-  Float = "Float",
-
-  Array = "Array",
-
   BinaryExpression = "BinaryExpression",
+
+  FunctionCall = "FunctionCall",
+  FunctionDeclaration = "FunctionDeclaration",
+  VariableDeclaration = "VariableDeclaration",
   AssignmentExpression = "AssignmentExpression",
 }
 
-export interface ASTStatement {
+export interface ASTNode {
   type: ASTNodeType;
 }
 
-export interface ASTExpression extends ASTStatement {}
-
-export interface ASTProgram extends ASTStatement {
+export interface ASTProgram extends ASTNode {
   type: ASTNodeType.Program;
-  body: ASTStatement[];
+  body: ASTNode[];
 }
 
-export interface ASTArray extends ASTStatement {
-  type: ASTNodeType.Array;
-  body: ASTStatement[];
+export interface ASTNumber extends ASTNode {
+  type: ASTNodeType.Number;
+  value: number;
 }
 
-export interface ASTVariableDeclaration extends ASTStatement {
+export interface ASTIdentifier extends ASTNode {
+  type: ASTNodeType.Identifier;
+  value: string;
+}
+
+export interface ASTString extends ASTNode {
+  type: ASTNodeType.String;
+  value: string;
+}
+
+export interface ASTBinaryExpression extends ASTNode {
+  type: ASTNodeType.BinaryExpression;
+  binaryOperator: string;
+  leftExpression: ASTNode;
+  rightExpression: ASTNode;
+}
+
+export interface ASTFunctionCall extends ASTNode {
+  type: ASTNodeType.FunctionCall;
+  identifier: string;
+  arguments: ASTNode[];
+}
+
+export interface ASTFunctionDeclaration extends ASTNode {
+  type: ASTNodeType.FunctionDeclaration;
+  body: ASTNode[];
+  identifier: string;
+  parameters: string[];
+  environment: Environment;
+}
+
+export interface ASTVariableDeclaration extends ASTNode {
   type: ASTNodeType.VariableDeclaration;
-  alpha: string;
-  value?: ASTExpression;
+  identifier: string;
+  value?: ASTNode;
   metadata: {
     isConstant: boolean;
   };
 }
 
-export interface ASTAlpha extends ASTStatement {
-  type: ASTNodeType.Alpha;
-  value: string;
-}
-
-export interface ASTString extends ASTStatement {
-  type: ASTNodeType.String;
-  value: string;
-}
-
-export interface ASTNumber extends ASTStatement {
-  type: ASTNodeType.Number;
-  value: number;
-}
-
-export interface ASTFloat extends ASTStatement {
-  type: ASTNodeType.Float;
-  value: number;
-}
-
-export interface ASTBinaryExpression extends ASTStatement {
-  type: ASTNodeType.BinaryExpression;
-  binaryOperator: string;
-  leftExpression: ASTExpression;
-  rightExpression: ASTExpression;
-}
-
-export interface ASTAssignmentExpression extends ASTStatement {
+export interface ASTAssignmentExpression extends ASTNode {
   type: ASTNodeType.AssignmentExpression;
-  value: ASTExpression;
-  assignee: ASTExpression;
+  value: ASTNode;
+  assignee: ASTNode;
 }

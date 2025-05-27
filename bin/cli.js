@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
-import { tokenize } from "../lib/index.js";
+import Lexer from "../lib/index.js";
 
-console.log(tokenize("const ok = 3;"));
+const lexer = new Lexer();
+
+console.log(lexer.toTokens("const ok = 3;"));

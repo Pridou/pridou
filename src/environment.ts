@@ -1,10 +1,11 @@
+import { InvalidVariableError } from "@/errors";
+
 import {
   type InterpreterBoolean,
+  type InterpreterNull,
   type InterpreterValue,
   InterpreterValueType,
-} from "@/types";
-
-import { InvalidAssignmentError, InvalidVariableError } from "./errors";
+} from "@/types/interpreter";
 
 export default class Environment {
   readonly #parent?: Environment;
@@ -16,35 +17,25 @@ export default class Environment {
     this.#constants = [];
     this.#variables = new Map<string, InterpreterValue>();
 
-    this.addVariable(
-      "false",
-      <InterpreterBoolean>{
-        type: InterpreterValueType.Boolean,
-        value: 0,
-      },
-      true,
-    );
-
-    this.addVariable(
-      "true",
-      <InterpreterBoolean>{
-        type: InterpreterValueType.Boolean,
-        value: 1,
-      },
-      true,
-    );
-  }
-
-  private getEnvironment(name: string): Environment {
-    if (this.#variables.get(name)) {
-      return this;
-    }
-
     if (!this.#parent) {
-      throw new InvalidVariableError(`Variable "${name}" is not defined`);
-    }
+      this.addVariable(
+        "false",
+        <InterpreterBoolean>{
+          type: InterpreterValueType.Boolean,
+          value: 0,
+        },
+        true,
+      );
 
-    return this.#parent.getEnvironment(name);
+      this.addVariable(
+        "true",
+        <InterpreterBoolean>{
+          type: InterpreterValueType.Boolean,
+          value: 1,
+        },
+        true,
+      );
+    }
   }
 
   public addVariable(
@@ -52,10 +43,9 @@ export default class Environment {
     value: InterpreterValue,
     isConstant: boolean,
   ): InterpreterValue {
-    if (Object.keys(this.#variables).includes(name)) {
-      throw new InvalidVariableError(
-        `Variable "${name}" has already been declared`,
-      );
+    if (this.#variables.has(name)) {
+      // TODO: Add message
+      throw InvalidVariableError;
     }
 
     this.#variables.set(name, value);
@@ -67,25 +57,59 @@ export default class Environment {
     return value;
   }
 
+  // TODO: Simplify
   public getVariable(name: string): InterpreterValue {
-    const environment: Environment = this.getEnvironment(name);
-
-    // TODO: Upgrade
-    // biome-ignore lint/style/noNonNullAssertion: temp
-    return environment.#variables.get(name)!;
-  }
-
-  public setVariable(name: string, value: InterpreterValue): InterpreterValue {
-    const environment: Environment = this.getEnvironment(name);
-
-    if (environment.#constants.includes(name)) {
-      throw new InvalidAssignmentError(
-        `Cannot reassign variable ${name} as it is a constant.`,
+    if (this.#variables.has(name)) {
+      return (
+        this.#variables.get(name) ??
+        <InterpreterNull>{
+          type: InterpreterValueType.Null,
+          value: null,
+        }
       );
     }
 
-    environment.#variables.set(name, value);
+    if (!this.#parent) {
+      // TODO: Add message
+      throw new Error("InvalidVariableError: Variable not found");
+    }
 
-    return value;
+    let parent: Environment | undefined = this.#parent;
+
+    while (parent) {
+      if (parent.#variables.has(name)) {
+        return (
+          parent.#variables.get(name) ??
+          <InterpreterNull>{
+            type: InterpreterValueType.Null,
+            value: null,
+          }
+        );
+      }
+
+      parent = parent.#parent;
+    }
+
+    // TODO: Add message
+    throw new Error("InvalidVariableError: Variable not found");
+  }
+
+  public setVariable(name: string, value: InterpreterValue): InterpreterValue {
+    if (this.#variables.has(name)) {
+      if (this.#constants.includes(name)) {
+        // TODO: Add message
+        throw InvalidVariableError;
+      }
+
+      this.#variables.set(name, value);
+
+      return value;
+    }
+
+    if (this.#parent) {
+      return this.#parent.setVariable(name, value);
+    }
+
+    throw new Error(`InvalidVariableError: Variable '${name}' not found`);
   }
 }

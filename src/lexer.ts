@@ -1,15 +1,34 @@
-import { type LexerToken, LexerTokenType } from "@/types";
-
 import { InvalidTokenError } from "@/errors";
-import { isAlpha, isNumber } from "@/utils";
 
-const reservedKeywords: { [key: string]: LexerTokenType } = {
-  let: LexerTokenType.Let,
-  const: LexerTokenType.Const,
-};
+import { isIdentifier, isNumber } from "@/utils";
 
-// TODO: Support unicode and hex
-const canBeSkippedValues: Set<string> = new Set<string>([
+import { type LexerToken, LexerTokenType } from "@/types/lexer";
+
+const BASIC_TOKENS: Map<string, LexerTokenType> = new Map([
+  ["%", LexerTokenType.BinaryOperator],
+  ["*", LexerTokenType.BinaryOperator],
+  ["+", LexerTokenType.BinaryOperator],
+  ["-", LexerTokenType.BinaryOperator],
+  ["/", LexerTokenType.BinaryOperator],
+  [".", LexerTokenType.Dot],
+  [",", LexerTokenType.Comma],
+  [":", LexerTokenType.Colon],
+  [";", LexerTokenType.Semicolon],
+  ["(", LexerTokenType.OpeningParenthesis],
+  [")", LexerTokenType.ClosingParenthesis],
+  ["{", LexerTokenType.OpeningCurlyBracket],
+  ["}", LexerTokenType.ClosingCurlyBracket],
+  ["[", LexerTokenType.OpeningSquareBracket],
+  ["]", LexerTokenType.ClosingSquareBracket],
+]);
+
+const RESERVED_TOKENS: Map<string, LexerTokenType> = new Map([
+  ["let", LexerTokenType.Let],
+  ["const", LexerTokenType.Const],
+  ["function", LexerTokenType.Function],
+]);
+
+const SKIPPED_TOKENS: Set<string> = new Set([
   " ",
   "\0",
   "\b",
@@ -21,145 +40,133 @@ const canBeSkippedValues: Set<string> = new Set<string>([
   "\\",
 ]);
 
-function toToken(type: LexerTokenType, value?: string): LexerToken {
-  if (!value) {
-    throw new InvalidTokenError("Invalid or missing token value");
+export default class Lexer {
+  private toToken(type?: LexerTokenType, value?: string): LexerToken {
+    if (!type || (!value && value !== "")) {
+      throw new InvalidTokenError(`Token value is required for type: ${type}`);
+    }
+
+    return { type, value };
   }
 
-  return { type, value };
-}
+  public toTokens(sourceCode: string): LexerToken[] {
+    const tokens: LexerToken[] = [];
+    const source: string[] = sourceCode.split("");
 
-function shouldBeSkipped(value: string): boolean {
-  return canBeSkippedValues.has(value);
-}
+    while (source.length > 0) {
+      if (BASIC_TOKENS.has(source[0])) {
+        tokens.push(this.toToken(BASIC_TOKENS.get(source[0]), source.shift()));
 
-export function tokenize(sourceCode: string): LexerToken[] {
-  const tokens: LexerToken[] = [];
-  const source: string[] = <string[]>sourceCode.split("");
-  let str = "";
-  let isBuildStr = false;
-  let stringDelimiter: string | null = null;
-
-  while (source.length > 0) {
-    switch (source[0]) {
-      case "'":
-      case '"': {
-        const currentDelimiter = source.shift() ?? null;
-
-        if (isBuildStr && currentDelimiter !== stringDelimiter) {
-          str += currentDelimiter;
-          continue;
-        }
-
-        if (isBuildStr) {
-          tokens.push(toToken(LexerTokenType.String, str));
-          str = "";
-          stringDelimiter = null;
-        } else {
-          stringDelimiter = currentDelimiter;
-        }
-
-        isBuildStr = !isBuildStr;
-
-        break;
+        continue;
       }
 
-      case "=":
-        tokens.push(toToken(LexerTokenType.Equals, source.shift()));
-        break;
-      case "%":
-      case "*":
-      case "+":
-      case "-":
-      case "/":
-        tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
-        break;
-      case ",":
-        tokens.push(toToken(LexerTokenType.Comma, source.shift()));
-        break;
-      case ":":
-        tokens.push(toToken(LexerTokenType.Colon, source.shift()));
-        break;
-      case ";":
-        tokens.push(toToken(LexerTokenType.Semicolon, source.shift()));
-        break;
-      case "(":
-        tokens.push(toToken(LexerTokenType.OpeningParenthesis, source.shift()));
-        break;
-      case ")":
-        tokens.push(toToken(LexerTokenType.ClosingParenthesis, source.shift()));
-        break;
-      case "{":
-        tokens.push(
-          toToken(LexerTokenType.OpeningCurlyBracket, source.shift()),
-        );
-        break;
-      case "}":
-        tokens.push(
-          toToken(LexerTokenType.ClosingCurlyBracket, source.shift()),
-        );
-        break;
-      case "[":
-        tokens.push(
-          toToken(LexerTokenType.OpeningSquareBracket, source.shift()),
-        );
-        break;
-      case "]":
-        tokens.push(
-          toToken(LexerTokenType.ClosingSquareBracket, source.shift()),
-        );
-        break;
-      default:
-        if (isBuildStr) {
-          str += source.shift();
+      switch (source[0]) {
+        case '"':
+        case "'": {
+          const quote = source.shift() as string;
+          let string = "";
+
+          while (source.length > 0 && source[0] !== quote) {
+            string += source.shift();
+          }
+
+          if (source[0] !== quote) {
+            throw new InvalidTokenError("Unterminated string literal.");
+          }
+
+          source.shift();
+
+          tokens.push(this.toToken(LexerTokenType.String, string));
 
           break;
         }
+        case "=":
+          if (source[1] === LexerTokenType.Equals) {
+            source.shift();
+            source.shift();
 
-        if (isAlpha(source[0])) {
-          let alpha = "";
+            tokens.push(this.toToken(LexerTokenType.ComparisonOperator, "=="));
 
-          while (source.length > 0 && isAlpha(source[0])) {
-            alpha += source.shift();
+            break;
           }
 
-          tokens.push(
-            toToken(reservedKeywords[alpha] ?? LexerTokenType.Alpha, alpha),
-          );
+          tokens.push(this.toToken(LexerTokenType.Equals, source.shift()));
 
           break;
-        }
+        case "!":
+        case "<":
+        case ">":
+          if (source[1] === LexerTokenType.Equals) {
+            source.shift();
+            source.shift();
 
-        if (isNumber(source[0])) {
-          let number = "";
+            tokens.push(
+              this.toToken(
+                LexerTokenType.ComparisonOperator,
+                `${source.shift()}=`,
+              ),
+            );
 
-          while (source.length > 0 && isNumber(source[0])) {
-            number += source.shift();
+            break;
           }
-          if (source[0] === ".") {
-            number += source.shift();
+
+          tokens.push(this.toToken(LexerTokenType.Equals, source.shift()));
+
+          break;
+        default:
+          if (isNumber(source[0])) {
+            let number = "";
 
             while (source.length > 0 && isNumber(source[0])) {
               number += source.shift();
             }
-            tokens.push(toToken(LexerTokenType.Float, number));
+
+            if (source[0] === LexerTokenType.Dot) {
+              number += source.shift();
+
+              if (isNumber(source[0])) {
+                while (source.length > 0 && isNumber(source[0])) {
+                  number += source.shift();
+                }
+              }
+            }
+
+            tokens.push(this.toToken(LexerTokenType.Number, number));
+
             break;
           }
 
-          tokens.push(toToken(LexerTokenType.Number, number));
-          break;
-        }
+          if (isIdentifier(source[0])) {
+            let identifier = "";
 
-        if (shouldBeSkipped(source[0])) {
-          source.shift();
-          break;
-        }
+            while (source.length > 0 && isIdentifier(source[0])) {
+              identifier += source.shift();
+            }
 
-        throw new InvalidTokenError(`Unrecognized token: '${source[0]}'`);
+            tokens.push(
+              this.toToken(
+                RESERVED_TOKENS.get(identifier) ?? LexerTokenType.Identifier,
+                identifier,
+              ),
+            );
+
+            break;
+          }
+
+          if (SKIPPED_TOKENS.has(source[0])) {
+            source.shift();
+
+            break;
+          }
+
+          throw new InvalidTokenError(`Invalid identifier: ${source[0]}`);
+      }
     }
+
+    tokens.push(
+      this.toToken(LexerTokenType.EndOfFile, LexerTokenType.EndOfFile),
+    );
+
+    return tokens;
   }
-
-  tokens.push(toToken(LexerTokenType.EOF, LexerTokenType.EOF.toString()));
-
-  return tokens;
 }

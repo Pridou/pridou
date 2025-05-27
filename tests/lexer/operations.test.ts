@@ -1,15 +1,89 @@
 import { describe, expect, it } from "vitest";
-import { tokenize } from "../../lib";
+import Lexer from "../../lib";
 import { type LexerToken, LexerTokenType } from "../../lib/types";
 
 const EOF: LexerToken = {
-  type: LexerTokenType.EOF,
-  value: "EOF",
+  type: LexerTokenType.EndOfFile,
+  value: "EndOfFile",
 };
+
+const lexer = new Lexer();
+
+describe("Variables", () => {
+  it("Constant (immut)", () => {
+    const immut = lexer.toTokens("const");
+    const expected: LexerToken[] = [
+      {
+        type: LexerTokenType.Const,
+        value: "const",
+      },
+      EOF,
+    ];
+
+    expect(immut).toStrictEqual(expected);
+  });
+
+  it("Variable (mut)", () => {
+    const mut = lexer.toTokens("let");
+    const expected: LexerToken[] = [
+      {
+        type: LexerTokenType.Let,
+        value: "let",
+      },
+      EOF,
+    ];
+
+    expect(mut).toStrictEqual(expected);
+  });
+});
+
+describe("Assignment and declarations", () => {
+  it("Constant (immut)", () => {
+    const immut = lexer.toTokens("const test;");
+    const expected: LexerToken[] = [
+      {
+        type: LexerTokenType.Const,
+        value: "const",
+      },
+      {
+        type: LexerTokenType.Identifier,
+        value: "test",
+      },
+      {
+        type: LexerTokenType.Semicolon,
+        value: ";",
+      },
+      EOF,
+    ];
+
+    expect(immut).toStrictEqual(expected);
+  });
+
+  it("Variable (mut)", () => {
+    const mut = lexer.toTokens("let test;");
+    const expected: LexerToken[] = [
+      {
+        type: LexerTokenType.Let,
+        value: "let",
+      },
+      {
+        type: LexerTokenType.Identifier,
+        value: "test",
+      },
+      {
+        type: LexerTokenType.Semicolon,
+        value: ";",
+      },
+      EOF,
+    ];
+
+    expect(mut).toStrictEqual(expected);
+  });
+});
 
 describe("BinaryOperations", () => {
   it("Equals", () => {
-    const equals = tokenize("1 == 1");
+    const equals = lexer.toTokens("1 == 1");
     const expected: LexerToken[] = [
       {
         type: LexerTokenType.Number,
@@ -34,7 +108,7 @@ describe("BinaryOperations", () => {
   });
 
   it("Add Numbers", () => {
-    const add = tokenize("21 + 9999");
+    const add = lexer.toTokens("21 + 9999");
     const expected: LexerToken[] = [
       {
         type: LexerTokenType.Number,
@@ -55,7 +129,7 @@ describe("BinaryOperations", () => {
   });
 
   it("Add Strings", () => {
-    const addStr = tokenize('"Im\' " + "testing"');
+    const addStr = lexer.toTokens('"Im\' " + "testing"');
     const expected: LexerToken[] = [
       {
         type: LexerTokenType.String,

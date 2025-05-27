@@ -1,10 +1,15 @@
+import type Environment from "@/environment";
+import type { ASTFunctionDeclaration } from "@/types/ast";
+
 export enum InterpreterValueType {
   Null = "Null",
-  Array = "Array",
 
   Number = "Number",
   Boolean = "Boolean",
+
   String = "String",
+
+  Function = "Function",
 }
 
 export interface InterpreterValue {
@@ -26,12 +31,14 @@ export interface InterpreterBoolean extends InterpreterValue {
   value: number;
 }
 
-export interface InterpreterArray extends InterpreterValue {
-  type: InterpreterValueType.Array;
-  elements: InterpreterValue[];
-}
-
 export interface InterpreterString extends InterpreterValue {
   type: InterpreterValueType.String;
   value: string;
+}
+
+export interface InterpreterFunction extends InterpreterValue {
+  type: InterpreterValueType.Function;
+  value: ASTFunctionDeclaration;
+  parameters: string[];
+  environment: Environment;
 }

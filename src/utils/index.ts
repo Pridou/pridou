@@ -1,4 +1,4 @@
-export function isAlpha(value: string): boolean {
+export function isIdentifier(value: string): boolean {
   return /^[A-Z]$/i.test(value);
 }
 
