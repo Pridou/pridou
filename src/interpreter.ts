@@ -24,7 +24,8 @@ import {
   type InterpreterString,
   type InterpreterValue,
   InterpreterValueType,
-type ASTIfStatement,type InterpreterBoolean} from "@/types";
+type ASTIfStatement,type InterpreterBoolean,
+type InterpreterComparison} from "@/types";
 
 function getArrayIndex(
   array: InterpreterArray,
@@ -373,7 +374,8 @@ export function evaluate(
       const { condition, trueCase, falseCase } = node as ASTIfStatement;
 
       const conditionValue = evaluate(condition, environment);
-      if (conditionValue.type !== InterpreterValueType.Boolean) {
+      if (!isNumeric(conditionValue)) {
+        console.log(conditionValue.type)
         throw new Error("Condition in 'if' must evaluate to a boolean");
       }
 

@@ -2,7 +2,7 @@ mut x = 3;
 
 mut y = 0;
 
-if (x > y) {
+if (!5 < 4) {
   mut x = 7;
 
   y = x;
@@ -14,6 +14,4 @@ mut az = {Nom : "Prenom"};
 mut azb = !true;
 mut azc = azb < 5;
 
-
 y
-
