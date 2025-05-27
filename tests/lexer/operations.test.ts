@@ -1,151 +1,121 @@
 import { describe, expect, it } from "vitest";
-import Lexer from "../../lib";
-import { type LexerToken, LexerTokenType } from "../../lib/types";
-
-const EOF: LexerToken = {
-  type: LexerTokenType.EndOfFile,
-  value: "EndOfFile",
-};
+import Lexer from "../../src/lexer";
+import { T, tokens } from "../utils/lexer";
 
 const lexer = new Lexer();
 
 describe("Variables", () => {
   it("Constant (immut)", () => {
-    const immut = lexer.toTokens("const");
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.Const,
-        value: "const",
-      },
-      EOF,
-    ];
-
-    expect(immut).toStrictEqual(expected);
+    expect(lexer.toTokens("const")).toStrictEqual(tokens([T.Const, "const"]));
   });
 
   it("Variable (mut)", () => {
-    const mut = lexer.toTokens("let");
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.Let,
-        value: "let",
-      },
-      EOF,
-    ];
-
-    expect(mut).toStrictEqual(expected);
+    expect(lexer.toTokens("let")).toStrictEqual(tokens([T.Let, "let"]));
   });
 });
 
 describe("Assignment and declarations", () => {
-  it("Constant (immut)", () => {
-    const immut = lexer.toTokens("const test;");
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.Const,
-        value: "const",
-      },
-      {
-        type: LexerTokenType.Identifier,
-        value: "test",
-      },
-      {
-        type: LexerTokenType.Semicolon,
-        value: ";",
-      },
-      EOF,
-    ];
-
-    expect(immut).toStrictEqual(expected);
+  it("Constant declaration (immut)", () => {
+    expect(lexer.toTokens("const test;")).toStrictEqual(
+      tokens([T.Const, "const"], [T.Identifier, "test"], [T.Semicolon, ";"]),
+    );
   });
 
-  it("Variable (mut)", () => {
-    const mut = lexer.toTokens("let test;");
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.Let,
-        value: "let",
-      },
-      {
-        type: LexerTokenType.Identifier,
-        value: "test",
-      },
-      {
-        type: LexerTokenType.Semicolon,
-        value: ";",
-      },
-      EOF,
-    ];
+  it("Variable declaration (mut)", () => {
+    expect(lexer.toTokens("let test;")).toStrictEqual(
+      tokens([T.Let, "let"], [T.Identifier, "test"], [T.Semicolon, ";"]),
+    );
+  });
 
-    expect(mut).toStrictEqual(expected);
+  it("Assign to const", () => {
+    const result = lexer.toTokens("const x = 5;");
+    const expected = tokens(
+      [T.Const, "const"],
+      [T.Identifier, "x"],
+      [T.Equals, "="],
+      [T.Number, "5"],
+      [T.Semicolon, ";"],
+    );
+
+    expect(result).toStrictEqual(expected);
+  });
+
+  it("Assign to variable", () => {
+    const result = lexer.toTokens("let y = 10;");
+    const expected = tokens(
+      [T.Let, "let"],
+      [T.Identifier, "y"],
+      [T.Equals, "="],
+      [T.Number, "10"],
+      [T.Semicolon, ";"],
+    );
+
+    expect(result).toStrictEqual(expected);
   });
 });
 
 describe("BinaryOperations", () => {
-  it("Equals", () => {
-    const equals = lexer.toTokens("1 == 1");
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.Number,
-        value: "1",
-      },
-      {
-        type: LexerTokenType.Equals,
-        value: "=",
-      },
-      {
-        type: LexerTokenType.Equals,
-        value: "=",
-      },
-      {
-        type: LexerTokenType.Number,
-        value: "1",
-      },
-      EOF,
-    ];
+  it("Greater than", () => {
+    expect(lexer.toTokens("102 > 107")).toStrictEqual(
+      tokens([T.Number, "102"], [T.ComparisonOperator, ">"], [T.Number, "107"]),
+    );
 
-    expect(equals).toStrictEqual(expected);
+    expect(lexer.toTokens("107 >= 107")).toStrictEqual(
+      tokens(
+        [T.Number, "107"],
+        [T.ComparisonOperator, ">="],
+        [T.Number, "107"],
+      ),
+    );
+  });
+
+  it("Lower than", () => {
+    expect(lexer.toTokens("102 < 107")).toStrictEqual(
+      tokens([T.Number, "102"], [T.ComparisonOperator, "<"], [T.Number, "107"]),
+    );
+
+    expect(lexer.toTokens("107 <= 107")).toStrictEqual(
+      tokens(
+        [T.Number, "107"],
+        [T.ComparisonOperator, "<="],
+        [T.Number, "107"],
+      ),
+    );
+  });
+
+  it("Equal", () => {
+    expect(lexer.toTokens("x == 5")).toStrictEqual(
+      tokens(
+        [T.Identifier, "x"],
+        [T.ComparisonOperator, "=="],
+        [T.Number, "5"],
+      ),
+    );
+  });
+
+  it("Not equal", () => {
+    expect(lexer.toTokens("'hello' != 5")).toStrictEqual(
+      tokens(
+        [T.String, "hello"],
+        [T.ComparisonOperator, "!="],
+        [T.Number, "5"],
+      ),
+    );
   });
 
   it("Add Numbers", () => {
-    const add = lexer.toTokens("21 + 9999");
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.Number,
-        value: "21",
-      },
-      {
-        type: LexerTokenType.BinaryOperator,
-        value: "+",
-      },
-      {
-        type: LexerTokenType.Number,
-        value: "9999",
-      },
-      EOF,
-    ];
-
-    expect(add).toStrictEqual(expected);
+    expect(lexer.toTokens("21 + 9999")).toStrictEqual(
+      tokens([T.Number, "21"], [T.BinaryOperator, "+"], [T.Number, "9999"]),
+    );
   });
 
   it("Add Strings", () => {
-    const addStr = lexer.toTokens('"Im\' " + "testing"');
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.String,
-        value: "Im' ",
-      },
-      {
-        type: LexerTokenType.BinaryOperator,
-        value: "+",
-      },
-      {
-        type: LexerTokenType.String,
-        value: "testing",
-      },
-      EOF,
-    ];
-
-    expect(addStr).toStrictEqual(expected);
+    expect(lexer.toTokens('"Im\' " + "testing"')).toStrictEqual(
+      tokens(
+        [T.String, "Im' "],
+        [T.BinaryOperator, "+"],
+        [T.String, "testing"],
+      ),
+    );
   });
 });

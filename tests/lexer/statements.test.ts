@@ -1,14 +1,10 @@
 import { describe, expect, it } from "vitest";
-import Lexer from "../../lib";
-import { type LexerToken, LexerTokenType } from "../../lib/types";
-
-const EOF: LexerToken = {
-  type: LexerTokenType.EndOfFile,
-  value: "EndOfFile",
-};
+import Lexer from "../../src/lexer";
+import { EOF, T, tokens } from "../utils/lexer";
 
 const lexer = new Lexer();
 
+//TODO: Add tests for statements (if, while, else, for)
 describe("Statements", () => {
   it("");
 });

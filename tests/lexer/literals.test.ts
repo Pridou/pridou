@@ -1,152 +1,67 @@
 import { describe, expect, it } from "vitest";
-import Lexer from "../../lib";
-import { type LexerToken, LexerTokenType } from "../../lib/types";
-
-const EOF: LexerToken = {
-  type: LexerTokenType.EndOfFile,
-  value: "EndOfFile",
-};
+import Lexer from "../../src/lexer";
+import { EOF, T, t, tokens } from "../utils/lexer";
 
 const lexer = new Lexer();
 
 describe("Literals", () => {
-  it("Alpha", () => {
-    const alpha = lexer.toTokens("a");
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.Identifier,
-        value: "a",
-      },
-      EOF,
-    ];
-
-    expect(alpha).toStrictEqual(expected);
+  it("Identifier", () => {
+    expect(lexer.toTokens("a")).toStrictEqual(tokens([T.Identifier, "a"]));
   });
 
-  //? Maybe can be better
-  it.skip("Number", () => {
-    const number = lexer.toTokens("10");
-    const expectedNumber: LexerToken[] = [
-      {
-        type: LexerTokenType.Number,
-        value: "10",
-      },
-      EOF,
-    ];
+  it("Number", () => {
+    expect(lexer.toTokens("10")).toStrictEqual(tokens([T.Number, "10"]));
+  });
 
-    expect(number).toStrictEqual(expectedNumber);
-
-    const float = lexer.toTokens("10.2");
-    const expectedFloat: LexerToken[] = [
-      {
-        type: LexerTokenType.Number,
-        value: "10.2",
-      },
-      EOF,
-    ];
-
-    expect(float).toStrictEqual(expectedFloat);
+  it("Float", () => {
+    expect(lexer.toTokens("10.2")).toStrictEqual(tokens([T.Number, "10.2"]));
   });
 
   it("String", () => {
-    const strings = [
-      lexer.toTokens('"Im\' testing now !"'),
-      lexer.toTokens("'hello'"),
-    ];
-    const expected: LexerToken[][] = [
-      [
-        {
-          type: LexerTokenType.String,
-          value: "Im' testing now !",
-        },
-        EOF,
-      ],
-      [
-        {
-          type: LexerTokenType.String,
-          value: "hello",
-        },
-        EOF,
-      ],
-    ];
+    expect(lexer.toTokens('"Im\' testing now !"')).toStrictEqual(
+      tokens([T.String, "Im' testing now !"]),
+    );
 
-    expect(strings[0]).toStrictEqual(expected[0]);
-    expect(strings[1]).toStrictEqual(expected[1]);
+    expect(lexer.toTokens("'hello'")).toStrictEqual(
+      tokens([T.String, "hello"]),
+    );
+  });
+
+  it("SkippedLiterals", () => {
+    expect(lexer.toTokens("   \n\t  ")).toStrictEqual([EOF]);
   });
 });
 
 describe("Structures", () => {
   it("Array", () => {
-    const array = lexer.toTokens("[1, 'hello', \"world\"]");
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.OpeningSquareBracket,
-        value: "[",
-      },
-      {
-        type: LexerTokenType.Number,
-        value: "1",
-      },
-      {
-        type: LexerTokenType.Comma,
-        value: ",",
-      },
-      {
-        type: LexerTokenType.String,
-        value: "hello",
-      },
-      {
-        type: LexerTokenType.Comma,
-        value: ",",
-      },
-      {
-        type: LexerTokenType.String,
-        value: "world",
-      },
-      {
-        type: LexerTokenType.ClosingSquareBracket,
-        value: "]",
-      },
+    const input = "[1, 'hello', \"world\"]";
+    const expected = [
+      t(T.OpeningSquareBracket, "["),
+      t(T.Number, "1"),
+      t(T.Comma, ","),
+      t(T.String, "hello"),
+      t(T.Comma, ","),
+      t(T.String, "world"),
+      t(T.ClosingSquareBracket, "]"),
       EOF,
     ];
 
-    expect(array).toStrictEqual(expected);
+    expect(lexer.toTokens(input)).toStrictEqual(expected);
   });
 
   it("Function", () => {
-    const func = lexer.toTokens("function hello(name) { }");
-    const expected: LexerToken[] = [
-      {
-        type: LexerTokenType.Function,
-        value: "function",
-      },
-      {
-        type: LexerTokenType.Identifier,
-        value: "hello",
-      },
-      {
-        type: LexerTokenType.OpeningParenthesis,
-        value: "(",
-      },
-      {
-        type: LexerTokenType.Identifier,
-        value: "name",
-      },
-      {
-        type: LexerTokenType.ClosingParenthesis,
-        value: ")",
-      },
-      {
-        type: LexerTokenType.OpeningCurlyBracket,
-        value: "{",
-      },
-      {
-        type: LexerTokenType.ClosingCurlyBracket,
-        value: "}",
-      },
+    const input = "function hello(name) { }";
+    const expected = [
+      t(T.Function, "function"),
+      t(T.Identifier, "hello"),
+      t(T.OpeningParenthesis, "("),
+      t(T.Identifier, "name"),
+      t(T.ClosingParenthesis, ")"),
+      t(T.OpeningCurlyBracket, "{"),
+      t(T.ClosingCurlyBracket, "}"),
       EOF,
     ];
 
-    expect(func).toStrictEqual(expected);
+    expect(lexer.toTokens(input)).toStrictEqual(expected);
   });
 });

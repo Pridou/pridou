@@ -81,7 +81,7 @@ export default class Lexer {
           break;
         }
         case "=":
-          if (source[1] === LexerTokenType.Equals) {
+          if (source[1] === "=") {
             source.shift();
             source.shift();
 
@@ -96,10 +96,7 @@ export default class Lexer {
         case "!":
         case "<":
         case ">":
-          if (source[1] === LexerTokenType.Equals) {
-            source.shift();
-            source.shift();
-
+          if (source[1] === "=") {
             tokens.push(
               this.toToken(
                 LexerTokenType.ComparisonOperator,
@@ -107,10 +104,14 @@ export default class Lexer {
               ),
             );
 
+            source.shift();
+
             break;
           }
 
-          tokens.push(this.toToken(LexerTokenType.Equals, source.shift()));
+          tokens.push(
+            this.toToken(LexerTokenType.ComparisonOperator, source.shift()),
+          );
 
           break;
         default:
@@ -121,7 +122,7 @@ export default class Lexer {
               number += source.shift();
             }
 
-            if (source[0] === LexerTokenType.Dot) {
+            if (source[0] === ".") {
               number += source.shift();
 
               if (isNumber(source[0])) {
