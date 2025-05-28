@@ -1,5 +1,5 @@
 import Environment from "@/src/environment";
-import { InvalidNodeError, InvalidTokenError } from "@/src/errs";
+import { InvalidNodeError, InvalidTokenError, RuntimeError } from "@/src/errs";
 import { getNumber, getString, isNumeric, isString } from "@/src/utils";
 import {
   type ASTAlpha,
@@ -15,6 +15,8 @@ import {
   type ASTProgram,
   type ASTStatement,
   type ASTString,
+  type ASTWhileStatement,
+  type ASTBlockStatement,
   type ASTUnaryExpression,
   type ASTVariableDeclaration,
   type InterpreterArray,
@@ -333,6 +335,25 @@ export function evaluate(
       };
     }
 
+    case ASTNodeType.WhileStatement: {
+      const { test, body } = node as ASTWhileStatement;
+
+      while (true) {
+        const condition: InterpreterBoolean = <InterpreterBoolean>(
+          evaluate(test, environment)
+        );
+
+        if (!condition.value) break;
+
+        evaluate(body, environment);
+      }
+
+      return {
+        type: InterpreterValueType.Null,
+        value: null,
+      } as InterpreterNull;
+    }
+
     case ASTNodeType.ObjectAttribute: {
       const object = evaluate((<ASTObjectAttribute>node).object, environment);
       if (object.type !== InterpreterValueType.Object) {
@@ -375,18 +396,17 @@ export function evaluate(
 
       const conditionValue = evaluate(condition, environment);
       if (!isNumeric(conditionValue)) {
-        console.log(conditionValue.type)
         throw new Error("Condition in 'if' must evaluate to a boolean");
       }
 
       const scopedEnv = new Environment(environment);
 
-     if ((conditionValue as InterpreterBoolean).value === 1){
+      if ((conditionValue as InterpreterBoolean).value === 1) {
         return evaluate(trueCase, scopedEnv);
       } else if (falseCase) {
         return evaluate(falseCase, scopedEnv);
       } else {
-       return {
+        return {
           type: InterpreterValueType.Null,
           value: null,
         } as InterpreterNull;
