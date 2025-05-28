@@ -52,7 +52,10 @@ export enum ASTNodeType {
 	Number = "Number",
 
 	String = "String",
+
 	If = "If",
+	Switch = "Switch",
+          Case = "Case",
 
 
 	Array = "Array",
@@ -164,6 +167,19 @@ export interface ASTIfStatement extends ASTStatement {
 export interface ASTBlock extends ASTStatement {
   type: ASTNodeType.Program;
   body: ASTStatement[];
+}
+
+export interface ASTCase extends ASTStatement {
+  type: ASTNodeType.Case;
+  test: ASTExpression; 
+  consequent: ASTBlock; 
+}
+
+export interface ASTSwitchStatement extends ASTStatement {
+  type: ASTNodeType.Switch;
+  discriminant: ASTExpression; 
+  cases: ASTCase[];
+  defaultCase?: ASTBlock; 
 }
 
 

@@ -24,6 +24,12 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
   mut: LexerTokenType.Let,
   if: LexerTokenType.Alpha,
   else: LexerTokenType.Alpha,
+  switch: LexerTokenType.Alpha,
+  case: LexerTokenType.Alpha,
+  default: LexerTokenType.Alpha,
+  break: LexerTokenType.Alpha,
+  
+  
 
   and: LexerTokenType.And,
   or: LexerTokenType.Or,

@@ -24,7 +24,7 @@ import {
   type InterpreterString,
   type InterpreterValue,
   InterpreterValueType,
-type ASTIfStatement,type InterpreterBoolean,
+type ASTIfStatement,type InterpreterBoolean,type ASTSwitchStatement,
 type InterpreterComparison} from "@/types";
 
 function getArrayIndex(
@@ -393,6 +393,38 @@ export function evaluate(
 
       }
 }
+
+case ASTNodeType.Switch: {
+  const { discriminant, cases, defaultCase } = node as ASTSwitchStatement;
+  const value = evaluate(discriminant, environment);
+
+  for (const caseNode of cases) {
+    const caseValue = evaluate(caseNode.test, environment);
+
+  if (
+  value.type === caseValue.type &&
+  (
+    (value.type === InterpreterValueType.Number && (value as InterpreterNumber).value === (caseValue as InterpreterNumber).value) ||
+    (value.type === InterpreterValueType.String && (value as InterpreterString).value === (caseValue as InterpreterString).value)
+  )
+) {
+      const caseEnv = new Environment(environment);
+      return evaluate(caseNode.consequent, caseEnv);
+    }
+  }
+
+  if (defaultCase) {
+    const defaultEnv = new Environment(environment);
+    return evaluate(defaultCase, defaultEnv);
+  }
+
+  return {
+  type: InterpreterValueType.Null,
+  value: null,
+} as InterpreterNull;
+
+}
+
 
 
     default:

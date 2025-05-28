@@ -1,17 +1,21 @@
-mut x = 3;
-
+mut color = "orange";
 mut y = 0;
 
-if (!5 < 4) {
-  mut x = 7;
+switch (color) {
+  case "blue":
+    mut y = 1;
+    y
+    break;
 
-  y = x;
+  case "red":
+    mut y = 2;
+    y
+    break;
+
+  default:
+    mut y = 3;
+    y
 }
 
 
-mut z = "oui";
-mut az = {Nom : "Prenom"};
-mut azb = !true;
-mut azc = azb < 5;
 
-y
