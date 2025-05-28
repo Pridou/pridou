@@ -9,6 +9,8 @@ export enum LexerTokenType {
   Or = "Or",
   Not = "Not",
 
+  BlockStatement = "BlockStatement",
+
   Let = "Let",
   Const = "Const",
   Function = "Function",
@@ -58,6 +60,7 @@ export enum ASTNodeType {
   String = "String",
   If = "If",
   WhileStatement = "WhileStatement",
+  BlockStatement = "BlockStatement",
 
   Array = "Array",
   Index = "Index",
@@ -95,6 +98,11 @@ export interface ASTIndex extends ASTStatement {
   type: ASTNodeType.Index;
   array: ASTExpression;
   index: ASTExpression;
+}
+
+export interface ASTBlockStatement extends ASTStatement {
+  type: ASTNodeType.BlockStatement;
+  body: ASTStatement;
 }
 
 export interface ASTFunctionDeclaration extends ASTStatement {
@@ -166,11 +174,6 @@ export interface ASTIfStatement extends ASTStatement {
   condition: ASTExpression;
   trueCase: ASTStatement;
   falseCase?: ASTStatement;
-}
-
-export interface ASTBlock extends ASTStatement {
-  type: ASTNodeType.Program;
-  body: ASTStatement[];
 }
 
 export interface ASTImport extends ASTStatement {

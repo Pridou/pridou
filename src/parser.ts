@@ -18,6 +18,8 @@ import {
   type ASTVariableDeclaration,
   type ASTModule,
   type ASTImport,
+  type ASTWhileStatement,
+  type ASTBlockStatement,
   type LexerToken,
   LexerTokenType,
   type ASTIfStatement,
@@ -464,6 +466,8 @@ export default class Parser {
       case LexerTokenType.And:
       case LexerTokenType.Or:
         return this.parseComparisonExpression();
+      case LexerTokenType.While:
+        //
       default:
         return this.parseAssignmentExpression();
     }

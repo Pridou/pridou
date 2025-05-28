@@ -8,5 +8,9 @@ if (!5 < 4) {
   y = x;
 }
 
+mut z = {Noam : "Chamouard", Age:15};
 
-y
+while(true){
+  z.Age = z.Age + 1;
+  z;
+}

@@ -1,5 +1,5 @@
 import Environment from "@/src/environment";
-import { InvalidNodeError, InvalidTokenError } from "@/src/errs";
+import { InvalidNodeError, InvalidTokenError, RuntimeError } from "@/src/errs";
 import { getNumber, getString, isNumeric, isString } from "@/src/utils";
 import {
   type ASTAlpha,
@@ -16,6 +16,7 @@ import {
   type ASTStatement,
   type ASTString,
   type ASTWhileStatement,
+  type ASTBlockStatement,
   type ASTUnaryExpression,
   type ASTVariableDeclaration,
   type InterpreterArray,
@@ -335,6 +336,25 @@ export function evaluate(
       };
     }
 
+    case ASTNodeType.WhileStatement: {
+      const { test, body } = node as ASTWhileStatement;
+
+      while (true) {
+        const condition: InterpreterBoolean = <InterpreterBoolean>(
+          evaluate(test, environment)
+        );
+
+        if (!condition.value) break;
+
+        evaluate(body, environment);
+      }
+
+      return {
+        type: InterpreterValueType.Null,
+        value: null,
+      } as InterpreterNull;
+    }
+
     case ASTNodeType.ObjectAttribute: {
       const object = evaluate((<ASTObjectAttribute>node).object, environment);
       if (object.type !== InterpreterValueType.Object) {
@@ -400,7 +420,7 @@ export function evaluate(
       while (true) {
         const condition = evaluate(test, environment);
 
-        if ((!isNumeric(condition))) {
+        if (!isNumeric(condition)) {
           throw new Error("Condition in 'while' must be a boolean");
         }
 

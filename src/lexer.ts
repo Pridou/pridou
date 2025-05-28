@@ -24,6 +24,7 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
   mut: LexerTokenType.Let,
   if: LexerTokenType.Alpha,
   else: LexerTokenType.Alpha,
+  while: LexerTokenType.While,
 
   and: LexerTokenType.And,
   or: LexerTokenType.Or,
