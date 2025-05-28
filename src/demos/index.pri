@@ -6,9 +6,20 @@ if(x < 15){
   x
 }
 
+switch(color){
+  case 'blue':
+    y = 5;
+  
+  case 'red':
+    y = 10;
+  
+  default:
+    y = -1;
+}
+
 while (x < 15) {
   x = x + 1 ;
 }
 
-immut z = 5;
-z
+mut ob = {Noam : "Chamouard"};
+y

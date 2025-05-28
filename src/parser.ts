@@ -469,13 +469,6 @@ export default class Parser {
       return this.parseWhileStatement();
     }
 
-    if (token.type === LexerTokenType.Alpha && token.value === "if") {
-      return this.parseIfStatement();
-    }
-    if (token.type === LexerTokenType.Alpha && token.value === "switch") {
-      return this.parseSwitchStatement();
-    }
-
     switch (token.type) {
       case LexerTokenType.Let:
       case LexerTokenType.Const:
@@ -548,8 +541,7 @@ export default class Parser {
 
     while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
       const token = this.peek();
-
-      if (token.type === LexerTokenType.Alpha && token.value === "case") {
+      if (token.type === LexerTokenType.Case) {
         this.#tokens.shift();
         const test = this.parseExpression();
 
@@ -561,15 +553,12 @@ export default class Parser {
 
         while (
           !(
-            this.peek().type === LexerTokenType.Alpha &&
-            (this.peek().value === "case" || this.peek().value === "default")
+            this.peek().type === LexerTokenType.Case ||
+            this.peek().type === LexerTokenType.Default
           ) &&
           this.peek().type !== LexerTokenType.ClosingCurlyBracket
         ) {
-          if (
-            this.peek().type === LexerTokenType.Alpha &&
-            this.peek().value === "break"
-          ) {
+          if (this.peek().type === LexerTokenType.Break) {
             this.#tokens.shift();
             if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
               throw new InvalidTokenError("Expected ';' after 'break'");
@@ -588,10 +577,7 @@ export default class Parser {
             body: statements,
           },
         });
-      } else if (
-        token.type === LexerTokenType.Alpha &&
-        token.value === "default"
-      ) {
+      } else if (token.type === LexerTokenType.Default) {
         this.#tokens.shift();
 
         if (this.#tokens.shift()?.type !== LexerTokenType.Colon) {
@@ -600,16 +586,10 @@ export default class Parser {
 
         const statements: ASTStatement[] = [];
         while (
-          !(
-            this.peek().type === LexerTokenType.Alpha &&
-            this.peek().value === "case"
-          ) &&
+          !(this.peek().type === LexerTokenType.Case) &&
           this.peek().type !== LexerTokenType.ClosingCurlyBracket
         ) {
-          if (
-            this.peek().type === LexerTokenType.Alpha &&
-            this.peek().value === "break"
-          ) {
+          if (this.peek().type === LexerTokenType.Break) {
             this.#tokens.shift();
             if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
               throw new InvalidTokenError("Expected ';' after 'break'");
@@ -642,8 +622,6 @@ export default class Parser {
   }
 
   private parseWhileStatement(): ASTWhileStatement {
-    console.log("READY TO PARSE WHILE");
-
     this.#tokens.shift();
 
     if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
