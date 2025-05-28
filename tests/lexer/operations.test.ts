@@ -4,16 +4,6 @@ import { T, tokens } from "../utils/lexer";
 
 const lexer = new Lexer();
 
-describe("Variables", () => {
-  it("Constant (immut)", () => {
-    expect(lexer.toTokens("const")).toStrictEqual(tokens([T.Const, "const"]));
-  });
-
-  it("Variable (mut)", () => {
-    expect(lexer.toTokens("let")).toStrictEqual(tokens([T.Let, "let"]));
-  });
-});
-
 describe("Assignment and declarations", () => {
   it("Constant declaration (immut)", () => {
     expect(lexer.toTokens("const test;")).toStrictEqual(
@@ -83,6 +73,26 @@ describe("BinaryOperations", () => {
     );
   });
 
+  it.todo("And", () => {
+    expect(lexer.toTokens("false && true")).toStrictEqual(
+      tokens(
+        [T.Identifier, "false"],
+        [T.ComparisonOperator, "&&"],
+        [T.Identifier, "true"],
+      ),
+    );
+  });
+
+  it.todo("Or", () => {
+    expect(lexer.toTokens("false || true")).toStrictEqual(
+      tokens(
+        [T.Identifier, "false"],
+        [T.ComparisonOperator, "||"],
+        [T.Identifier, "true"],
+      ),
+    );
+  });
+
   it("Equal", () => {
     expect(lexer.toTokens("x == 5")).toStrictEqual(
       tokens(
@@ -106,6 +116,18 @@ describe("BinaryOperations", () => {
   it("Add Numbers", () => {
     expect(lexer.toTokens("21 + 9999")).toStrictEqual(
       tokens([T.Number, "21"], [T.BinaryOperator, "+"], [T.Number, "9999"]),
+    );
+  });
+
+  it("Multiply Numbers", () => {
+    expect(lexer.toTokens("7 * 8")).toStrictEqual(
+      tokens([T.Number, "7"], [T.BinaryOperator, "*"], [T.Number, "8"]),
+    );
+  });
+
+  it("Divide Numbers", () => {
+    expect(lexer.toTokens("100 / 4")).toStrictEqual(
+      tokens([T.Number, "100"], [T.BinaryOperator, "/"], [T.Number, "4"]),
     );
   });
 

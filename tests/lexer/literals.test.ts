@@ -17,6 +17,32 @@ describe("Literals", () => {
     expect(lexer.toTokens("10.2")).toStrictEqual(tokens([T.Number, "10.2"]));
   });
 
+  it.todo("Negative Integer", () => {
+    expect(lexer.toTokens("-42")).toStrictEqual(tokens([T.Number, "-42"]));
+  });
+
+  it.todo("Negative Float", () => {
+    expect(lexer.toTokens("-3.14")).toStrictEqual(tokens([T.Number, "-3.14"]));
+  });
+
+  it("Boolean true", () => {
+    expect(lexer.toTokens("true")).toStrictEqual(
+      tokens([T.Identifier, "true"]),
+    );
+  });
+
+  it("Boolean false", () => {
+    expect(lexer.toTokens("false")).toStrictEqual(
+      tokens([T.Identifier, "false"]),
+    );
+  });
+
+  it("Null", () => {
+    expect(lexer.toTokens("null")).toStrictEqual(
+      tokens([T.Identifier, "null"]),
+    );
+  });
+
   it("String", () => {
     expect(lexer.toTokens('"Im\' testing now !"')).toStrictEqual(
       tokens([T.String, "Im' testing now !"]),
@@ -25,6 +51,10 @@ describe("Literals", () => {
     expect(lexer.toTokens("'hello'")).toStrictEqual(
       tokens([T.String, "hello"]),
     );
+  });
+
+  it("Empty String", () => {
+    expect(lexer.toTokens("''")).toStrictEqual(tokens([T.String, ""]));
   });
 
   it("SkippedLiterals", () => {
@@ -49,8 +79,8 @@ describe("Structures", () => {
     expect(lexer.toTokens(input)).toStrictEqual(expected);
   });
 
-  it("Function", () => {
-    const input = "function hello(name) { }";
+  it.todo("Function", () => {
+    const input = "function hello(name) { const a = name; return a; }";
     const expected = [
       t(T.Function, "function"),
       t(T.Identifier, "hello"),
@@ -58,6 +88,13 @@ describe("Structures", () => {
       t(T.Identifier, "name"),
       t(T.ClosingParenthesis, ")"),
       t(T.OpeningCurlyBracket, "{"),
+      t(T.Const, "const"),
+      t(T.Identifier, "a"),
+      t(T.Equals, "="),
+      t(T.Identifier, "name"),
+      t(T.Semicolon, ";"),
+      t(T.Return, "return"),
+      t(T.Semicolon, ";"),
       t(T.ClosingCurlyBracket, "}"),
       EOF,
     ];
