@@ -227,66 +227,113 @@ export function evaluate(
     }
 
     case ASTNodeType.AssignmentExpression: {
-      const assignee = (<ASTAssignmentExpression>node).assignee;
+  const assignment = node as ASTAssignmentExpression;
+  const assignee = assignment.assignee;
+  const operator = assignment.operator;
+  const newValue = evaluate(assignment.value, environment);
 
-      if (assignee.type === ASTNodeType.ObjectAttribute) {
-        const object = evaluate(
-          (<ASTObjectAttribute>assignee).object,
-          environment
-        );
-        if (object.type !== InterpreterValueType.Object) {
-          throw new InvalidTokenError(
-            "Cannot assign to property of non-object value"
-          );
-        }
+ if (assignee.type === ASTNodeType.Alpha) {
+  const variableName = (<ASTAlpha>assignee).value;
+  const current = environment.getVariable(variableName);
+  const newValue = evaluate((<ASTAssignmentExpression>node).value, environment);
+  const operator = (<ASTAssignmentExpression>node).operator;
 
-        const propertyName = (<ASTAlpha>(<ASTObjectAttribute>assignee).property)
-          .value;
-        const value = evaluate(
-          (<ASTAssignmentExpression>node).value,
-          environment
-        );
+  if (
+    current.type === InterpreterValueType.Number &&
+    newValue.type === InterpreterValueType.Number
+  ) {
+    const left = current as InterpreterNumber;
+    const right = newValue as InterpreterNumber;
 
-        (<InterpreterObject>object).properties[propertyName] = value;
-        (<InterpreterObject>object).environment.setVariable(
-          propertyName,
-          value
-        );
+    let result: InterpreterNumber;
 
-        return value;
-      }
-
-      if (assignee.type === ASTNodeType.Index) {
-        const array = evaluate((<ASTIndex>assignee).array, environment);
-        if (array.type !== InterpreterValueType.Array) {
-          throw new InvalidTokenError(
-            "Cannot assign to index of non-array value"
-          );
-        }
-
-        const value = evaluate(
-          (<ASTAssignmentExpression>node).value,
-          environment
-        );
-        const actualIndex = getArrayIndex(
-          <InterpreterArray>array,
-          (<ASTIndex>assignee).index,
-          environment
-        );
-
-        (<InterpreterArray>array).elements[actualIndex] = value;
-        return value;
-      }
-
-      if (assignee.type === ASTNodeType.Alpha) {
-        return environment.setVariable(
-          (<ASTAlpha>assignee).value,
-          evaluate((<ASTAssignmentExpression>node).value, environment)
-        );
-      }
-
-      throw new InvalidTokenError("Invalid assignment target");
+    switch (operator) {
+      case "+=":
+        result = {
+          type: InterpreterValueType.Number,
+          value: left.value + right.value,
+        };
+        break;
+      case "-=":
+        result = {
+          type: InterpreterValueType.Number,
+          value: left.value - right.value,
+        };
+        break;
+      case "*=":
+        result = {
+          type: InterpreterValueType.Number,
+          value: left.value * right.value,
+        };
+        break;
+      case "/=":
+        result = {
+          type: InterpreterValueType.Number,
+          value: left.value / right.value,
+        };
+        break;
+      case "%=":
+        result = {
+          type: InterpreterValueType.Number,
+          value: left.value % right.value,
+        };
+        break;
+      case "=":
+      default:
+        result = right;
     }
+
+    environment.setVariable(variableName, result);
+    return result;
+  } else {
+    throw new InvalidTokenError("Opérateur composé utilisé sur des types invalides");
+  }
+}
+
+
+  
+  if (assignee.type === ASTNodeType.ObjectAttribute) {
+    const object = evaluate(
+      (assignee as ASTObjectAttribute).object,
+      environment
+    );
+
+    if (object.type !== InterpreterValueType.Object) {
+      throw new InvalidTokenError(
+        "Cannot assign to property of non-object value"
+      );
+    }
+
+    const propertyName = ((assignee as ASTObjectAttribute).property as ASTAlpha).value;
+    (object as InterpreterObject).properties[propertyName] = newValue;
+    (object as InterpreterObject).environment.setVariable(propertyName, newValue);
+
+    return newValue;
+  }
+
+  
+  if (assignee.type === ASTNodeType.Index) {
+    const array = evaluate((assignee as ASTIndex).array, environment);
+    if (array.type !== InterpreterValueType.Array) {
+      throw new InvalidTokenError(
+        "Cannot assign to index of non-array value"
+      );
+    }
+
+    const actualIndex = getArrayIndex(
+      array as InterpreterArray,
+      (assignee as ASTIndex).index,
+      environment
+    );
+
+    (array as InterpreterArray).elements[actualIndex] = newValue;
+    return newValue;
+  }
+
+  throw new InvalidTokenError("Invalid assignment target");
+}
+
+    
 
     case ASTNodeType.String:
       return <InterpreterString>{

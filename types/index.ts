@@ -153,11 +153,16 @@ export interface ASTUnaryExpression extends ASTStatement {
   expression: ASTExpression;
 }
 
-export interface ASTAssignmentExpression extends ASTStatement {
+
+  export interface ASTAssignmentExpression {
   type: ASTNodeType.AssignmentExpression;
-  value: ASTExpression;
   assignee: ASTExpression;
+  value: ASTExpression;
+  operator: "=" | "+=" | "-=" | "*=" | "/=" | "%=";
 }
+
+
+
 
 export interface ASTString extends ASTStatement {
   type: ASTNodeType.String;

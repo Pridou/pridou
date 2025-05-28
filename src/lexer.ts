@@ -127,13 +127,18 @@ export function tokenize(sourceCode: string): LexerToken[] {
         }
         break;
 
-      case "%":
-      case "*":
       case "+":
       case "-":
+      case "*":
       case "/":
-        tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
-        break;
+      case "%":
+  if (source[1] === "=") {
+    tokens.push(toToken(LexerTokenType.Equals, consume(source, 2))); 
+  } else {
+    tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
+  }
+  break;
+
       case ",":
         tokens.push(toToken(LexerTokenType.Comma, source.shift()));
         break;

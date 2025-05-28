@@ -97,21 +97,41 @@ export default class Parser {
 
   private parseAssignmentExpression(): ASTExpression {
     const leftExpression: ASTExpression = this.parseComparisonExpression();
+    
 
-    if (this.peek().type === LexerTokenType.Equals) {
+    if (this.peek().type === LexerTokenType.Equals &&
+  ["=", "+=", "-=", "*=", "/=", "%="].includes(this.peek().value)) {
       this.#tokens.shift();
 
-      const assignment: ASTAssignmentExpression = {
-        type: ASTNodeType.AssignmentExpression,
-        value: this.parseAdditiveExpression(),
-        assignee: leftExpression,
-      };
+     const token = this.peek();
+
+if (
+  token.type === LexerTokenType.Equals &&
+  ["=", "+=", "-=", "*=", "/=", "%="].includes(token.value)
+) {
+  const operator = this.#tokens.shift()?.value as "=" | "+=" | "-=" | "*=" | "/=" | "%=";
+
+
+  const assignment: ASTAssignmentExpression = {
+    type: ASTNodeType.AssignmentExpression,
+    value: this.parseAdditiveExpression(),
+    assignee: leftExpression,
+    operator,
+  };
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+    throw new InvalidTokenError("Expected ';' after assignment expression");
+  }
+
+  return assignment;
+}
+
 
       if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
         throw new InvalidTokenError("Expected ';' after assignment expression");
       }
 
-      return assignment;
+     
     }
 
     return leftExpression;
