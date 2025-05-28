@@ -97,13 +97,13 @@ export default class Parser {
 
   private parseAssignmentExpression(): ASTExpression {
     const leftExpression: ASTExpression = this.parseComparisonExpression();
-
+    
     if (this.peek().type === LexerTokenType.Equals) {
       this.#tokens.shift();
 
       const assignment: ASTAssignmentExpression = {
         type: ASTNodeType.AssignmentExpression,
-        value: this.parsePrimitiveExpression(),
+        value: this.parseAdditiveExpression(),
         assignee: leftExpression,
       };
 
@@ -457,14 +457,15 @@ export default class Parser {
   private parseExpression(): ASTExpression {
     const token = this.peek();
 
+    if (token.type === LexerTokenType.While) {
+      return this.parseWhileStatement();
+    }
+
     if (token.type === LexerTokenType.Alpha && token.value === "if") {
       return this.parseIfStatement();
     }
     if (token.type === LexerTokenType.Alpha && token.value === "switch") {
       return this.parseSwitchStatement();
-    }
-    if (token.type === LexerTokenType.While) {
-      return this.parseWhileStatement();
     }
 
     switch (token.type) {
@@ -633,13 +634,15 @@ export default class Parser {
   }
 
   private parseWhileStatement(): ASTWhileStatement {
+    console.log("READY TO PARSE WHILE");
+
     this.#tokens.shift();
 
     if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
       throw new InvalidTokenError("Expected '(' after 'while'");
     }
 
-    const condition = this.parseExpression();
+    const condition = this.parseComparisonExpression();
 
     if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
       throw new InvalidTokenError("Expected ')' after condition");

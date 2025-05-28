@@ -15,6 +15,12 @@ export enum LexerTokenType {
   Const = "Const",
   Function = "Function",
   While = "While",
+  If = "If",
+  Else = "Else",
+  Switch = "Switch",
+  Case = "Case",
+  Default = "Default",
+  Break = "Break",
 
   String = "String",
 

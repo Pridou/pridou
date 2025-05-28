@@ -22,13 +22,13 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
   immut: LexerTokenType.Const,
   function: LexerTokenType.Function,
   mut: LexerTokenType.Let,
-  if: LexerTokenType.Alpha,
-  else: LexerTokenType.Alpha,
-  switch: LexerTokenType.Alpha,
-  case: LexerTokenType.Alpha,
-  default: LexerTokenType.Alpha,
-  break: LexerTokenType.Alpha,
-  while: LexerTokenType.Alpha,
+  if: LexerTokenType.If,
+  else: LexerTokenType.Else,
+  switch: LexerTokenType.Switch,
+  case: LexerTokenType.Case,
+  default: LexerTokenType.Default,
+  break: LexerTokenType.Break,
+  while: LexerTokenType.While,
   
   
 

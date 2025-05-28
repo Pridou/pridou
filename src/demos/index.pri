@@ -1,9 +1,5 @@
-mut x = 0;
+mut x = 0 ;
 
-while (x < 3) {
-  imut y = x * 2;
-  x = x + 1;
+while (x < 15) {
+  x = x + 1 ;
 }
-
-
-
