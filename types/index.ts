@@ -1,27 +1,30 @@
+import type Environment from "@/src/environment";
+
 // Lexer
 
 export enum LexerTokenType {
 	Alpha = "Alpha",
 	Number = "Number",
+	And = "And",
+	Or = "Or",
+	Not = "Not",
 
 	Let = "Let",
 	Const = "Const",
 	Function = "Function",
+	For = "For",
 
 	String = "String",
-	For = "For",
 
 	Equals = "Equals",
 	BinaryOperator = "BinaryOperator",
-
-	If = "If",
-	Else = "Else",
-	Return = "Return",
+	ComparisonOperator = "ComparisonOperator",
+	ForStatement = "ForStatement",
 
 	Comma = "Comma",
 	Colon = "Colon",
 	Semicolon = "Semicolon",
-
+	Dot = "Dot",
 
 	OpeningParenthesis = "OpeningParenthesis",
 	ClosingParenthesis = "ClosingParenthesis",
@@ -51,40 +54,50 @@ export enum ASTNodeType {
 	Number = "Number",
 
 	String = "String",
-	For = "For",
 
 	Array = "Array",
+	Index = "Index",
+	For = "For",
 
-	
+
 	BinaryExpression = "BinaryExpression",
 	AssignmentExpression = "AssignmentExpression",
-	ForStatement = "ForStatement"
-	
+	UnaryExpression = "UnaryExpression",
+	ForStatement = "ForStatement",
+
+	Object = "Object",
+	ObjectProperty = "ObjectProperty",
+	ObjectAttribute = "Attribute"
 }
 
 export interface ASTStatement {
 	type: ASTNodeType;
 }
 
+export interface ASTForStatement extends ASTStatement {
+	type: ASTNodeType.VariableDeclaration;
+	 initializer: ASTStatement; 
+	 condition: ASTExpression;
+	 increment: ASTExpression;
+	 body: ASTStatement[];
+}
+
 export interface ASTExpression extends ASTStatement {}
-
-
 
 export interface ASTProgram extends ASTStatement {
 	type: ASTNodeType.Program;
 	body: ASTStatement[];
 }
-export interface ASTForStatement extends ASTStatement {
-    type: ASTNodeType.ForStatement;
-    initializer: ASTStatement; 
-    condition: ASTExpression;
-    increment: ASTExpression;
-    body: ASTStatement[];
-}
 
 export interface ASTArray extends ASTStatement {
 	type: ASTNodeType.Array;
 	body: ASTStatement[];
+}
+
+export interface ASTIndex extends ASTStatement {
+  type: ASTNodeType.Index;
+  array: ASTExpression;
+  index: ASTExpression;
 }
 
 export interface ASTFunctionDeclaration extends ASTStatement {
@@ -117,6 +130,12 @@ export interface ASTBinaryExpression extends ASTStatement {
 	rightExpression: ASTExpression;
 }
 
+export interface ASTUnaryExpression extends ASTStatement {
+  type: ASTNodeType.UnaryExpression;
+  operator: string;
+  expression: ASTExpression;
+}
+
 export interface ASTAssignmentExpression extends ASTStatement {
 	type: ASTNodeType.AssignmentExpression;
 	value: ASTExpression;
@@ -128,6 +147,22 @@ export interface ASTString extends ASTStatement {
 	value: string;
 }
 
+export interface ASTObject extends ASTStatement {
+  type: ASTNodeType.Object;
+  properties: { [key: string]: ASTExpression };
+}
+
+export interface ASTObjectProperty extends ASTStatement {
+  type: ASTNodeType.ObjectProperty;
+  key: string;
+  value: ASTExpression;
+}
+
+export interface ASTObjectAttribute extends ASTStatement {
+  type: ASTNodeType.ObjectAttribute;
+  object: ASTExpression;
+  property: ASTExpression;
+}
 
 // Interpreter
 
@@ -137,7 +172,8 @@ export enum InterpreterValueType {
 	Number = "Number",
 	Boolean = "Boolean",
 	String = "String",
-	For = "For",
+	Object = "Object",
+	Comparison = "Comparison"
 }
 
 export interface InterpreterValue {
@@ -167,4 +203,15 @@ export interface InterpreterArray extends InterpreterValue {
 export interface InterpreterString extends InterpreterValue {
 	type: InterpreterValueType.String;
 	value: string;
+}
+
+export interface InterpreterObject extends InterpreterValue {
+  type: InterpreterValueType.Object;
+  properties: { [key: string]: InterpreterValue };
+  environment: Environment;
+}
+
+export interface InterpreterComparison extends InterpreterValue {
+	type: InterpreterValueType.Comparison;
+	value: number;
 }

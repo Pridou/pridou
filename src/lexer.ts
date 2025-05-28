@@ -1,41 +1,60 @@
-import {type LexerToken, LexerTokenType} from "@/types";
-
-import {InvalidTokenError} from "@/src/errs";
-import {isAlpha, isNumber} from "@/src/utils";
-
+import { InvalidTokenError } from "@/src/errs";
+import { isAlpha, isNumber } from "@/src/utils";
+import { type LexerToken, LexerTokenType } from "@/types";
 
 function toToken(type: LexerTokenType, value?: string): LexerToken {
-	if (!value && value !== "") {
-		throw new InvalidTokenError("Invalid or missing token value");
-	}
+  if (!value && value !== "") {
+    throw new InvalidTokenError("Invalid or missing token value");
+  }
 
-	return { type, value };
+  return { type, value };
+}
+
+function consume(source: string[], count: number = 1): string {
+  let result = "";
+  for (let i = 0; i < count; i++) {
+    result += source.shift();
+  }
+  return result;
 }
 
 const reservedKeywords: { [key: string]: LexerTokenType } = {
-	const: LexerTokenType.Const,
+  immut: LexerTokenType.Const,
+  function: LexerTokenType.Function,
+  mut: LexerTokenType.Let,
+  if: LexerTokenType.Alpha,
+  else: LexerTokenType.Alpha,
+  switch: LexerTokenType.Alpha,
+  case: LexerTokenType.Alpha,
+  default: LexerTokenType.Alpha,
+  break: LexerTokenType.Alpha,
+  while: LexerTokenType.Alpha,
+  for: LexerTokenType.For,
+  
+  
 
-	function: LexerTokenType.Function,
-	let: LexerTokenType.Let,
-
-	for: LexerTokenType.For,
+  and: LexerTokenType.And,
+  or: LexerTokenType.Or,
+  import: LexerTokenType.Import,
+  export: LexerTokenType.Export,
+  module: LexerTokenType.Module,
 };
 
 // TODO: Support unicode and hex
 const canBeSkippedValues: Set<string> = new Set<string>([
-	" ",
-	"\0",
-	"\b",
-	"\f",
-	"\n",
-	"\r",
-	"\t",
-	"\v",
-	"\\",
+  " ",
+  "\0",
+  "\b",
+  "\f",
+  "\n",
+  "\r",
+  "\t",
+  "\v",
+  "\\",
 ]);
 
 function shouldBeSkipped(value: string): boolean {
-	return canBeSkippedValues.has(value);
+  return canBeSkippedValues.has(value);
 }
 
 function isCommentStart(source: string[], offset: number = 0): boolean {
@@ -46,16 +65,15 @@ function skipSingleLineComment(source: string[]): void {
     while (source.length > 0 && source[0] !== '\n') {
         source.shift();
     }
-    //pour le saut de ligne
+    
     if (source[0] === '\n') source.shift();
 }
 
 function skipMultiLineComment(source: string[]): void {
-    // Avance jusqu'à trouver '*/'
     while (source.length > 1) {
         if (source[0] === '*' && source[1] === '/') {
-            source.shift(); // *
-            source.shift(); // /
+            source.shift(); 
+            source.shift(); 
             return;
         }
         source.shift();
@@ -63,147 +81,173 @@ function skipMultiLineComment(source: string[]): void {
     throw new InvalidTokenError("Unterminated multi-line comment");
 }
 
+
 export function tokenize(sourceCode: string): LexerToken[] {
-	const tokens: LexerToken[] = [];
-	const source: string[] = <string[]>sourceCode.split("");
+  const tokens: LexerToken[] = [];
+  const source: string[] = sourceCode.split("");
+  let temporaryString: string = "";
+  let isBuildingString: boolean = false;
 
-	let temporaryString: string = "";
-	let isBuildingString: boolean = false;
-	// pour les commentaires
+  while (source.length > 0) {
+    if (isBuildingString) {
+      if (source[0] === '"' || source[0] === "'") {
+        tokens.push(toToken(LexerTokenType.String, temporaryString));
+        temporaryString = "";
+        isBuildingString = false;
+        source.shift();
+        continue;
+      }
+      temporaryString += source.shift();
+      continue;
+    }
 
-	while (source.length > 0) {
-        if (isCommentStart(source)) {
-            source.shift();
-            if (source[0] === '/') {
-                skipSingleLineComment(source);
-            } else if (source[0] === '*') {
-                skipMultiLineComment(source);
-            }
-            continue;
+    switch (source[0]) {
+      case '"':
+      case "'":
+        source.shift();
+        isBuildingString = true;
+        break;
+
+      case "=":
+        if (source[1] == "=") {
+          if (source[2] == "=") {
+            tokens.push(
+              toToken(LexerTokenType.ComparisonOperator, consume(source, 3))
+            );
+          } else {
+            tokens.push(
+              toToken(LexerTokenType.ComparisonOperator, consume(source, 2))
+            );
+          }
+        } else {
+          tokens.push(toToken(LexerTokenType.Equals, source.shift()));
         }
-		switch (source[0]) {
-			case "'":
-			case '"':
-				source.shift();
+        break;
 
-				if (isBuildingString) {
-					tokens.push(toToken(LexerTokenType.String, temporaryString));
-					temporaryString = "";
-				}
+      case "<":
+      case ">":
+        if (source[1] == "=") {
+          tokens.push(
+            toToken(LexerTokenType.ComparisonOperator, consume(source, 2))
+          );
+        } else {
+          tokens.push(
+            toToken(LexerTokenType.ComparisonOperator, source.shift())
+          );
+        }
+        break;
 
-				isBuildingString = !isBuildingString;
+      case "!":
+        if (source[1] == "=") {
+          if (source[2] == "=") {
+            tokens.push(
+              toToken(LexerTokenType.ComparisonOperator, consume(source, 3))
+            );
+          } else {
+            tokens.push(
+              toToken(LexerTokenType.ComparisonOperator, consume(source, 2))
+            );
+          }
+        } else {
+          tokens.push(toToken(LexerTokenType.Not, source.shift()));
+        }
+        break;
 
-				break;
+      case "%":
+      case "*":
+      case "+":
+      case "-":
+      case "/":
+        tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
+        break;
+      case ",":
+        tokens.push(toToken(LexerTokenType.Comma, source.shift()));
+        break;
+      case ".":
+        tokens.push(toToken(LexerTokenType.Dot, source.shift()));
+        break;
+      case ":":
+        tokens.push(toToken(LexerTokenType.Colon, source.shift()));
+        break;
+      case ";":
+        tokens.push(toToken(LexerTokenType.Semicolon, source.shift()));
+        break;
+      case "(":
+        tokens.push(toToken(LexerTokenType.OpeningParenthesis, source.shift()));
+        break;
+      case ")":
+        tokens.push(toToken(LexerTokenType.ClosingParenthesis, source.shift()));
+        break;
+      case "{":
+        tokens.push(
+          toToken(LexerTokenType.OpeningCurlyBracket, source.shift())
+        );
+        break;
+      case "}":
+        tokens.push(
+          toToken(LexerTokenType.ClosingCurlyBracket, source.shift())
+        );
+        break;
+      case "[":
+        tokens.push(
+          toToken(LexerTokenType.OpeningSquareBracket, source.shift())
+        );
+        break;
+      case "]":
+        tokens.push(
+          toToken(LexerTokenType.ClosingSquareBracket, source.shift())
+        );
+        break;
+      default:
+        if (isBuildingString) {
+          temporaryString += source.shift();
 
-			case "=":
-				tokens.push(toToken(LexerTokenType.Equals, source.shift()));
-				break;
-			case "%":
-			case "*":
-			case "+":
-			case "-":
-			case "/":
-				tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
-				break;
-			case ",":
-				tokens.push(toToken(LexerTokenType.Comma, source.shift()));
-				break;
-			case ":":
-				tokens.push(toToken(LexerTokenType.Colon, source.shift()));
-				break;
-			case ";":
-				tokens.push(toToken(LexerTokenType.Semicolon, source.shift()));
-				break;
-			case "(":
-				tokens.push(toToken(LexerTokenType.OpeningParenthesis, source.shift()));
-				break;
-			case ")":
-				tokens.push(toToken(LexerTokenType.ClosingParenthesis, source.shift()));
-				break;
-			case "{":
-				tokens.push(
-					toToken(LexerTokenType.OpeningCurlyBracket, source.shift()),
-				);
-				break;
-			case "}":
-				tokens.push(
-					toToken(LexerTokenType.ClosingCurlyBracket, source.shift()),
-				);
-				break;
-			case "[":
-				tokens.push(
-					toToken(LexerTokenType.OpeningSquareBracket, source.shift()),
-				);
-				break;
-			case "]":
-				tokens.push(
-					toToken(LexerTokenType.ClosingSquareBracket, source.shift()),
-				);
-				break;
-			case "<":
-   				 tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
-   				 break;
-			case ".":
-   				 tokens.push(toToken(LexerTokenType.Semicolon, source.shift()));
-   				 break;
-			
-			default:
-				if (isBuildingString) {
-					temporaryString += source.shift();
+          break;
+        }
 
-					break;
-				}
+        if (isAlpha(source[0])) {
+          let alpha: string = "";
 
-				if (isAlpha(source[0])) {
-					let alpha: string = "";
+          while (source.length > 0 && isAlpha(source[0])) {
+            alpha += source.shift();
+          }
 
-					while (source.length > 0 && isAlpha(source[0])) {
-						alpha += source.shift();
-					}
+          tokens.push(
+            toToken(reservedKeywords[alpha] ?? LexerTokenType.Alpha, alpha)
+          );
 
-					tokens.push(
-						toToken(reservedKeywords[alpha] ?? LexerTokenType.Alpha, alpha),
-					);
+          break;
+        }
 
-					break;
-				}
+        if (isNumber(source[0])) {
+          let number: string = "";
 
-				if (isNumber(source[0])) {
-					let number: string = "";
+          while (
+            source.length > 0 &&
+            (isNumber(source[0]) || source[0] === ".")
+          ) {
+            if (!(source[0] === "." && number.includes("."))) {
+              number += source.shift();
+            }
+          }
 
-					while (source.length > 0 && isNumber(source[0])) {
-						number += source.shift();
-					}
+          tokens.push(toToken(LexerTokenType.Number, number));
+          break;
+        }
 
-					if (source[0] === ".") {
-						number += source.shift();
+        if (shouldBeSkipped(source[0])) {
+          source.shift();
+          break;
+        }
 
-						if (isNumber(source[0])) {
-							while (source.length > 0 && isNumber(source[0])) {
-								number += source.shift();
-							}
+        throw new InvalidTokenError(`Unrecognized token: '${source[0]}'`);
+    }
+  }
 
-							tokens.push(toToken(LexerTokenType.Number, number));
+  if (isBuildingString) {
+    throw new InvalidTokenError("Unterminated string literal");
+  }
 
-							break;
-						}
-					}
-
-					tokens.push(toToken(LexerTokenType.Number, number));
-
-					break;
-				}
-
-				if (shouldBeSkipped(source[0])) {
-					source.shift();
-					break;
-				}
-
-				throw new InvalidTokenError(`Unrecognized token: '${source[0]}'`);
-		}
-	}
-
-	tokens.push(toToken(LexerTokenType.EOF, LexerTokenType.EOF.toString()));
-
-	return tokens;
+  tokens.push(toToken(LexerTokenType.EOF, LexerTokenType.EOF.toString()));
+  return tokens;
 }
