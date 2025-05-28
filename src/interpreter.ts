@@ -29,7 +29,9 @@ import {
 type ASTIfStatement,
 type InterpreterBoolean,
 type ASTSwitchStatement,
-type ASTWhileStatement,type ASTForStatement,
+type ASTWhileStatement,
+type ASTForStatement,
+type ASTForOfStatement,
 type InterpreterComparison} from "@/types";
 
 function getArrayIndex(
@@ -378,7 +380,8 @@ export function evaluate(
 
 
 
-
+/**
+ * 
     case ASTNodeType.Index: {
       const array = evaluate((<ASTIndex>node).array, environment);
       if (array.type !== InterpreterValueType.Array) {
@@ -394,10 +397,11 @@ export function evaluate(
       );
       return (<InterpreterArray>array).elements[actualIndex];
     }
+ */
 
     
 
-    case ASTNodeType.If: {
+   case ASTNodeType.If: {
       const { condition, trueCase, falseCase } = node as ASTIfStatement;
 
       const conditionValue = evaluate(condition, environment);
@@ -497,9 +501,34 @@ case ASTNodeType.While: {
   return result;
 }
 
-
-
-
+case ASTNodeType.ForOf: {
+  const forOfNode = node as ASTForOfStatement;
+  
+  const iterableValue = evaluate(forOfNode.iterable, environment);
+  
+  if (iterableValue.type !== InterpreterValueType.Array) {
+    throw new Error("For...of ne peut itérer que sur des tableaux");
+  }
+  
+  const array = iterableValue as InterpreterArray;
+  const loopEnv = new Environment(environment);
+  
+  for (const element of array.elements) {
+    loopEnv.addVariable(
+      (forOfNode.variable as ASTVariableDeclaration).alpha,
+      element,
+      forOfNode.variable.metadata.isConstant
+    );
+    
+    for (const statement of forOfNode.body) {
+      evaluate(statement, loopEnv);
+    }
+  }
+  
+  return { 
+    type: InterpreterValueType.Null, 
+  };
+}
 
 
     default:

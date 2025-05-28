@@ -26,7 +26,8 @@ type ASTIfStatement,
 type ASTSwitchStatement,
 type ASTCase,
 type ASTWhileStatement,
-type ASTForStatement
+type ASTForStatement,
+type ASTForOfStatement,
 } from "@/types";
 
 const additiveOperators: Set<string> = new Set<string>(["+", "-"]);
@@ -89,20 +90,67 @@ export default class Parser {
         body,
     };
 }
+
+private parseForOfStatement(): ASTForOfStatement {
+  this.#tokens.shift();
+  
+  if (this.peek().type !== LexerTokenType.OpeningParenthesis) {
+    throw new InvalidTokenError("Parenthese '(' attendue apres 'for'");
+  }
+  this.#tokens.shift();
+
+  
+  const variable = this.parseVariableDeclaration();
+  if (variable.type !== ASTNodeType.VariableDeclaration) {
+    throw new InvalidTokenError("Declaration de variable attendue dans for...of");
+  }
+
+ 
+  if (this.peek().type !== LexerTokenType.ForOf) {
+    throw new InvalidTokenError("On attendait un 'of' dans l'instruction for...of");
+  }
+  this.#tokens.shift();
+
+  const iterable = this.parseExpression();
+
+  if (this.peek().type !== LexerTokenType.ClosingParenthesis) {
+    throw new InvalidTokenError("')' attendu après l'entete de for...of");
+  }
+  this.#tokens.shift();
+
+  if (this.peek().type !== LexerTokenType.OpeningCurlyBracket) {
+    throw new InvalidTokenError("'{' apres l'entete de for...of");
+  }
+  this.#tokens.shift();
+
+  const body: ASTStatement[] = [];
+  while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+    body.push(this.parseExpression());
+  }
+
+  this.#tokens.shift();
+
+  return {
+    type: ASTNodeType.ForOf,
+    variable: variable as ASTVariableDeclaration, 
+    iterable,
+    body,
+  };
+}
   private parseVariableDeclaration(): ASTStatement {
     const isConstant: boolean = this.#tokens.shift()?.type === LexerTokenType.Const;
 
     const alpha: string | undefined = this.#tokens.shift()?.value;
 
     if (!alpha) {
-      throw new InvalidTokenError("Expected identifier after let/const");
+      throw new InvalidTokenError("Identifiant attendu apres let/const");
     }
 
     if (this.peek().type === LexerTokenType.Semicolon) {
       this.#tokens.shift();
 
       if (isConstant) {
-        throw new InvalidTokenError("Missing initializer in const declaration");
+        throw new InvalidTokenError("Initialiseur manquant dans la déclaration de const");
       }
 
       return <ASTVariableDeclaration>{
@@ -115,7 +163,7 @@ export default class Parser {
     }
 
     if (this.#tokens.shift()?.type !== LexerTokenType.Equals) {
-      throw new InvalidTokenError("Expected '=' in variable declaration");
+      throw new InvalidTokenError("On attendait un '=' dans la declaration de variable");
     }
 
     const variableDeclaration: ASTVariableDeclaration = {
@@ -128,7 +176,7 @@ export default class Parser {
     };
 
     if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-      throw new InvalidTokenError("Expected ';' after variable declaration");
+      throw new InvalidTokenError("On attendait un ';' apres la declaration de variable");
     }
 
     return variableDeclaration;

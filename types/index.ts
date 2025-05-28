@@ -13,6 +13,7 @@ export enum LexerTokenType {
 	Const = "Const",
 	Function = "Function",
 	For = "For",
+	ForOf = "ForOf",
 
 	String = "String",
 
@@ -58,6 +59,7 @@ export enum ASTNodeType {
 	Array = "Array",
 	Index = "Index",
 	For = "For",
+	ForOf = "ForOf",
 
 
 	BinaryExpression = "BinaryExpression",
@@ -80,6 +82,12 @@ export interface ASTForStatement extends ASTStatement {
 	 condition: ASTExpression;
 	 increment: ASTExpression;
 	 body: ASTStatement[];
+}
+export interface ASTForOfStatement extends ASTStatement {
+  type: ASTNodeType.ForOf;
+  variable: ASTVariableDeclaration; 
+  iterable: ASTExpression;
+  body: ASTStatement[];
 }
 
 export interface ASTExpression extends ASTStatement {}

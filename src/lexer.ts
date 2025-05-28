@@ -38,6 +38,7 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
   import: LexerTokenType.Import,
   export: LexerTokenType.Export,
   module: LexerTokenType.Module,
+  of: LexerTokenType.ForOf,
 };
 
 // TODO: Support unicode and hex
