@@ -18,13 +18,11 @@ import {
   type ASTVariableDeclaration,
   type ASTModule,
   type ASTImport,
-  type ASTWhileStatement,
-  type ASTBlockStatement,
+  type ASTBlock,
   type LexerToken,
   LexerTokenType,
 type ASTIfStatement,
 type ASTSwitchStatement,
-type ASTBlock,
 type ASTCase
 } from "@/types";
 
@@ -328,36 +326,33 @@ export default class Parser {
   }
 
   private parseIfStatement(): ASTIfStatement {
-    this.#tokens.shift();
+  this.#tokens.shift(); // consume "if"
 
-    if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
-      throw new InvalidTokenError("Expected '(' after 'if'");
-    }
-
-    const condition = this.parseExpression();
-
-    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
-      throw new InvalidTokenError("Expected ')' after condition");
-    }
-
-    const trueCase = this.parseBlockStatement();
-
-    let falseCase: ASTStatement | undefined = undefined;
-    if (
-      this.peek()?.type === LexerTokenType.Alpha &&
-      this.peek().value === "else"
-    ) {
-      this.#tokens.shift();
-      falseCase = this.parseBlockStatement();
-    }
-
-    return {
-      type: ASTNodeType.If,
-      condition,
-      trueCase,
-      falseCase,
-    };
+  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
+    throw new InvalidTokenError("Expected '(' after 'if'");
   }
+
+  const condition = this.parseExpression();
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+    throw new InvalidTokenError("Expected ')' after condition");
+  }
+
+  const trueCase = this.parseBlockStatement();
+
+  let falseCase: ASTStatement | undefined = undefined;
+  if (this.peek()?.type === LexerTokenType.Alpha && this.peek().value === "else") {
+    this.#tokens.shift(); // consume "else"
+    falseCase = this.parseBlockStatement(); 
+  }
+
+  return {
+    type: ASTNodeType.If,
+    condition,
+    trueCase,
+    falseCase,
+  };
+}
 
   private parseBlockStatement(): ASTProgram {
     if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
@@ -379,6 +374,8 @@ export default class Parser {
       body,
     };
   }
+
+  
 
   private parseModuleDeclaration(): ASTModule {
     this.#tokens.shift();
@@ -533,55 +530,9 @@ export default class Parser {
     return program;
   }
 
-  private parseIfStatement(): ASTIfStatement {
-  this.#tokens.shift(); // consume "if"
+  
 
-  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
-    throw new InvalidTokenError("Expected '(' after 'if'");
-  }
 
-  const condition = this.parseExpression();
-
-  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
-    throw new InvalidTokenError("Expected ')' after condition");
-  }
-
-  const trueCase = this.parseBlockStatement();
-
-  let falseCase: ASTStatement | undefined = undefined;
-  if (this.peek()?.type === LexerTokenType.Alpha && this.peek().value === "else") {
-    this.#tokens.shift(); // consume "else"
-    falseCase = this.parseBlockStatement(); 
-  }
-
-  return {
-    type: ASTNodeType.If,
-    condition,
-    trueCase,
-    falseCase,
-  };
-}
-
-private parseBlockStatement(): ASTProgram {
-  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
-    throw new InvalidTokenError("Expected '{' at the start of block");
-  }
-
-  const body: ASTStatement[] = [];
-
-  while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
-    body.push(this.parseExpression());
-  }
-
-  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
-    throw new InvalidTokenError("Expected '}' at the end of block");
-  }
-
-  return {
-    type: ASTNodeType.Program,
-    body,
-  };
-}
 
 private parseSwitchStatement(): ASTSwitchStatement {
   this.#tokens.shift(); // consume 'switch'

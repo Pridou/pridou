@@ -62,6 +62,9 @@ export enum ASTNodeType {
 	If = "If",
 	Switch = "Switch",
           Case = "Case",
+	BlockStatement="BlockStatement",
+	Block="Block",
+
 
 
   Array = "Array",
@@ -102,7 +105,7 @@ export interface ASTIndex extends ASTStatement {
   index: ASTExpression;
 }
 
-export interface ASTBlockStatement extends ASTStatement {
+export interface ASTBlock extends ASTStatement {
   type: ASTNodeType.BlockStatement;
   body: ASTStatement;
 }

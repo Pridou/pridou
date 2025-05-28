@@ -15,8 +15,7 @@ import {
   type ASTProgram,
   type ASTStatement,
   type ASTString,
-  type ASTWhileStatement,
-  type ASTBlockStatement,
+  type ASTBlock,
   type ASTUnaryExpression,
   type ASTVariableDeclaration,
   type InterpreterArray,
@@ -335,24 +334,7 @@ export function evaluate(
       };
     }
 
-    case ASTNodeType.WhileStatement: {
-      const { test, body } = node as ASTWhileStatement;
-
-      while (true) {
-        const condition: InterpreterBoolean = <InterpreterBoolean>(
-          evaluate(test, environment)
-        );
-
-        if (!condition.value) break;
-
-        evaluate(body, environment);
-      }
-
-      return {
-        type: InterpreterValueType.Null,
-        value: null,
-      } as InterpreterNull;
-    }
+    
 
     case ASTNodeType.ObjectAttribute: {
       const object = evaluate((<ASTObjectAttribute>node).object, environment);
