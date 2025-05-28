@@ -15,6 +15,7 @@ import {
   type ASTProgram,
   type ASTStatement,
   type ASTString,
+  type ASTBlockStatement,
   type ASTBlock,
   type ASTUnaryExpression,
   type ASTVariableDeclaration,
@@ -357,6 +358,24 @@ export function evaluate(
       return property;
     }
 
+  case ASTNodeType.Block: {
+  const block = node as ASTBlock;
+
+  let result: InterpreterValue = {
+    type: InterpreterValueType.Null,
+    value: null,
+  }as InterpreterNull;
+
+  for (const stmt of block.body) {
+    result = evaluate(stmt, environment);
+  }
+
+  return result;
+}
+
+
+
+
     case ASTNodeType.Index: {
       const array = evaluate((<ASTIndex>node).array, environment);
       if (array.type !== InterpreterValueType.Array) {
@@ -372,6 +391,8 @@ export function evaluate(
       );
       return (<InterpreterArray>array).elements[actualIndex];
     }
+
+    
 
     case ASTNodeType.If: {
       const { condition, trueCase, falseCase } = node as ASTIfStatement;

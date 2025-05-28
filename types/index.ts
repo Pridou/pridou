@@ -105,10 +105,12 @@ export interface ASTIndex extends ASTStatement {
   index: ASTExpression;
 }
 
-export interface ASTBlock extends ASTStatement {
+
+export interface ASTBlockStatement {
   type: ASTNodeType.BlockStatement;
-  body: ASTStatement;
+  body: ASTStatement[];
 }
+
 
 export interface ASTFunctionDeclaration extends ASTStatement {
   type: ASTNodeType.FunctionDeclaration;
@@ -195,6 +197,11 @@ export interface ASTExport extends ASTStatement {
 export interface ASTModule extends ASTStatement {
   type: ASTNodeType.Module;
   name: string;
+  body: ASTStatement[];
+}
+
+export interface ASTBlock {
+  type: ASTNodeType.Block;
   body: ASTStatement[];
 }
 

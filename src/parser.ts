@@ -18,6 +18,7 @@ import {
   type ASTVariableDeclaration,
   type ASTModule,
   type ASTImport,
+  type ASTBlockStatement,
   type ASTBlock,
   type LexerToken,
   LexerTokenType,
@@ -354,7 +355,7 @@ export default class Parser {
   };
 }
 
-  private parseBlockStatement(): ASTProgram {
+  private parseBlockStatement(): ASTBlock {
     if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
       throw new InvalidTokenError("Expected '{' at the start of block");
     }
@@ -368,11 +369,12 @@ export default class Parser {
     if (this.#tokens.shift()?.type !== LexerTokenType.ClosingCurlyBracket) {
       throw new InvalidTokenError("Expected '}' at the end of block");
     }
-
     return {
-      type: ASTNodeType.Program,
-      body,
-    };
+  type: ASTNodeType.Block,
+  body,
+};
+
+    
   }
 
   
@@ -588,7 +590,7 @@ private parseSwitchStatement(): ASTSwitchStatement {
         type: ASTNodeType.Case,
         test,
         consequent: {
-          type: ASTNodeType.Program,
+          type: ASTNodeType.Block,
           body: statements
         }
       });
@@ -618,7 +620,7 @@ private parseSwitchStatement(): ASTSwitchStatement {
       }
 
       defaultCase = {
-        type: ASTNodeType.Program,
+        type: ASTNodeType.Block,
         body: statements
       };
     } else {

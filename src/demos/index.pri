@@ -1,4 +1,4 @@
-mut color = "orange";
+mut color = "red";
 mut y = 0;
 
 switch (color) {
