@@ -10,6 +10,8 @@ export enum ASTNodeType {
 
   BinaryExpression = "BinaryExpression",
 
+  ReturnStatement = "ReturnStatement",
+
   FunctionCall = "FunctionCall",
   FunctionDeclaration = "FunctionDeclaration",
   VariableDeclaration = "VariableDeclaration",
@@ -45,6 +47,11 @@ export interface ASTBinaryExpression extends ASTNode {
   binaryOperator: string;
   leftExpression: ASTNode;
   rightExpression: ASTNode;
+}
+
+export interface ASTReturnStatement extends ASTNode {
+  type: ASTNodeType.ReturnStatement;
+  value: ASTNode;
 }
 
 export interface ASTFunctionCall extends ASTNode {

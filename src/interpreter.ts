@@ -13,6 +13,7 @@ import {
   ASTNodeType,
   type ASTNumber,
   type ASTProgram,
+  type ASTReturnStatement,
   type ASTString,
   type ASTVariableDeclaration,
 } from "@/types/ast";
@@ -110,18 +111,44 @@ export default class Interpreter {
           },
         );
 
-        let result: InterpreterValue = {
-          type: InterpreterValueType.Null,
-          value: null,
-        } as InterpreterNull;
-
         for (const statement of (<ASTFunctionDeclaration>(
           (<InterpreterFunction>functionValue).value
         )).body) {
-          result = this.evaluateNode(statement, functionEnvironment);
+          if (statement.type === ASTNodeType.ReturnStatement) {
+            const returnValue: InterpreterValue = this.evaluateNode(
+              (<ASTReturnStatement>statement).value,
+              functionEnvironment,
+            );
+
+            return returnValue;
+          }
+
+          this.evaluateNode(statement, functionEnvironment);
         }
 
-        return result;
+        return {
+          type: InterpreterValueType.Null,
+          value: null,
+        } as InterpreterNull;
+      }
+      case ASTNodeType.ReturnStatement: {
+        const returnStatement = <ASTReturnStatement>node;
+        const returnValue = this.evaluateNode(
+          returnStatement.value,
+          environment,
+        );
+
+        if (returnValue.type !== InterpreterValueType.Number) {
+          throw new InvalidNodeError(
+            `Expected a number as return value, but got ${returnValue.type}.`,
+          );
+        }
+
+        const exitCode = (<ASTNumber>(<unknown>returnValue)).value;
+
+        //TODO: Temporary solution to exit the process
+        process.exit(exitCode);
+        break;
       }
       case ASTNodeType.VariableDeclaration: {
         const variableDeclaration: ASTVariableDeclaration = <
@@ -129,7 +156,14 @@ export default class Interpreter {
         >node;
 
         if (!variableDeclaration.value) {
-          throw new InvalidNodeError("Variable declaration must have a value.");
+          return environment.addVariable(
+            variableDeclaration.identifier,
+            {
+              type: InterpreterValueType.Null,
+              value: null,
+            } as InterpreterNull,
+            variableDeclaration.metadata.isConstant,
+          );
         }
 
         return environment.addVariable(
@@ -144,7 +178,7 @@ export default class Interpreter {
           this.evaluateNode((<ASTAssignmentExpression>node).value, environment),
         );
       case ASTNodeType.BinaryExpression: {
-        const binaryExpression: ASTBinaryExpression = <ASTBinaryExpression>node;
+        const binaryExpression = <ASTBinaryExpression>node;
 
         const leftHandSideExpression: InterpreterValue = this.evaluateNode(
           (<ASTBinaryExpression>node).leftExpression,
@@ -155,7 +189,7 @@ export default class Interpreter {
           environment,
         );
 
-        // TODO: Add type-checking (number)
+        //! Not a number all the time !
         const leftValue: number = (<InterpreterNumber>leftHandSideExpression)
           .value;
         const rightValue: number = (<InterpreterNumber>rightHandSideExpression)
@@ -185,8 +219,19 @@ export default class Interpreter {
             );
         }
 
+        if (Number.isNaN(value)) {
+          throw new InvalidNodeError(
+            `Invalid operation: ${leftValue} ${binaryExpression.binaryOperator} ${rightValue}`,
+          );
+        }
+
+        const type =
+          typeof value === "number"
+            ? InterpreterValueType.Number
+            : InterpreterValueType.String;
+
         return <InterpreterNumber>{
-          type: InterpreterValueType.Number,
+          type: type,
           value,
         };
       }

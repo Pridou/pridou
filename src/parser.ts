@@ -13,6 +13,7 @@ import {
   ASTNodeType,
   type ASTNumber,
   type ASTProgram,
+  type ASTReturnStatement,
   type ASTString,
   type ASTVariableDeclaration,
 } from "@/types/ast";
@@ -285,6 +286,25 @@ export default class Parser {
     return leftExpression;
   }
 
+  private parseReturnStatement(): ASTNode {
+    this.#tokens.shift();
+
+    const isSemicolon = this.peek().type === LexerTokenType.Semicolon;
+
+    const returnStatement: ASTReturnStatement = {
+      type: ASTNodeType.ReturnStatement,
+      value: isSemicolon
+        ? <ASTNumber>{ type: ASTNodeType.Number, value: 0 }
+        : this.parseAdditiveExpression(),
+    };
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+      throw new InvalidTokenError("Expected ';' after return statement.");
+    }
+
+    return returnStatement;
+  }
+
   private parseNode(): ASTNode {
     switch (this.peek().type) {
       case LexerTokenType.Let:
@@ -292,6 +312,8 @@ export default class Parser {
         return this.parseVariableDeclaration();
       case LexerTokenType.Function:
         return this.parseFunctionDeclaration();
+      case LexerTokenType.Return:
+        return this.parseReturnStatement();
       default:
         return this.parseAssignmentExpression();
     }

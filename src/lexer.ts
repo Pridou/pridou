@@ -26,6 +26,7 @@ const RESERVED_TOKENS: Map<string, LexerTokenType> = new Map([
   ["let", LexerTokenType.Let],
   ["const", LexerTokenType.Const],
   ["function", LexerTokenType.Function],
+  ["return", LexerTokenType.Return],
 ]);
 
 const SKIPPED_TOKENS: Set<string> = new Set([
@@ -41,11 +42,7 @@ const SKIPPED_TOKENS: Set<string> = new Set([
 ]);
 
 export default class Lexer {
-  private toToken(type?: LexerTokenType, value?: string): LexerToken {
-    if (!type || (!value && value !== "")) {
-      throw new InvalidTokenError(`Token value is required for type: ${type}`);
-    }
-
+  private toToken(type: LexerTokenType, value: string): LexerToken {
     return { type, value };
   }
 
@@ -55,7 +52,12 @@ export default class Lexer {
 
     while (source.length > 0) {
       if (BASIC_TOKENS.has(source[0])) {
-        tokens.push(this.toToken(BASIC_TOKENS.get(source[0]), source.shift()));
+        tokens.push(
+          this.toToken(
+            <LexerTokenType>BASIC_TOKENS.get(source[0]),
+            <string>source.shift(),
+          ),
+        );
 
         continue;
       }
@@ -63,7 +65,7 @@ export default class Lexer {
       switch (source[0]) {
         case '"':
         case "'": {
-          const quote = source.shift() as string;
+          const quote = <string>source.shift();
           let string = "";
 
           while (source.length > 0 && source[0] !== quote) {
@@ -90,7 +92,9 @@ export default class Lexer {
             break;
           }
 
-          tokens.push(this.toToken(LexerTokenType.Equals, source.shift()));
+          tokens.push(
+            this.toToken(LexerTokenType.Equals, <string>source.shift()),
+          );
 
           break;
         case "!":
@@ -110,7 +114,10 @@ export default class Lexer {
           }
 
           tokens.push(
-            this.toToken(LexerTokenType.ComparisonOperator, source.shift()),
+            this.toToken(
+              LexerTokenType.ComparisonOperator,
+              <string>source.shift(),
+            ),
           );
 
           break;

@@ -59,18 +59,16 @@ describe("Assignment and declarations", () => {
     expect(input).toStrictEqual({ type: "Number", value: 16 });
   });
 
-  //! This test can't be better, for now
   it("Return top level", () => {
     expect(() =>
       interpreter.evaluateSourceCode("let ok = 1; ok = 3; return ok+2;"),
-    ).toThrow();
+    ).toThrow(new Error('process.exit unexpectedly called with "5"'));
   });
 
-  //! This test can't be better, for now
-  //TODO: Fix this test
-  it.todo("Return top level without exit code", () => {
-    interpreter.evaluateSourceCode("return;");
-    expect(() => interpreter.evaluateSourceCode("return;")).toThrow();
+  it("Return top level without exit code", () => {
+    expect(() => interpreter.evaluateSourceCode("return;")).toThrow(
+      new Error('process.exit unexpectedly called with "0"'),
+    );
   });
 });
 

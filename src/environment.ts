@@ -35,6 +35,15 @@ export default class Environment {
         },
         true,
       );
+
+      this.addVariable(
+        "null",
+        <InterpreterNull>{
+          type: InterpreterValueType.Null,
+          value: null,
+        },
+        true,
+      );
     }
   }
 
