@@ -15,7 +15,6 @@ import {
   type ASTProgram,
   type ASTStatement,
   type ASTString,
-  type ASTBlockStatement,
   type ASTBlock,
   type ASTUnaryExpression,
   type ASTVariableDeclaration,
@@ -29,8 +28,7 @@ import {
 type ASTIfStatement,
 type InterpreterBoolean,
 type ASTSwitchStatement,
-type ASTWhileStatement,
-type InterpreterComparison} from "@/types";
+type ASTWhileStatement} from "@/types";
 
 function getArrayIndex(
   array: InterpreterArray,
