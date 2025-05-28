@@ -62,6 +62,9 @@ export enum ASTNodeType {
 	If = "If",
 	Switch = "Switch",
           Case = "Case",
+
+	While = "While",
+
 	BlockStatement="BlockStatement",
 	Block="Block",
 
@@ -217,6 +220,13 @@ export interface ASTSwitchStatement extends ASTStatement {
   cases: ASTCase[];
   defaultCase?: ASTBlock; 
 }
+
+export interface ASTWhileStatement extends ASTStatement {
+  type: ASTNodeType.While;
+  condition: ASTExpression;
+  body: ASTBlock;
+}
+
 
 
 

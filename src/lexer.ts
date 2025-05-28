@@ -28,6 +28,7 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
   case: LexerTokenType.Alpha,
   default: LexerTokenType.Alpha,
   break: LexerTokenType.Alpha,
+  while: LexerTokenType.Alpha,
   
   
 

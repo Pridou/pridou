@@ -26,7 +26,10 @@ import {
   type InterpreterString,
   type InterpreterValue,
   InterpreterValueType,
-type ASTIfStatement,type InterpreterBoolean,type ASTSwitchStatement,
+type ASTIfStatement,
+type InterpreterBoolean,
+type ASTSwitchStatement,
+type ASTWhileStatement,
 type InterpreterComparison} from "@/types";
 
 function getArrayIndex(
@@ -447,6 +450,23 @@ case ASTNodeType.Switch: {
 } as InterpreterNull;
 
 }
+
+
+case ASTNodeType.While: {
+  const { condition, body } = node as ASTWhileStatement;
+
+  let result: InterpreterValue = { type: InterpreterValueType.Null, value: null } as InterpreterNull;
+
+  while ((evaluate(condition, environment) as InterpreterBoolean).value === 1) {
+    const loopEnv = new Environment(environment); 
+    result = evaluate(body, loopEnv);
+  }
+
+  return result;
+}
+
+
+
 
 
 

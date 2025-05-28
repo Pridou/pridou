@@ -24,7 +24,8 @@ import {
   LexerTokenType,
 type ASTIfStatement,
 type ASTSwitchStatement,
-type ASTCase
+type ASTCase,
+type ASTWhileStatement
 } from "@/types";
 
 const additiveOperators: Set<string> = new Set<string>(["+", "-"]);
@@ -201,6 +202,7 @@ export default class Parser {
         if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
           throw new InvalidTokenError("Expected ')' after expression");
         }
+        
         break;
       }
 
@@ -464,6 +466,10 @@ export default class Parser {
   if (token.type === LexerTokenType.Alpha && token.value === "switch") {
   return this.parseSwitchStatement();
 }
+if (token.type === LexerTokenType.While) {
+  return this.parseWhileStatement();
+}
+
 
 
     switch (token.type) {
@@ -473,7 +479,7 @@ export default class Parser {
       case LexerTokenType.And:
       case LexerTokenType.Or:
         return this.parseComparisonExpression();
-      case LexerTokenType.While:
+      case LexerTokenType.Alpha:
         //
       default:
         return this.parseAssignmentExpression();
@@ -637,6 +643,29 @@ private parseSwitchStatement(): ASTSwitchStatement {
     defaultCase,
   };
 }
+
+private parseWhileStatement(): ASTWhileStatement {
+  this.#tokens.shift(); // consume 'while'
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
+    throw new InvalidTokenError("Expected '(' after 'while'");
+  }
+
+  const condition = this.parseExpression();
+
+  if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+    throw new InvalidTokenError("Expected ')' after condition");
+  }
+
+  const body = this.parseBlockStatement(); // returns ASTProgram, but compatible avec ASTBlock
+
+  return {
+    type: ASTNodeType.While,
+    condition,
+    body,
+  };
+}
+
 
 
 
