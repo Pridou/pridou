@@ -92,7 +92,7 @@ export interface ASTWhileStatement extends ASTStatement{
 
 export interface ASTBlockStatement extends ASTStatement{
 	type: ASTNodeType.BlockStatement;
-	body: ASTStatement;
+	body: ASTStatement[];
 }
 
 
@@ -126,7 +126,7 @@ export enum InterpreterValueType {
 
 	Number = "Number",
 	Boolean = "Boolean",
-	//String ="String",
+	
 }
 
 export interface InterpreterValue {
@@ -151,14 +151,8 @@ export interface InterpreterBoolean extends InterpreterValue {
 
 
 
-/*export interface ASTString {
-	type: ASTNodeType.String;
-	value: string;
-}*/
 
-/*export interface InterpreterString extends InterpreterValue {
-	type: InterpreterValueType.String;
-	value: string;
-}*/
+
+
 
 
