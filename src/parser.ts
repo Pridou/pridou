@@ -97,7 +97,7 @@ export default class Parser {
 
   private parseAssignmentExpression(): ASTExpression {
     const leftExpression: ASTExpression = this.parseComparisonExpression();
-    
+
     if (this.peek().type === LexerTokenType.Equals) {
       this.#tokens.shift();
 
@@ -184,6 +184,14 @@ export default class Parser {
           type: ASTNodeType.String,
           value: stringToken?.value,
         };
+        break;
+
+      case LexerTokenType.If:
+        expression = this.parseIfStatement();
+        break;
+
+      case LexerTokenType.Switch:
+        expression = this.parseSwitchStatement();
         break;
 
       case LexerTokenType.Not:
@@ -328,7 +336,7 @@ export default class Parser {
   }
 
   private parseIfStatement(): ASTIfStatement {
-    this.#tokens.shift(); // consume "if"
+    this.#tokens.shift();
 
     if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
       throw new InvalidTokenError("Expected '(' after 'if'");
@@ -344,10 +352,10 @@ export default class Parser {
 
     let falseCase: ASTStatement | undefined = undefined;
     if (
-      this.peek()?.type === LexerTokenType.Alpha &&
+      this.peek()?.type === LexerTokenType.Else &&
       this.peek().value === "else"
     ) {
-      this.#tokens.shift(); // consume "else"
+      this.#tokens.shift();
       falseCase = this.parseBlockStatement();
     }
 

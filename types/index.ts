@@ -63,18 +63,16 @@ export enum ASTNodeType {
   Alpha = "Alpha",
   Number = "Number",
 
-	String = "String",
+  String = "String",
 
-	If = "If",
-	Switch = "Switch",
-          Case = "Case",
+  If = "If",
+  Switch = "Switch",
+  Case = "Case",
 
-	While = "While",
+  While = "While",
 
-	BlockStatement="BlockStatement",
-	Block="Block",
-
-
+  BlockStatement = "BlockStatement",
+  Block = "Block",
 
   Array = "Array",
   Index = "Index",
@@ -114,12 +112,10 @@ export interface ASTIndex extends ASTStatement {
   index: ASTExpression;
 }
 
-
 export interface ASTBlockStatement {
   type: ASTNodeType.BlockStatement;
   body: ASTStatement[];
 }
-
 
 export interface ASTFunctionDeclaration extends ASTStatement {
   type: ASTNodeType.FunctionDeclaration;
@@ -216,15 +212,15 @@ export interface ASTBlock {
 
 export interface ASTCase extends ASTStatement {
   type: ASTNodeType.Case;
-  test: ASTExpression; 
-  consequent: ASTBlock; 
+  test: ASTExpression;
+  consequent: ASTBlock;
 }
 
 export interface ASTSwitchStatement extends ASTStatement {
   type: ASTNodeType.Switch;
-  discriminant: ASTExpression; 
+  discriminant: ASTExpression;
   cases: ASTCase[];
-  defaultCase?: ASTBlock; 
+  defaultCase?: ASTBlock;
 }
 
 export interface ASTWhileStatement extends ASTStatement {
@@ -232,9 +228,6 @@ export interface ASTWhileStatement extends ASTStatement {
   condition: ASTExpression;
   body: ASTBlock;
 }
-
-
-
 
 // Interpreter
 
