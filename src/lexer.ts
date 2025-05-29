@@ -25,6 +25,7 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
   if: LexerTokenType.If,
   else: LexerTokenType.Else,
   switch: LexerTokenType.Switch,
+  for: LexerTokenType.For,
   case: LexerTokenType.Case,
   default: LexerTokenType.Default,
   break: LexerTokenType.Break,

@@ -25,6 +25,7 @@ import {
   type ASTSwitchStatement,
   type ASTCase,
   type ASTWhileStatement,
+  type ASTForStatement,
 } from "@/types";
 
 const additiveOperators: Set<string> = new Set<string>(["+", "-"]);
@@ -95,7 +96,7 @@ export default class Parser {
     return variableDeclaration;
   }
 
-  private parseAssignmentExpression(): ASTExpression {
+  private parseAssignmentExpression(expectedSemicolon = true): ASTExpression {
     const leftExpression: ASTExpression = this.parseComparisonExpression();
 
     const token = this.peek();
@@ -114,8 +115,12 @@ export default class Parser {
 
       const value = this.parseAdditiveExpression();
 
-      if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-        throw new InvalidTokenError("Expected ';' after assignment expression");
+      if (expectedSemicolon) {
+        if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+          throw new InvalidTokenError(
+            "Expected ';' after assignment expression"
+          );
+        }
       }
 
       return {
@@ -204,6 +209,10 @@ export default class Parser {
 
       case LexerTokenType.Switch:
         expression = this.parseSwitchStatement();
+        break;
+
+      case LexerTokenType.For:
+        expression = this.parseForStatement();
         break;
 
       case LexerTokenType.Not:
@@ -327,15 +336,12 @@ export default class Parser {
 
   private parseMultiplicativeExpression(): ASTExpression {
     let leftExpression: ASTExpression = this.parsePrimitiveExpression();
-
     while (multiplicativeOperators.has(this.peek()?.value)) {
       const binaryOperator: string | undefined = this.#tokens.shift()?.value;
       if (!binaryOperator) {
         throw new InvalidTokenError("Expected binary operator");
       }
-
       const rightExpression: ASTExpression = this.parsePrimitiveExpression();
-
       leftExpression = <ASTBinaryExpression>{
         type: ASTNodeType.BinaryExpression,
         binaryOperator,
@@ -651,6 +657,59 @@ export default class Parser {
     return {
       type: ASTNodeType.While,
       condition,
+      body,
+    };
+  }
+
+  private parseForInitializer(): ASTStatement | null {
+    const nextToken = this.#tokens[0];
+    if (!nextToken) return null;
+
+    if (nextToken.type === LexerTokenType.Let) {
+      return this.parseVariableDeclaration();
+    }
+
+    if (nextToken.type !== LexerTokenType.Semicolon) {
+      return this.parseExpression();
+    }
+
+    return null;
+  }
+
+  private parseForStatement(): ASTForStatement {
+    const token = this.#tokens.shift();
+    if (!token || token.value !== "for") {
+      throw new InvalidTokenError("Expected 'for' keyword");
+    }
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
+      throw new InvalidTokenError("Expected '(' after 'for'");
+    }
+
+    const initializer = this.parseForInitializer();
+    if (initializer?.type === ASTNodeType.Alpha) {
+      this.#tokens.shift();
+    }
+
+    const comparison = this.parseComparisonExpression();
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
+      throw new InvalidTokenError("Expected ';' after comparison expression");
+    }
+
+    const increment = this.parseAssignmentExpression(false);
+
+    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
+      throw new InvalidTokenError("Expected ')' after increment expression");
+    }
+
+    const body = this.parseBlockStatement();
+
+    return {
+      type: ASTNodeType.For,
+      initializer,
+      comparison,
+      increment,
       body,
     };
   }

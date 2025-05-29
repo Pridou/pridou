@@ -25,10 +25,12 @@ import {
   type InterpreterString,
   type InterpreterValue,
   InterpreterValueType,
-type ASTIfStatement,
-type InterpreterBoolean,
-type ASTSwitchStatement,
-type ASTWhileStatement} from "@/types";
+  type ASTIfStatement,
+  type InterpreterBoolean,
+  type ASTSwitchStatement,
+  type ASTWhileStatement,
+  type ASTForStatement,
+} from "@/types";
 
 function getArrayIndex(
   array: InterpreterArray,
@@ -227,113 +229,118 @@ export function evaluate(
     }
 
     case ASTNodeType.AssignmentExpression: {
-  const assignment = node as ASTAssignmentExpression;
-  const assignee = assignment.assignee;
-  const operator = assignment.operator;
-  const newValue = evaluate(assignment.value, environment);
+      const assignment = node as ASTAssignmentExpression;
+      const assignee = assignment.assignee;
+      const operator = assignment.operator;
+      const newValue = evaluate(assignment.value, environment);
 
- if (assignee.type === ASTNodeType.Alpha) {
-  const variableName = (<ASTAlpha>assignee).value;
-  const current = environment.getVariable(variableName);
-  const newValue = evaluate((<ASTAssignmentExpression>node).value, environment);
-  const operator = (<ASTAssignmentExpression>node).operator;
+      if (assignee.type === ASTNodeType.Alpha) {
+        const variableName = (<ASTAlpha>assignee).value;
+        const current = environment.getVariable(variableName);
+        const newValue = evaluate(
+          (<ASTAssignmentExpression>node).value,
+          environment
+        );
+        const operator = (<ASTAssignmentExpression>node).operator;
 
-  if (
-    current.type === InterpreterValueType.Number &&
-    newValue.type === InterpreterValueType.Number
-  ) {
-    const left = current as InterpreterNumber;
-    const right = newValue as InterpreterNumber;
+        if (
+          current.type === InterpreterValueType.Number &&
+          newValue.type === InterpreterValueType.Number
+        ) {
+          const left = current as InterpreterNumber;
+          const right = newValue as InterpreterNumber;
 
-    let result: InterpreterNumber;
+          let result: InterpreterNumber;
 
-    switch (operator) {
-      case "+=":
-        result = {
-          type: InterpreterValueType.Number,
-          value: left.value + right.value,
-        };
-        break;
-      case "-=":
-        result = {
-          type: InterpreterValueType.Number,
-          value: left.value - right.value,
-        };
-        break;
-      case "*=":
-        result = {
-          type: InterpreterValueType.Number,
-          value: left.value * right.value,
-        };
-        break;
-      case "/=":
-        result = {
-          type: InterpreterValueType.Number,
-          value: left.value / right.value,
-        };
-        break;
-      case "%=":
-        result = {
-          type: InterpreterValueType.Number,
-          value: left.value % right.value,
-        };
-        break;
-      case "=":
-      default:
-        result = right;
+          switch (operator) {
+            case "+=":
+              result = {
+                type: InterpreterValueType.Number,
+                value: left.value + right.value,
+              };
+              break;
+            case "-=":
+              result = {
+                type: InterpreterValueType.Number,
+                value: left.value - right.value,
+              };
+              break;
+            case "*=":
+              result = {
+                type: InterpreterValueType.Number,
+                value: left.value * right.value,
+              };
+              break;
+            case "/=":
+              result = {
+                type: InterpreterValueType.Number,
+                value: left.value / right.value,
+              };
+              break;
+            case "%=":
+              result = {
+                type: InterpreterValueType.Number,
+                value: left.value % right.value,
+              };
+              break;
+            case "=":
+            default:
+              result = right;
+          }
+
+          environment.setVariable(variableName, result);
+          return result;
+        } else {
+          throw new InvalidTokenError(
+            "Opérateur composé utilisé sur des types invalides"
+          );
+        }
+      }
+
+      if (assignee.type === ASTNodeType.ObjectAttribute) {
+        const object = evaluate(
+          (assignee as ASTObjectAttribute).object,
+          environment
+        );
+
+        if (object.type !== InterpreterValueType.Object) {
+          throw new InvalidTokenError(
+            "Cannot assign to property of non-object value"
+          );
+        }
+
+        const propertyName = (
+          (assignee as ASTObjectAttribute).property as ASTAlpha
+        ).value;
+        (object as InterpreterObject).properties[propertyName] = newValue;
+        (object as InterpreterObject).environment.setVariable(
+          propertyName,
+          newValue
+        );
+
+        return newValue;
+      }
+
+      if (assignee.type === ASTNodeType.Index) {
+        const array = evaluate((assignee as ASTIndex).array, environment);
+        if (array.type !== InterpreterValueType.Array) {
+          throw new InvalidTokenError(
+            "Cannot assign to index of non-array value"
+          );
+        }
+
+        const actualIndex = getArrayIndex(
+          array as InterpreterArray,
+          (assignee as ASTIndex).index,
+          environment
+        );
+
+        (array as InterpreterArray).elements[actualIndex] = newValue;
+        return newValue;
+      }
+
+      throw new InvalidTokenError("Invalid assignment target");
     }
-
-    environment.setVariable(variableName, result);
-    return result;
-  } else {
-    throw new InvalidTokenError("Opérateur composé utilisé sur des types invalides");
-  }
-}
-
-
-  
-  if (assignee.type === ASTNodeType.ObjectAttribute) {
-    const object = evaluate(
-      (assignee as ASTObjectAttribute).object,
-      environment
-    );
-
-    if (object.type !== InterpreterValueType.Object) {
-      throw new InvalidTokenError(
-        "Cannot assign to property of non-object value"
-      );
-    }
-
-    const propertyName = ((assignee as ASTObjectAttribute).property as ASTAlpha).value;
-    (object as InterpreterObject).properties[propertyName] = newValue;
-    (object as InterpreterObject).environment.setVariable(propertyName, newValue);
-
-    return newValue;
-  }
-
-  
-  if (assignee.type === ASTNodeType.Index) {
-    const array = evaluate((assignee as ASTIndex).array, environment);
-    if (array.type !== InterpreterValueType.Array) {
-      throw new InvalidTokenError(
-        "Cannot assign to index of non-array value"
-      );
-    }
-
-    const actualIndex = getArrayIndex(
-      array as InterpreterArray,
-      (assignee as ASTIndex).index,
-      environment
-    );
-
-    (array as InterpreterArray).elements[actualIndex] = newValue;
-    return newValue;
-  }
-
-  throw new InvalidTokenError("Invalid assignment target");
-}
-
-    
 
     case ASTNodeType.String:
       return <InterpreterString>{
@@ -383,8 +390,6 @@ export function evaluate(
       };
     }
 
-    
-
     case ASTNodeType.ObjectAttribute: {
       const object = evaluate((<ASTObjectAttribute>node).object, environment);
       if (object.type !== InterpreterValueType.Object) {
@@ -406,23 +411,20 @@ export function evaluate(
       return property;
     }
 
-  case ASTNodeType.Block: {
-  const block = node as ASTBlock;
+    case ASTNodeType.Block: {
+      const block = node as ASTBlock;
 
-  let result: InterpreterValue = {
-    type: InterpreterValueType.Null,
-    value: null,
-  }as InterpreterNull;
+      let result: InterpreterValue = {
+        type: InterpreterValueType.Null,
+        value: null,
+      } as InterpreterNull;
 
-  for (const stmt of block.body) {
-    result = evaluate(stmt, environment);
-  }
+      for (const stmt of block.body) {
+        result = evaluate(stmt, environment);
+      }
 
-  return result;
-}
-
-
-
+      return result;
+    }
 
     case ASTNodeType.Index: {
       const array = evaluate((<ASTIndex>node).array, environment);
@@ -439,8 +441,6 @@ export function evaluate(
       );
       return (<InterpreterArray>array).elements[actualIndex];
     }
-
-    
 
     case ASTNodeType.If: {
       const { condition, trueCase, falseCase } = node as ASTIfStatement;
@@ -461,59 +461,87 @@ export function evaluate(
           type: InterpreterValueType.Null,
           value: null,
         } as InterpreterNull;
-
       }
-}
-
-case ASTNodeType.Switch: {
-  const { discriminant, cases, defaultCase } = node as ASTSwitchStatement;
-  const value = evaluate(discriminant, environment);
-
-  for (const caseNode of cases) {
-    const caseValue = evaluate(caseNode.test, environment);
-
-  if (
-  value.type === caseValue.type &&
-  (
-    (value.type === InterpreterValueType.Number && (value as InterpreterNumber).value === (caseValue as InterpreterNumber).value) ||
-    (value.type === InterpreterValueType.String && (value as InterpreterString).value === (caseValue as InterpreterString).value)
-  )
-) {
-      const caseEnv = new Environment(environment);
-      return evaluate(caseNode.consequent, caseEnv);
     }
-  }
 
-  if (defaultCase) {
-    const defaultEnv = new Environment(environment);
-    return evaluate(defaultCase, defaultEnv);
-  }
+    case ASTNodeType.For: {
+      const { initializer, comparison, increment, body } =
+        node as ASTForStatement;
 
-  return {
-  type: InterpreterValueType.Null,
-  value: null,
-} as InterpreterNull;
+      const loopEnv = new Environment(environment);
 
-}
+      if (initializer) {
+        evaluate(initializer, loopEnv);
+      }
 
+      let result: InterpreterValue = {
+        type: InterpreterValueType.Null,
+        value: null,
+      } as InterpreterNull;
 
-case ASTNodeType.While: {
-  const { condition, body } = node as ASTWhileStatement;
+      while (
+        !comparison ||
+        (evaluate(comparison, loopEnv) as InterpreterBoolean).value === 1
+      ) {
+        result = evaluate(body, loopEnv);
 
-  let result: InterpreterValue = { type: InterpreterValueType.Null, value: null } as InterpreterNull;
+        if (increment) {
+          evaluate(increment, loopEnv);
+        }
+      }
 
-  while ((evaluate(condition, environment) as InterpreterBoolean).value === 1) {
-    const loopEnv = new Environment(environment); 
-    result = evaluate(body, loopEnv);
-  }
+      return result;
+    }
 
-  return result;
-}
+    case ASTNodeType.Switch: {
+      const { discriminant, cases, defaultCase } = node as ASTSwitchStatement;
+      const value = evaluate(discriminant, environment);
 
+      for (const caseNode of cases) {
+        const caseValue = evaluate(caseNode.test, environment);
 
+        if (
+          value.type === caseValue.type &&
+          ((value.type === InterpreterValueType.Number &&
+            (value as InterpreterNumber).value ===
+              (caseValue as InterpreterNumber).value) ||
+            (value.type === InterpreterValueType.String &&
+              (value as InterpreterString).value ===
+                (caseValue as InterpreterString).value))
+        ) {
+          const caseEnv = new Environment(environment);
+          return evaluate(caseNode.consequent, caseEnv);
+        }
+      }
 
+      if (defaultCase) {
+        const defaultEnv = new Environment(environment);
+        return evaluate(defaultCase, defaultEnv);
+      }
 
+      return {
+        type: InterpreterValueType.Null,
+        value: null,
+      } as InterpreterNull;
+    }
 
+    case ASTNodeType.While: {
+      const { condition, body } = node as ASTWhileStatement;
+
+      let result: InterpreterValue = {
+        type: InterpreterValueType.Null,
+        value: null,
+      } as InterpreterNull;
+
+      while (
+        (evaluate(condition, environment) as InterpreterBoolean).value === 1
+      ) {
+        const loopEnv = new Environment(environment);
+        result = evaluate(body, loopEnv);
+      }
+
+      return result;
+    }
 
     default:
       throw new InvalidNodeError(`Unexpected AST node type: '${node.type}'`);

@@ -18,6 +18,7 @@ export enum LexerTokenType {
   If = "If",
   Else = "Else",
   Switch = "Switch",
+  For = "For",
   Case = "Case",
   Default = "Default",
   Break = "Break",
@@ -68,6 +69,7 @@ export enum ASTNodeType {
   If = "If",
   Switch = "Switch",
   Case = "Case",
+  For = "For",
 
   While = "While",
 
@@ -152,16 +154,12 @@ export interface ASTUnaryExpression extends ASTStatement {
   expression: ASTExpression;
 }
 
-
-  export interface ASTAssignmentExpression {
+export interface ASTAssignmentExpression {
   type: ASTNodeType.AssignmentExpression;
   assignee: ASTExpression;
   value: ASTExpression;
   operator: "=" | "+=" | "-=" | "*=" | "/=" | "%=";
 }
-
-
-
 
 export interface ASTString extends ASTStatement {
   type: ASTNodeType.String;
@@ -230,6 +228,14 @@ export interface ASTSwitchStatement extends ASTStatement {
 export interface ASTWhileStatement extends ASTStatement {
   type: ASTNodeType.While;
   condition: ASTExpression;
+  body: ASTBlock;
+}
+
+export interface ASTForStatement extends ASTStatement {
+  type: ASTNodeType.For;
+  initializer: ASTStatement | null;
+  comparison: ASTExpression;
+  increment: ASTExpression;
   body: ASTBlock;
 }
 
