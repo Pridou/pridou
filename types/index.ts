@@ -71,7 +71,6 @@ export enum ASTNodeType {
 
   While = "While",
 
-  BlockStatement = "BlockStatement",
   Block = "Block",
 
   Array = "Array",
@@ -113,7 +112,7 @@ export interface ASTIndex extends ASTStatement {
 }
 
 export interface ASTBlockStatement {
-  type: ASTNodeType.BlockStatement;
+  type: ASTNodeType.Block;
   body: ASTStatement[];
 }
 
