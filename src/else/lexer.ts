@@ -21,12 +21,12 @@ export const CLASSIC_TOKENS: Map<string, LexerTokenType> = new Map<
 	[LexerTokenType.Colon, LexerTokenType.Colon],
 	[LexerTokenType.Semicolon, LexerTokenType.Semicolon],
 
-	[LexerTokenType.OpeningParenthesis, LexerTokenType.OpeningParenthesis],
-	[LexerTokenType.ClosingParenthesis, LexerTokenType.ClosingParenthesis],
-	[LexerTokenType.OpeningCurlyBracket, LexerTokenType.OpeningCurlyBracket],
-	[LexerTokenType.ClosingCurlyBracket, LexerTokenType.ClosingCurlyBracket],
-	[LexerTokenType.OpeningSquareBracket, LexerTokenType.OpeningSquareBracket],
-	[LexerTokenType.ClosingSquareBracket, LexerTokenType.ClosingSquareBracket],
+	[LexerTokenType.LeftRoundBracket, LexerTokenType.LeftRoundBracket],
+	[LexerTokenType.RightRoundBracket, LexerTokenType.RightRoundBracket],
+	[LexerTokenType.LeftCurlyBracket, LexerTokenType.LeftCurlyBracket],
+	[LexerTokenType.RightCurlyBracket, LexerTokenType.RightCurlyBracket],
+	[LexerTokenType.LeftSquareBracket, LexerTokenType.LeftSquareBracket],
+	[LexerTokenType.RightSquareBracket, LexerTokenType.RightSquareBracket],
 ]);
 
 export const RESERVED_TOKENS: Map<string, LexerTokenType> = new Map<
