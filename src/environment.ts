@@ -106,8 +106,7 @@ export default class Environment {
   public setVariable(name: string, value: InterpreterValue): InterpreterValue {
     if (this.#variables.has(name)) {
       if (this.#constants.includes(name)) {
-        // TODO: Add message
-        throw InvalidVariableError;
+        throw new Error("Unable to assign value to immutable variable.");
       }
 
       this.#variables.set(name, value);

@@ -37,11 +37,13 @@ export default class Parser {
       arguments: [],
     };
 
-    if (this.#tokens.shift()?.type !== LexerTokenType.OpeningParenthesis) {
-      throw new InvalidTokenError("Expected '(' after function identifier.");
-    }
+    this.#tokens.shift();
 
     while (this.peek().type !== LexerTokenType.ClosingParenthesis) {
+      if (this.peek().type === LexerTokenType.EndOfFile) {
+        throw new InvalidTokenError("Expected ')' after function call.");
+      }
+
       functionCall.arguments.push(this.parseAdditiveExpression());
 
       if (this.peek().type === LexerTokenType.Comma) {
@@ -49,9 +51,7 @@ export default class Parser {
       }
     }
 
-    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
-      throw new InvalidTokenError("Expected ')' after function arguments.");
-    }
+    this.#tokens.shift();
 
     if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
       throw new InvalidTokenError("Expected ';' after function call.");
@@ -63,9 +63,9 @@ export default class Parser {
   private parseFunctionDeclaration(): ASTNode {
     this.#tokens.shift();
 
-    const identifier: string | undefined = this.#tokens.shift()?.value;
+    const identifier: LexerToken | undefined = this.#tokens.shift();
 
-    if (!identifier) {
+    if (identifier?.type !== LexerTokenType.Identifier) {
       throw new InvalidTokenError(
         "Expected identifier after function declaration.",
       );
@@ -78,7 +78,7 @@ export default class Parser {
     const functionDeclaration: ASTFunctionDeclaration = {
       type: ASTNodeType.FunctionDeclaration,
       body: [],
-      identifier,
+      identifier: identifier.value,
       parameters: [],
       environment: new Environment(),
     };
@@ -97,15 +97,17 @@ export default class Parser {
       }
     }
 
-    if (this.#tokens.shift()?.type !== LexerTokenType.ClosingParenthesis) {
-      throw new InvalidTokenError("Expected ')' after function parameters.");
-    }
+    this.#tokens.shift();
 
     if (this.#tokens.shift()?.type !== LexerTokenType.OpeningCurlyBracket) {
       throw new InvalidTokenError("Expected '{' after function declaration.");
     }
 
     while (this.peek().type !== LexerTokenType.ClosingCurlyBracket) {
+      if (this.peek().type === LexerTokenType.EndOfFile) {
+        throw new InvalidTokenError("Expected '}' after function block.");
+      }
+
       functionDeclaration.body.push(this.parseNode());
     }
 
@@ -118,18 +120,18 @@ export default class Parser {
     const isConstant: boolean =
       this.#tokens.shift()?.type === LexerTokenType.Const;
 
-    const identifier: string | undefined = this.#tokens.shift()?.value;
+    const identifier: LexerToken | undefined = this.#tokens.shift();
 
-    if (!identifier) {
+    if (identifier?.type !== LexerTokenType.Identifier) {
       throw new InvalidTokenError(
-        "Expected identifier after let/const declaration.",
+        "Expected identifier after mut/immut declaration.",
       );
     }
 
     if (this.peek().type === LexerTokenType.Semicolon) {
       if (isConstant) {
         throw new InvalidTokenError(
-          "Missing initializer in const declaration.",
+          "Missing initializer in immut declaration.",
         );
       }
 
@@ -137,7 +139,7 @@ export default class Parser {
 
       return <ASTVariableDeclaration>{
         type: ASTNodeType.VariableDeclaration,
-        identifier,
+        identifier: identifier.value,
         metadata: {
           isConstant: false,
         },
@@ -152,7 +154,7 @@ export default class Parser {
 
     const variableDeclaration: ASTVariableDeclaration = {
       type: ASTNodeType.VariableDeclaration,
-      identifier,
+      identifier: identifier.value,
       value: this.parseNode(),
       metadata: {
         isConstant,
@@ -160,7 +162,7 @@ export default class Parser {
     };
 
     if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
-      throw new InvalidTokenError("Expected ';' after variable declaration.");
+      throw new InvalidTokenError("Expected ';' after variable assignment.");
     }
 
     return variableDeclaration;
@@ -171,13 +173,6 @@ export default class Parser {
 
     while (MULTIPLICATIVE_OPERATORS.has(this.peek()?.value)) {
       const binaryOperator: string | undefined = this.#tokens.shift()?.value;
-
-      if (!binaryOperator) {
-        throw new InvalidTokenError(
-          "Expected multiplicative operator but found none.",
-        );
-      }
-
       const rightExpression: ASTNode = this.parsePrimitiveExpression();
 
       leftExpression = <ASTBinaryExpression>{
@@ -196,13 +191,6 @@ export default class Parser {
 
     while (ADDITIVE_OPERATORS.has(this.peek()?.value)) {
       const binaryOperator: string | undefined = this.#tokens.shift()?.value;
-
-      if (!binaryOperator) {
-        throw new InvalidTokenError(
-          "Expected additive operator but found none.",
-        );
-      }
-
       const rightExpression: ASTNode = this.parseMultiplicativeExpression();
 
       leftExpression = <ASTBinaryExpression>{
@@ -268,10 +256,16 @@ export default class Parser {
     if (this.peek().type === LexerTokenType.Equals) {
       this.#tokens.shift();
 
+      if (leftExpression.type !== ASTNodeType.Identifier) {
+        throw new InvalidTokenError(
+          "Unexpected assignment to binary expression.",
+        );
+      }
+
       const assignmentExpression: ASTAssignmentExpression = {
         type: ASTNodeType.AssignmentExpression,
         value: this.parseAdditiveExpression(),
-        assignee: leftExpression,
+        assignee: <ASTIdentifier>leftExpression,
       };
 
       if (this.#tokens.shift()?.type !== LexerTokenType.Semicolon) {
@@ -335,17 +329,8 @@ export default class Parser {
   }
 
   public sourceCodeToAST(sourceCode: string): ASTProgram {
-    this.#tokens = new Lexer().toTokens(sourceCode);
+    const tokens = new Lexer().toTokens(sourceCode);
 
-    const program: ASTProgram = {
-      type: ASTNodeType.Program,
-      body: [],
-    };
-
-    while (this.peek().type !== LexerTokenType.EndOfFile) {
-      program.body.push(this.parseNode());
-    }
-
-    return program;
+    return this.toAST(tokens);
   }
 }

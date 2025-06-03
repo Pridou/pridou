@@ -80,5 +80,5 @@ export interface ASTVariableDeclaration extends ASTNode {
 export interface ASTAssignmentExpression extends ASTNode {
   type: ASTNodeType.AssignmentExpression;
   value: ASTNode;
-  assignee: ASTNode;
+  assignee: ASTIdentifier;
 }

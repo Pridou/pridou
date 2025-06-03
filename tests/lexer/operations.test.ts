@@ -17,7 +17,7 @@ describe("Assignment and declarations", () => {
     );
   });
 
-  it("Assign to const", () => {
+  it("Initialize immut", () => {
     const result = lexer.toTokens("const x = 5;");
     const expected = tokens(
       [T.Const, "const"],
@@ -30,7 +30,7 @@ describe("Assignment and declarations", () => {
     expect(result).toStrictEqual(expected);
   });
 
-  it("Assign to variable", () => {
+  it("Initialize mut", () => {
     const result = lexer.toTokens("let y = 10;");
     const expected = tokens(
       [T.Let, "let"],
