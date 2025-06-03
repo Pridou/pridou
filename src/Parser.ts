@@ -1,6 +1,6 @@
 import {LexerToken, LexerTokenType} from "@/types/lexer";
 import {
-	ASTAssignmentExpression,
+	ASTAssignmentExpression, ASTBinaryExpression, ASTComparisonExpression,
 	ASTFunctionCallExpression,
 	ASTFunctionDeclarationStatement,
 	ASTIdentifier,
@@ -14,6 +14,13 @@ import {
 } from "@/types/parser";
 
 import Lexer from "@/src/Lexer";
+
+import {
+	ADDITIVE_OPERATORS,
+	ASSIGNMENT_OPERATORS,
+	COMPARISON_OPERATORS,
+	MULTIPLICATIVE_OPERATORS
+} from "@/src/else/parser";
 
 import InvalidTokenError from "@/src/errs/InvalidTokenError";
 
@@ -184,26 +191,104 @@ export default class Parser {
 		}
 	}
 
-	private parseMultiplicativeExpression() {
+	private parseMultiplicativeExpression(): ASTBinaryExpression {
+		let leftExpression: ASTBinaryExpression = <ASTBinaryExpression>(
+			this.parsePrimitiveExpression()
+		);
+
+		while (MULTIPLICATIVE_OPERATORS.has(this.peek().type)) {
+			const binaryOperator: string = this.shift().value;
+			const rightExpression: ASTNode = this.parsePrimitiveExpression();
+
+			leftExpression = {
+				type: ASTNodeType.BinaryExpression,
+				binaryOperator,
+				leftExpression,
+				rightExpression,
+			};
+		}
+
+		return leftExpression;
 	}
 
-	private parseAdditiveExpression() {}
+	private parseAdditiveExpression(): ASTBinaryExpression {
+		let leftExpression: ASTBinaryExpression = this.parseMultiplicativeExpression();
 
-	private parseComparisonExpression() {
+		while (ADDITIVE_OPERATORS.has(this.peek().type)) {
+			const binaryOperator: string = this.shift().value;
+			const rightExpression: ASTNode = this.parseMultiplicativeExpression();
+
+			leftExpression = {
+				type: ASTNodeType.BinaryExpression,
+				leftExpression,
+				rightExpression,
+				binaryOperator,
+			};
+		}
+
+		return leftExpression;
+	}
+
+	private parseComparisonExpression(): ASTComparisonExpression | ASTNode {
+		let leftExpression: ASTNode = this.parseAdditiveExpression();
+
+		while (COMPARISON_OPERATORS.has(this.peek().type)) {
+			const comparisonOperator: string = this.shift().value;
+			const rightExpression: ASTNode = this.parseAdditiveExpression();
+
+			leftExpression = <ASTComparisonExpression>{
+				type: ASTNodeType.ComparisonExpression,
+				comparisonOperator,
+				leftExpression,
+				rightExpression,
+			};
+		}
+
+		return leftExpression;
 	}
 
 	private parseAssignmentExpression(): ASTAssignmentExpression | ASTNode {
-		const leftExpression: ASTNode = this.parseComparisonExpression();
+		const leftExpression: ASTComparisonExpression | ASTNode =
+			this.parseComparisonExpression();
 
 		if (this.peek().type === LexerTokenType.Assignment) {
 			this.expect(LexerTokenType.Assignment);
 
-			return {
+			const assignmentExpression: ASTAssignmentExpression = {
 				type: ASTNodeType.AssignmentExpression,
-				value: this.parseAssignmentExpression(),
+				value: this.parseComparisonExpression(),
 				leftExpression,
 			};
+
+			this.expect(";");
+
+			return assignmentExpression;
 		}
+
+		// TODO: Support complex assignment operators
+		/* if (ASSIGNMENT_OPERATORS.has(this.peek().type)) {
+			this.#tokens = [
+				{
+					type: LexerTokenType.Identifier,
+					value: (<ASTIdentifier>leftExpression).value,
+				},
+				{
+					type: LexerTokenType.BinaryOperator,
+					value: this.shift().value.split("")[0],
+				},
+				...this.#tokens,
+			];
+
+			const assignmentExpression: ASTAssignmentExpression = {
+				type: ASTNodeType.AssignmentExpression,
+				value: this.parseComparisonExpression(),
+				leftExpression,
+			};
+
+			this.expect(";");
+
+			return assignmentExpression;
+		} */
 
 		return leftExpression;
 	}
