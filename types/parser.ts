@@ -10,7 +10,7 @@ export enum ASTNodeType {
 	FunctionCallExpression       = "FunctionCallExpression",
 	VariableDeclarationStatement = "VariableDeclarationStatement",
 	FunctionDeclarationStatement = "FunctionDeclarationStatement",
-	ReturnExpression             = "ReturnExpression",
+	ReturnStatement              = "ReturnStatement",
 	BinaryExpression             = "BinaryExpression",
 	ComparisonExpression         = "ComparisonExpression",
 	AssignmentExpression         = "AssignmentExpression",
@@ -63,7 +63,7 @@ export interface ASTFunctionDeclarationStatement extends ASTNode {
 }
 
 export interface ASTReturnStatement extends ASTNode {
-	type: ASTNodeType.ReturnExpression;
+	type: ASTNodeType.ReturnStatement;
 	value: ASTNode;
 }
 
