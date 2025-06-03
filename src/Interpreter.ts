@@ -5,14 +5,7 @@ import {
 	InterpreterValue,
 	InterpreterValueType,
 } from "@/types/interpreter";
-import {
-	ASTIdentifier,
-	ASTNode,
-	ASTNodeType,
-	ASTNumber,
-	ASTProgram,
-	ASTString,
-} from "@/types/parser";
+import {ASTIdentifier, ASTNode, ASTNodeType, ASTNumber, ASTProgram, ASTString,} from "@/types/parser";
 
 import Environment from "@/src/Environment";
 import Parser from "@/src/Parser";
@@ -32,10 +25,10 @@ export default class Interpreter {
 		}
 	}
 
-	private evaluateProgram() {
+	private evaluateProgram(node: ASTNode, environment: Environment): InterpreterValue {
 		let lastExpression: InterpreterValue = <InterpreterNil>{
 			type: InterpreterValueType.Nil,
-			value: "nil",
+			value: InterpreterValueType.Nil,
 		};
 
 		for (const expression of (<ASTProgram>node).body) {
@@ -49,13 +42,9 @@ export default class Interpreter {
 		node: ASTNode,
 		environment: Environment,
 	): InterpreterValue {
-		if (!environment.parent) {
-			this.init(environment);
-		}
-
 		switch (node.type) {
 			case ASTNodeType.Program:
-				return this.evaluateProgram();
+				return this.evaluateProgram(node, environment);
 			case ASTNodeType.Number:
 				return <InterpreterNumber>{
 					type: InterpreterValueType.Number,
@@ -75,9 +64,10 @@ export default class Interpreter {
 	}
 
 	public run(sourceCode: string): void {
-		this.evaluateNode(
-			new Parser().sourceCodeToAST(sourceCode),
-			new Environment(),
-		);
+		const environment: Environment = new Environment();
+
+		this.init(environment);
+
+		this.evaluateNode(new Parser().sourceCodeToAST(sourceCode), environment);
 	}
 }
