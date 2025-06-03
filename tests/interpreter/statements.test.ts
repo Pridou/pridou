@@ -37,6 +37,13 @@ describe("Statements", () => {
     expect(input).toStrictEqual({ type: "Number", value: 3 });
   });
 
+  it.todo("Switch case", () => {
+    const input = interpreter.evaluateSourceCode(
+      "const test = 10; let val = 5; switch(test + 1) { case val + 6: val + 2 break; case 0: val break; default: val break; }",
+    );
+    expect(input).toStrictEqual({ type: "Number", value: 7 });
+  });
+
   it("Return top level", () => {
     expect(() =>
       interpreter.evaluateSourceCode("let ok = 1; ok = 3; return ok+2;"),

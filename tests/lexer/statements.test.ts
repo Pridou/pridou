@@ -4,7 +4,7 @@ import { EOF, T, t, tokens } from "../utils/lexer";
 
 const lexer = new Lexer();
 describe.todo("Statements", () => {
-  it("If", () => {
+  it("If statement", () => {
     const input = "if(1 == 4) {}";
     const expected = [
       t(T.If, "if"),
@@ -21,7 +21,7 @@ describe.todo("Statements", () => {
     expect(lexer.toTokens(input)).toStrictEqual(expected);
   });
 
-  it("If Else", () => {
+  it("If Else statement", () => {
     const input = "if(1 == 4) {} else {}";
     const expected = [
       t(T.If, "if"),
@@ -41,7 +41,7 @@ describe.todo("Statements", () => {
     expect(lexer.toTokens(input)).toStrictEqual(expected);
   });
 
-  it("For", () => {
+  it("For loop", () => {
     const input = "for(let a = 0; a < 4; a = a + 1) {a}";
     const expected = [
       t(T.For, "for"),
@@ -70,7 +70,7 @@ describe.todo("Statements", () => {
     expect(lexer.toTokens(input)).toStrictEqual(expected);
   });
 
-  it("While", () => {
+  it("While loop", () => {
     const input = "while(true) {const a = 2;}";
     const expected = [
       t(T.While, "while"),
@@ -83,6 +83,31 @@ describe.todo("Statements", () => {
       t(T.Equals, "="),
       t(T.Number, "2"),
       t(T.Semicolon, ";"),
+      t(T.ClosingCurlyBracket, "}"),
+      EOF,
+    ];
+
+    expect(lexer.toTokens(input)).toStrictEqual(expected);
+  });
+
+  //TODO: fix this test
+  it.todo("Switch case", () => {
+    const input = "switch (10) { case 10: break; default: break;}";
+    const expected = [
+      t(T.While, "switch"),
+      t(T.OpeningParenthesis, "("),
+      t(T.Number, "10"),
+      t(T.ClosingParenthesis, ")"),
+      t(T.OpeningCurlyBracket, "{"),
+      t(T.Identifier, "case"),
+      t(T.Number, "10"),
+      t(T.Colon, ":"),
+      t(T.Identifier, "break"),
+      t(T.Semicolon, ";"),
+      t(T.Identifier, "default"),
+      t(T.Colon, ":"),
+      t(T.Identifier, "break"),
+      t(T.Colon, ":"),
       t(T.ClosingCurlyBracket, "}"),
       EOF,
     ];
