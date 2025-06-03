@@ -62,7 +62,7 @@ export default class Environment {
 			environment = environment.#parent;
 		}
 
-		throw new InvalidVariableError(`Variable "${identifier} was not found."`);
+		throw new InvalidVariableError(`Variable "${identifier}" was not found.`);
 	}
 
 	public setVariable(
