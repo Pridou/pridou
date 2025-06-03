@@ -7,11 +7,13 @@ export enum ASTNodeType {
 
 	Identifier = "Identifier",
 
-	FunctionCallExpression = "FunctionCallExpression",
-	ReturnExpression     = "ReturnExpression",
-	VariableDeclarationStatement  = "VariableDeclarationStatement",
-	FunctionDeclarationStatement  = "FunctionDeclarationStatement",
-	AssignmentExpression = "AssignmentExpression",
+	FunctionCallExpression       = "FunctionCallExpression",
+	VariableDeclarationStatement = "VariableDeclarationStatement",
+	FunctionDeclarationStatement = "FunctionDeclarationStatement",
+	ReturnExpression             = "ReturnExpression",
+	BinaryExpression             = "BinaryExpression",
+	ComparisonExpression         = "ComparisonExpression",
+	AssignmentExpression         = "AssignmentExpression",
 }
 
 export interface ASTNode {
@@ -41,12 +43,7 @@ export interface ASTIdentifier extends ASTNode {
 export interface ASTFunctionCallExpression extends ASTNode {
 	type: ASTNodeType.FunctionCallExpression;
 	identifier: string;
-	arguments: ASTAssignmentExpression[];
-}
-
-export interface ASTReturnStatement extends ASTNode {
-	type: ASTNodeType.ReturnExpression;
-	value: ASTNode;
+	arguments: (ASTAssignmentExpression | ASTNode)[];
 }
 
 export interface ASTVariableDeclarationStatement extends ASTNode {
@@ -63,6 +60,25 @@ export interface ASTFunctionDeclarationStatement extends ASTNode {
 	body?: ASTNode[];
 	identifier: string;
 	parameters: string[];
+}
+
+export interface ASTReturnStatement extends ASTNode {
+	type: ASTNodeType.ReturnExpression;
+	value: ASTNode;
+}
+
+export interface ASTBinaryExpression extends ASTNode {
+	type: ASTNodeType.BinaryExpression,
+	binaryOperator: string;
+	leftExpression: ASTNode;
+	rightExpression: ASTNode;
+}
+
+export interface ASTComparisonExpression extends ASTNode {
+	type: ASTNodeType.ComparisonExpression;
+	comparisonOperator: string;
+	leftExpression: ASTNode;
+	rightExpression: ASTNode;
 }
 
 export interface ASTAssignmentExpression extends ASTNode {
