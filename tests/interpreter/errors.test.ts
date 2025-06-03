@@ -24,6 +24,32 @@ describe("Errors", () => {
       ).toThrow(new InvalidVariableError('Constant "a" cannot be reassigned.'));
     });
 
+    it("Variable already declared", () => {
+      expect(() =>
+        interpreter.evaluateSourceCode("const hello = 1; let hello = 2;"),
+      ).toThrow(
+        new InvalidVariableError('Variable "hello" has already been declared.'),
+      );
+
+      expect(() =>
+        interpreter.evaluateSourceCode("let hello = 1; const hello = 2;"),
+      ).toThrow(
+        new InvalidVariableError('Variable "hello" has already been declared.'),
+      );
+    });
+
+    it("Shadow immut in function", () => {
+      expect(() =>
+        interpreter.evaluateSourceCode(
+          "const hello = 2; function test() { let hello = 1; } test();",
+        ),
+      ).toThrow(
+        new InvalidVariableError(
+          'Constant "hello" from parent\'s scope cannot be shadowed.',
+        ),
+      );
+    });
+
     it("Expect a function", () => {
       expect(() => interpreter.evaluateSourceCode("let test; test();")).toThrow(
         new InvalidNodeError("Expected a function, but got Null."),
