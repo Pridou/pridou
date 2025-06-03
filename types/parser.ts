@@ -13,6 +13,7 @@ export enum ASTNodeType {
 	ReturnStatement              = "ReturnStatement",
 	BinaryExpression             = "BinaryExpression",
 	ComparisonExpression         = "ComparisonExpression",
+	WhileStatement               = "WhileStatement",
 	AssignmentExpression         = "AssignmentExpression",
 }
 
@@ -79,6 +80,12 @@ export interface ASTComparisonExpression extends ASTNode {
 	comparisonOperator: string;
 	leftExpression: ASTNode;
 	rightExpression: ASTNode;
+}
+
+export interface ASTWhileStatement extends ASTNode {
+	type: ASTNodeType.WhileStatement;
+	body: ASTNode[];
+	comparison: ASTComparisonExpression | ASTNode;
 }
 
 export interface ASTAssignmentExpression extends ASTNode {
