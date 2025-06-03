@@ -48,6 +48,10 @@
     "library"
   ],
   "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@commitlint/cli": "^19.8.1",

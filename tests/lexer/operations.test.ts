@@ -5,13 +5,13 @@ import { T, tokens } from "../utils/lexer";
 const lexer = new Lexer();
 
 describe("Assignment and declarations", () => {
-  it("Constant declaration (immut)", () => {
+  it("Immut declaration", () => {
     expect(lexer.toTokens("const test;")).toStrictEqual(
       tokens([T.Const, "const"], [T.Identifier, "test"], [T.Semicolon, ";"]),
     );
   });
 
-  it("Variable declaration (mut)", () => {
+  it("Mut declaration", () => {
     expect(lexer.toTokens("let test;")).toStrictEqual(
       tokens([T.Let, "let"], [T.Identifier, "test"], [T.Semicolon, ";"]),
     );

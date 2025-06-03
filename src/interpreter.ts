@@ -27,7 +27,7 @@ import {
 } from "@/types/interpreter";
 
 export default class Interpreter {
-  public evaluateNode(
+  private evaluateNode(
     node: ASTNode,
     environment: Environment,
   ): InterpreterValue {
@@ -238,10 +238,13 @@ export default class Interpreter {
     }
   }
 
-  public evaluateSourceCode(sourceCode: string): InterpreterValue {
+  public evaluateSourceCode(
+    sourceCode: string,
+    environment: Environment = new Environment(),
+  ): InterpreterValue {
     return this.evaluateNode(
       new Parser().sourceCodeToAST(sourceCode),
-      new Environment(),
+      environment,
     );
   }
 }
