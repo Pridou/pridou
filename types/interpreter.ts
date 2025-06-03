@@ -1,11 +1,15 @@
+import {ASTNode} from "@/types/parser";
+
+import Environment from "@/src/Environment";
+
 export enum InterpreterValueType {
 	Nil = "nil",
 
-	Number = "Number",
-	String = "String",
+	Number  = "Number",
+	String  = "String",
 	Boolean = "Boolean",
 
-	Identifier = "Identifier",
+	Function = "Function",
 }
 
 export interface InterpreterValue {
@@ -32,7 +36,9 @@ export interface InterpreterBoolean extends InterpreterValue {
 	value: boolean;
 }
 
-export interface InterpreterIdentifier extends InterpreterValue {
-	type: InterpreterValueType.Identifier;
-	value: string;
+export interface InterpreterFunction extends InterpreterValue {
+	type: InterpreterValueType.Function;
+	body: ASTNode[];
+	parameters: string[];
+	environment: Environment;
 }
