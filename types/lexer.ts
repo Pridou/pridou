@@ -28,19 +28,18 @@ export enum LexerTokenType {
 	MinusEquals    = "-=",
 	DivideEquals   = "/=",
 
-	Equality   = "==",
+	LessThan           = "<",
+	LessThanOrEqual    = "<=",
+	Equality           = "==",
+	GreaterThan        = ">",
+	GreaterThanOrEqual = ">=",
 
-	LessThan    = "<",
-	GreaterThan = ">",
-
+	Dot         = ".",
+	Comma       = ",",
+	Colon       = ":",
+	Semicolon   = ";",
 	SingleQuote = "'",
 	DoubleQuote = '"',
-
-	// TODO: Rework
-	Dot       = ".",
-	Comma     = ",",
-	Colon     = ":",
-	Semicolon = ";",
 
 	LeftRoundBracket   = "(",
 	RightRoundBracket  = ")",
