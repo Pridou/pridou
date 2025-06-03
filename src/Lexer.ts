@@ -1,9 +1,13 @@
 // TODO: Maybe count boundaries (i.e. { { ... } }, /* /* ... */ */) for nesting
 
-import {LexerToken, LexerTokenType} from "@/types/lexer";
+import { LexerToken, LexerTokenType } from "@/types/lexer";
 
-import {isIdentifier, isNumber} from "@/src/utils";
-import {CLASSIC_TOKENS, RESERVED_TOKENS, SKIPPED_TOKENS,} from "@/src/else/lexer";
+import { isIdentifier, isNumber } from "@/src/utils";
+import {
+	CLASSIC_TOKENS,
+	RESERVED_TOKENS,
+	SKIPPED_TOKENS,
+} from "@/src/else/lexer";
 
 import InvalidTokenError from "@/src/errs/InvalidTokenError";
 
@@ -76,7 +80,7 @@ export default class Lexer {
 
 				if (this.peek() === LexerTokenType.Dot) {
 					number += this.shift();
-				}	
+				}
 
 				while (isNumber(this.peek())) {
 					number += this.shift();
