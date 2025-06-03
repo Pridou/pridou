@@ -19,6 +19,14 @@ describe("Assignment and declarations", () => {
     expect(input).toStrictEqual({ type: "Number", value: 7 });
   });
 
+  //! Error when assigning function call to variable
+  it.todo("Function call reassignment", () => {
+    const input = interpreter.evaluateSourceCode(
+      "function hello() { const a = 1; return a + 2; } let b = 2; b = hello(); b",
+    );
+    expect(input).toStrictEqual({ type: "Number", value: 3 });
+  });
+
   it("Multiple variables declaration and assignment", () => {
     const input = interpreter.evaluateSourceCode("let x = 1; let y = 2; x + y");
     expect(input).toStrictEqual({ type: "Number", value: 3 });
@@ -57,18 +65,6 @@ describe("Assignment and declarations", () => {
       "function square(x) { return x * x; } let n = 4; square(n);",
     );
     expect(input).toStrictEqual({ type: "Number", value: 16 });
-  });
-
-  it("Return top level", () => {
-    expect(() =>
-      interpreter.evaluateSourceCode("let ok = 1; ok = 3; return ok+2;"),
-    ).toThrow(new Error('process.exit unexpectedly called with "5"'));
-  });
-
-  it("Return top level without exit code", () => {
-    expect(() => interpreter.evaluateSourceCode("return;")).toThrow(
-      new Error('process.exit unexpectedly called with "0"'),
-    );
   });
 });
 

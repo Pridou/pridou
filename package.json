@@ -77,6 +77,12 @@
         "types": "./lib/index.d.ts",
         "default": "./lib/index.js"
       }
+    },
+    "./config": {
+      "import": {
+        "types": "./lib/config/index.d.ts",
+        "default": "./lib/config/index.js"
+      }
     }
   },
   "publishConfig": {
