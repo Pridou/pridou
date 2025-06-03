@@ -3,7 +3,8 @@ import Parser from "./src/Parser";
 import Interpreter from "./src/Interpreter";
 
 (async (): Promise<void> => {
-	const program = "fix x = 5 ;";
+	const program =
+		"fix x = 5 ; mut r = x + 2 ; fun add(a,b) { ret a + b * 2 ; } fix m = add(1,2) * 10 ; fix z = 1 > 2 ;";
 	// const program: string = await Bun.file("../pridou-demo/index.pri").text();
 
 	const lexer: Lexer = new Lexer();

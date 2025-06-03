@@ -1,6 +1,8 @@
-import {LexerToken, LexerTokenType} from "@/types/lexer";
+import { LexerToken, LexerTokenType } from "@/types/lexer";
 import {
-	ASTAssignmentExpression, ASTBinaryExpression, ASTComparisonExpression,
+	ASTAssignmentExpression,
+	ASTBinaryExpression,
+	ASTComparisonExpression,
 	ASTFunctionCallExpression,
 	ASTFunctionDeclarationStatement,
 	ASTIdentifier,
@@ -10,16 +12,16 @@ import {
 	ASTProgram,
 	ASTReturnStatement,
 	ASTString,
-	ASTVariableDeclarationStatement
+	ASTVariableDeclarationStatement,
+	ASTWhileStatement,
 } from "@/types/parser";
 
 import Lexer from "@/src/Lexer";
 
 import {
 	ADDITIVE_OPERATORS,
-	ASSIGNMENT_OPERATORS,
 	COMPARISON_OPERATORS,
-	MULTIPLICATIVE_OPERATORS
+	MULTIPLICATIVE_OPERATORS,
 } from "@/src/else/parser";
 
 import InvalidTokenError from "@/src/errs/InvalidTokenError";
@@ -49,7 +51,9 @@ export default class Parser {
 		}
 	}
 
-	private parseFunctionCallExpression(identifier: string): ASTFunctionCallExpression {
+	private parseFunctionCallExpression(
+		identifier: string,
+	): ASTFunctionCallExpression {
 		const functionCallExpression: ASTFunctionCallExpression = {
 			type: ASTNodeType.FunctionCallExpression,
 			identifier,
@@ -66,7 +70,7 @@ export default class Parser {
 			}
 		}
 
-		this.expect(LexerTokenType.LeftRoundBracket);
+		this.expect(LexerTokenType.RightRoundBracket);
 
 		return functionCallExpression;
 	}
@@ -78,7 +82,9 @@ export default class Parser {
 
 		if (this.peek().type === LexerTokenType.Semicolon) {
 			if (isConstant) {
-				throw new InvalidTokenError("Cannot declare a constant without an initializer.");
+				throw new InvalidTokenError(
+					"Cannot declare a constant without an initializer.",
+				);
 			}
 
 			this.expect(LexerTokenType.Semicolon);
@@ -88,7 +94,7 @@ export default class Parser {
 				identifier,
 				metadata: {
 					isConstant,
-				}
+				},
 			};
 		}
 
@@ -96,7 +102,7 @@ export default class Parser {
 
 		const variableDeclarationStatement: ASTVariableDeclarationStatement = {
 			type: ASTNodeType.VariableDeclarationStatement,
-			value: this.parseStatement(),
+			value: this.parseAssignmentExpression(),
 			identifier,
 			metadata: {
 				isConstant,
@@ -152,20 +158,55 @@ export default class Parser {
 		return {
 			...functionDeclarationStatement,
 			body: this.parseBlockBody(),
-		}
+		};
 	}
 
 	private parseReturnStatement(): ASTReturnStatement {
 		this.expect(LexerTokenType.Ret);
 
 		// TODO: Same for typing
-		const assignmentExpression: ASTNode = this.parseAssignmentExpression()
+		const assignmentExpression: ASTNode = this.parseAssignmentExpression();
 
 		this.expect(LexerTokenType.Semicolon);
 
 		return <ASTReturnStatement>{
-			type: ASTNodeType.ReturnExpression,
+			type: ASTNodeType.ReturnStatement,
 			value: assignmentExpression,
+		};
+	}
+
+	private parseComparisonExpression(): ASTComparisonExpression | ASTNode {
+		let leftExpression: ASTNode = this.parseAdditiveExpression();
+
+		while (COMPARISON_OPERATORS.has(this.peek().type)) {
+			const comparisonOperator: string = this.shift().value;
+			const rightExpression: ASTNode = this.parseAdditiveExpression();
+
+			leftExpression = <ASTComparisonExpression>{
+				type: ASTNodeType.ComparisonExpression,
+				comparisonOperator,
+				leftExpression,
+				rightExpression,
+			};
+		}
+
+		return leftExpression;
+	}
+
+	private parseWhileStatement(): ASTWhileStatement {
+		this.expect(LexerTokenType.Wil);
+
+		this.expect(LexerTokenType.LeftRoundBracket);
+
+		const comparison: ASTComparisonExpression | ASTNode =
+			this.parseComparisonExpression();
+
+		this.expect(LexerTokenType.RightRoundBracket);
+
+		return <ASTWhileStatement>{
+			type: ASTNodeType.WhileStatement,
+			body: this.parseBlockBody(),
+			comparison,
 		};
 	}
 
@@ -182,9 +223,15 @@ export default class Parser {
 					value: this.shift().value,
 				};
 			case LexerTokenType.Identifier:
+				const identifier: string = this.shift().value;
+
+				if (this.peek().type === LexerTokenType.LeftRoundBracket) {
+					return this.parseFunctionCallExpression(identifier);
+				}
+
 				return <ASTIdentifier>{
 					type: ASTNodeType.Identifier,
-					value: this.shift().value,
+					value: identifier,
 				};
 			default:
 				throw new InvalidTokenError(`Invalid token ${this.peek()} was found.`);
@@ -212,7 +259,8 @@ export default class Parser {
 	}
 
 	private parseAdditiveExpression(): ASTBinaryExpression {
-		let leftExpression: ASTBinaryExpression = this.parseMultiplicativeExpression();
+		let leftExpression: ASTBinaryExpression =
+			this.parseMultiplicativeExpression();
 
 		while (ADDITIVE_OPERATORS.has(this.peek().type)) {
 			const binaryOperator: string = this.shift().value;
@@ -223,24 +271,6 @@ export default class Parser {
 				leftExpression,
 				rightExpression,
 				binaryOperator,
-			};
-		}
-
-		return leftExpression;
-	}
-
-	private parseComparisonExpression(): ASTComparisonExpression | ASTNode {
-		let leftExpression: ASTNode = this.parseAdditiveExpression();
-
-		while (COMPARISON_OPERATORS.has(this.peek().type)) {
-			const comparisonOperator: string = this.shift().value;
-			const rightExpression: ASTNode = this.parseAdditiveExpression();
-
-			leftExpression = <ASTComparisonExpression>{
-				type: ASTNodeType.ComparisonExpression,
-				comparisonOperator,
-				leftExpression,
-				rightExpression,
 			};
 		}
 
@@ -297,7 +327,8 @@ export default class Parser {
 		// Parse function calls
 		if (this.peek().type === LexerTokenType.Identifier) {
 			if (this.peek(1).type === LexerTokenType.LeftRoundBracket) {
-				const functionCall: ASTFunctionCallExpression = this.parseFunctionCallExpression(this.shift().value);
+				const functionCall: ASTFunctionCallExpression =
+					this.parseFunctionCallExpression(this.shift().value);
 
 				this.expect(LexerTokenType.Semicolon);
 
@@ -313,6 +344,8 @@ export default class Parser {
 				return this.parseFunctionDeclarationStatement();
 			case LexerTokenType.Ret:
 				return this.parseReturnStatement();
+			case LexerTokenType.Wil:
+				return this.parseWhileStatement();
 			default:
 				return this.parseAssignmentExpression();
 		}

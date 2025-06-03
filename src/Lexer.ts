@@ -34,8 +34,6 @@ export default class Lexer {
 			shift += this.#source.shift();
 		}
 
-		console.log(shift);
-
 		return shift;
 	}
 
@@ -189,7 +187,7 @@ export default class Lexer {
 
 					// TODO: Add support for identifiers (i.e. +<identifier>)
 
-					this.save(LexerTokenType.Plus, this.shift());
+					this.save(LexerTokenType.Plus, token);
 
 					break;
 				case LexerTokenType.Minus:
@@ -227,7 +225,7 @@ export default class Lexer {
 
 					// TODO: Add support for identifiers (i.e. -<identifier>)
 
-					this.save(LexerTokenType.Minus, this.shift());
+					this.save(LexerTokenType.Minus, token);
 
 					break;
 				case LexerTokenType.Assignment:
