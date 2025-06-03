@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { InvalidNodeError } from "../../src/errors";
+import { InvalidNodeError, InvalidVariableError } from "../../src/errors";
 import Interpreter from "../../src/interpreter";
 
 const interpreter = new Interpreter();
@@ -8,20 +8,20 @@ describe("Errors", () => {
   describe("Assignment and declarations", () => {
     it("Assign value to undeclared variable", () => {
       expect(() => interpreter.evaluateSourceCode("a = 1;")).toThrow(
-        new Error("InvalidVariableError: Variable 'a' not found"),
+        new InvalidVariableError('Variable "a was not found."'),
       );
     });
 
     it("Get value from undeclared variable", () => {
       expect(() => interpreter.evaluateSourceCode("a")).toThrow(
-        new Error("InvalidVariableError: Variable not found"),
+        new InvalidVariableError('Variable "a was not found."'),
       );
     });
 
     it("Assign value to immutable variable", () => {
       expect(() =>
         interpreter.evaluateSourceCode("const a = 1; a = 2;"),
-      ).toThrow(new Error("Unable to assign value to immutable variable."));
+      ).toThrow(new InvalidVariableError('Constant "a" cannot be reassigned.'));
     });
 
     it("Expect a function", () => {
