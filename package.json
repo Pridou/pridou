@@ -12,7 +12,12 @@
   "contributors": [
     "cannotbefound (https://github.com/cannotbefound)",
     "0BLV1V10N1 (https://github.com/0BL1V10N1)",
-    "Noam790 (https://github.com/Noam790)"
+    "Noam790 (https://github.com/Noam790)",
+    "Dimitri",
+    "Fatoumata",
+    "Ndeye Fatou",
+    "Mame Diarra",
+    "Mame faty"
   ],
   "scripts": {
     "start": "node bin/cli.js",
@@ -20,7 +25,9 @@
     "test": "vitest run",
     "test:watch": "vitest dev",
     "test:coverage": "vitest run --coverage",
-    "build": "tsc",
+    "test:ui": "vitest --ui",
+    "build": "tsc && tsc-alias",
+    "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
     "check": "biome check",
     "check:fix": "biome check --fix",
     "format": "biome format",
@@ -46,6 +53,10 @@
     "library"
   ],
   "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@commitlint/cli": "^19.8.1",
@@ -54,11 +65,14 @@
     "@semantic-release/git": "^10.0.1",
     "@types/bun": "^1.2.13",
     "@vitest/coverage-v8": "^3.1.4",
+    "@vitest/ui": "^3.1.4",
     "commitizen": "4.3.1",
+    "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "cz-conventional-changelog": "3.3.0",
     "husky": "^9.1.7",
     "semantic-release": "^24.2.5",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4"
   },
