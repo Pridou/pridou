@@ -31,7 +31,7 @@ import {
 import Environment from "@/environment";
 import Parser from "@/parser";
 
-import { NATIVE_CONSTANTS, NATIVE_FUNCTIONS } from "@/else/base";
+import { NATIVE_CONSTANTS, NATIVE_FUNCTIONS } from "@/config/builtin";
 
 import InvalidNodeError from "@/errors/InvalidNodeError";
 import InvalidTokenError from "@/errors/InvalidTokenError";

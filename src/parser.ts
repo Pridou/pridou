@@ -22,7 +22,7 @@ import {
   ADDITIVE_OPERATORS,
   COMPARISON_OPERATORS,
   MULTIPLICATIVE_OPERATORS,
-} from "@/else/parser";
+} from "@/config/parser";
 
 import InvalidTokenError from "@/errors/InvalidTokenError";
 

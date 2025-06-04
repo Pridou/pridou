@@ -2,7 +2,11 @@
 
 import { type LexerToken, LexerTokenType } from "@/types/lexer";
 
-import { CLASSIC_TOKENS, RESERVED_TOKENS, SKIPPED_TOKENS } from "@/else/lexer";
+import {
+  CLASSIC_TOKENS,
+  RESERVED_TOKENS,
+  SKIPPED_TOKENS,
+} from "@/config/lexer";
 import { isIdentifier, isNumber } from "@/utils";
 
 import InvalidTokenError from "@/errors/InvalidTokenError";
