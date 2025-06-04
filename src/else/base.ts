@@ -31,4 +31,4 @@ export const NATIVE_CONSTANTS: Map<string, InterpreterValue> = new Map<
   ],
 ]);
 
-export const NATIVE_FUNCTIONS: Map<string, unknown> = new Map();
+export const NATIVE_FUNCTIONS: Map<string, InterpreterValue> = new Map();
