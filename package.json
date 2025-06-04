@@ -1,6 +1,6 @@
 {
   "name": "pridou",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "The pridou interpreter.",
   "main": "lib/index.js",
   "module": "lib/index.js",
