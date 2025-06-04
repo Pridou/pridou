@@ -85,7 +85,7 @@
 You can use Pridou as a library in your own Node.js project:
 
 ```js
-import Pridou, { Environment } from "pridou";
+import Pridou, { Environment } from "pridoujs";
 
 const code = `
 mut a = 1 + 2;
