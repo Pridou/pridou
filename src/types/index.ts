@@ -3,7 +3,7 @@ export * from "./lexer";
 
 // AST
 // Parser
-export * from "./ast";
+export * from "./parser";
 
 // Interpreter
 export * from "./interpreter";

@@ -1,104 +1,118 @@
 import { describe, expect, it } from "vitest";
 import Lexer from "../../src/lexer";
-import { EOF, T, t, tokens } from "../utils/lexer";
-
-const lexer = new Lexer();
+import { T, t, tokens } from "../utils/lexer";
 
 describe("Literals", () => {
   it("Identifier", () => {
-    expect(lexer.toTokens("a")).toStrictEqual(tokens([T.Identifier, "a"]));
+    const a = new Lexer();
+    expect(a.toTokens("a")).toStrictEqual(tokens([T.Identifier, "a"]));
   });
 
   it("Number", () => {
-    expect(lexer.toTokens("10")).toStrictEqual(tokens([T.Number, "10"]));
+    const a = new Lexer();
+    expect(a.toTokens("10")).toStrictEqual(tokens([T.Number, "10"]));
   });
 
   it("Float", () => {
-    expect(lexer.toTokens("10.2")).toStrictEqual(tokens([T.Number, "10.2"]));
+    const a = new Lexer();
+    expect(a.toTokens("10.2")).toStrictEqual(tokens([T.Number, "10.2"]));
   });
 
-  it.todo("Negative Integer", () => {
-    expect(lexer.toTokens("-42")).toStrictEqual(tokens([T.Number, "-42"]));
+  it("Negative Integer", () => {
+    const a = new Lexer();
+    expect(a.toTokens("-42")).toStrictEqual(tokens([T.Number, "-42"]));
   });
 
-  it.todo("Negative Float", () => {
-    expect(lexer.toTokens("-3.14")).toStrictEqual(tokens([T.Number, "-3.14"]));
+  it("Negative Float", () => {
+    const a = new Lexer();
+    expect(a.toTokens("-3.14")).toStrictEqual(tokens([T.Number, "-3.14"]));
+  });
+
+  it("Plus Integer", () => {
+    const a = new Lexer();
+    expect(a.toTokens("+42")).toStrictEqual(tokens([T.Number, "+42"]));
+  });
+
+  it("Plus Float", () => {
+    const a = new Lexer();
+    expect(a.toTokens("+3.14")).toStrictEqual(tokens([T.Number, "+3.14"]));
   });
 
   it("Boolean true", () => {
-    expect(lexer.toTokens("true")).toStrictEqual(
-      tokens([T.Identifier, "true"]),
-    );
+    const a = new Lexer();
+    expect(a.toTokens("true")).toStrictEqual(tokens([T.Identifier, "true"]));
   });
 
   it("Boolean false", () => {
-    expect(lexer.toTokens("false")).toStrictEqual(
-      tokens([T.Identifier, "false"]),
-    );
+    const a = new Lexer();
+    expect(a.toTokens("false")).toStrictEqual(tokens([T.Identifier, "false"]));
   });
 
-  it("Null", () => {
-    expect(lexer.toTokens("null")).toStrictEqual(
-      tokens([T.Identifier, "null"]),
-    );
+  it("Nil", () => {
+    const a = new Lexer();
+    expect(a.toTokens("nil")).toStrictEqual(tokens([T.Identifier, "nil"]));
   });
 
   it("String", () => {
-    expect(lexer.toTokens('"Im\' testing now !"')).toStrictEqual(
+    const a = new Lexer();
+    const b = new Lexer();
+
+    expect(a.toTokens('"Im\' testing now !"')).toStrictEqual(
       tokens([T.String, "Im' testing now !"]),
     );
 
-    expect(lexer.toTokens("'hello'")).toStrictEqual(
-      tokens([T.String, "hello"]),
-    );
+    expect(b.toTokens("'hello'")).toStrictEqual(tokens([T.String, "hello"]));
   });
 
   it("Empty String", () => {
-    expect(lexer.toTokens("''")).toStrictEqual(tokens([T.String, ""]));
+    const a = new Lexer();
+    expect(a.toTokens("''")).toStrictEqual(tokens([T.String, ""]));
   });
 
   it("SkippedLiterals", () => {
-    expect(lexer.toTokens("   \n\t  ")).toStrictEqual([EOF]);
+    const a = new Lexer();
+    expect(a.toTokens("   \n\t\0\b\r  ")).toStrictEqual([]);
   });
 });
 
 describe("Structures", () => {
   it("Array", () => {
+    const a = new Lexer();
     const input = "[1, 'hello', \"world\"]";
     const expected = [
-      t(T.OpeningSquareBracket, "["),
+      t(T.LeftSquareBracket, "["),
       t(T.Number, "1"),
       t(T.Comma, ","),
       t(T.String, "hello"),
       t(T.Comma, ","),
       t(T.String, "world"),
-      t(T.ClosingSquareBracket, "]"),
-      EOF,
+      t(T.RightSquareBracket, "]"),
     ];
 
-    expect(lexer.toTokens(input)).toStrictEqual(expected);
+    expect(a.toTokens(input)).toStrictEqual(expected);
   });
 
-  it.todo("Function", () => {
-    const input = "function hello(name) { const a = name; return a; }";
+  it("Function", () => {
+    const a = new Lexer();
+    const input = "fun hello(name) { mut a = name; ret a; }";
     const expected = [
-      t(T.Function, "function"),
+      t(T.Fun, "fun"),
       t(T.Identifier, "hello"),
-      t(T.OpeningParenthesis, "("),
+      t(T.LeftRoundBracket, "("),
       t(T.Identifier, "name"),
-      t(T.ClosingParenthesis, ")"),
-      t(T.OpeningCurlyBracket, "{"),
-      t(T.Const, "const"),
+      t(T.RightRoundBracket, ")"),
+      t(T.LeftCurlyBracket, "{"),
+      t(T.Mut, "mut"),
       t(T.Identifier, "a"),
-      t(T.Equals, "="),
+      t(T.Assignment, "="),
       t(T.Identifier, "name"),
       t(T.Semicolon, ";"),
-      t(T.Return, "return"),
+      t(T.Ret, "ret"),
+      t(T.Identifier, "a"),
       t(T.Semicolon, ";"),
-      t(T.ClosingCurlyBracket, "}"),
-      EOF,
+      t(T.RightCurlyBracket, "}"),
     ];
 
-    expect(lexer.toTokens(input)).toStrictEqual(expected);
+    expect(a.toTokens(input)).toStrictEqual(expected);
   });
 });

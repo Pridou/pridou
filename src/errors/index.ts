@@ -1,5 +1,5 @@
-import InvalidNodeError from "@/errors/InvalidNode";
-import InvalidTokenError from "@/errors/InvalidToken";
+import InvalidNodeError from "@/errors/InvalidNodeError";
+import InvalidTokenError from "@/errors/InvalidTokenError";
 import InvalidVariableError from "@/errors/InvalidVariableError";
 
 export { InvalidNodeError, InvalidTokenError, InvalidVariableError };

@@ -1,37 +1,51 @@
 export enum LexerTokenType {
-  Equals = "Equals",
-  BinaryOperator = "BinaryOperator",
-  ComparisonOperator = "ComparisonOperator",
-
-  Dot = "Dot",
-  Comma = "Comma",
-  Colon = "Colon",
-  Semicolon = "SemiColon",
-  // SingleQuote = "SingleQuote",
-  // DoubleQuote = 'SingleQuote',
-
-  OpeningParenthesis = "OpeningParenthesis",
-  ClosingParenthesis = "ClosingParenthesis",
-  OpeningCurlyBracket = "OpeningCurlyBracket",
-  ClosingCurlyBracket = "ClosingCurlyBracket",
-  OpeningSquareBracket = "OpeningSquareBracket",
-  ClosingSquareBracket = "ClosingSquareBracket",
+  Fix = "fix",
+  For = "for",
+  Fun = "fun",
+  Mut = "mut",
+  Ret = "ret",
+  Wil = "wil",
 
   Number = "Number",
-  Identifier = "Identifier",
-
   String = "String",
 
-  If = "If",
-  For = "For",
-  Let = "Let",
-  Else = "Else",
-  Const = "Const",
-  While = "While",
-  Return = "Return",
-  Function = "Function",
+  Identifier = "Identifier",
 
-  EndOfFile = "EndOfFile",
+  Modulus = "%",
+  Multiply = "*",
+  Plus = "+",
+  Minus = "-",
+  Divide = "/",
+
+  Increment = "++",
+  Decrement = "--",
+
+  Assignment = "=",
+  ModulusEquals = "%=",
+  MultiplyEquals = "*=",
+  PlusEquals = "+=",
+  MinusEquals = "-=",
+  DivideEquals = "/=",
+
+  LessThan = "<",
+  LessThanOrEqual = "<=",
+  Equality = "==",
+  GreaterThan = ">",
+  GreaterThanOrEqual = ">=",
+
+  Dot = ".",
+  Comma = ",",
+  Colon = ":",
+  Semicolon = ";",
+  SingleQuote = "'",
+  DoubleQuote = '"',
+
+  LeftRoundBracket = "(",
+  RightRoundBracket = ")",
+  LeftCurlyBracket = "{",
+  RightCurlyBracket = "}",
+  LeftSquareBracket = "[",
+  RightSquareBracket = "]",
 }
 
 export interface LexerToken {

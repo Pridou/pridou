@@ -23,7 +23,7 @@ const runWatch = (filePath, options) => {
   try {
     const data = fs.readFileSync(filePath, options.encoding);
     //TODO: temporary
-    console.log(interpreter.evaluateSourceCode(data));
+    console.log(interpreter.run(data));
   } catch (err) {
     isError = true;
     console.log(chalk.red(`[ERROR] ${err.message}`));
@@ -55,7 +55,7 @@ const run = (filePath) => {
   try {
     const data = fs.readFileSync(filePath, options.encoding);
     //TODO: temporary
-    console.log(interpreter.evaluateSourceCode(data));
+    console.log(interpreter.run(data));
   } catch (err) {
     console.log(chalk.red(`[ERROR] ${err.message}`));
   }
@@ -79,7 +79,7 @@ const repl = (filePath) => {
   rl.on("line", (line) => {
     try {
       //TODO: temporary
-      console.log(interpreter.evaluateSourceCode(line, environment));
+      console.log(interpreter.run(line, environment));
     } catch (err) {
       console.log(chalk.red(`[ERROR] ${err.message}`));
     }

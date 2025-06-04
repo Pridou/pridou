@@ -7,41 +7,37 @@ const interpreter = new Interpreter();
 describe("Errors", () => {
   describe("Assignment and declarations", () => {
     it("Assign value to undeclared variable", () => {
-      expect(() => interpreter.evaluateSourceCode("a = 1;")).toThrow(
+      expect(() => interpreter.eval("a = 1;")).toThrow(
         new InvalidVariableError('Variable "a was not found."'),
       );
     });
 
     it("Get value from undeclared variable", () => {
-      expect(() => interpreter.evaluateSourceCode("a")).toThrow(
-        new InvalidVariableError('Variable "a was not found."'),
+      expect(() => interpreter.eval("a")).toThrow(
+        new InvalidVariableError('Variable "a" was not found.'),
       );
     });
 
     it("Assign value to immutable variable", () => {
-      expect(() =>
-        interpreter.evaluateSourceCode("const a = 1; a = 2;"),
-      ).toThrow(new InvalidVariableError('Constant "a" cannot be reassigned.'));
+      expect(() => interpreter.eval("fix a = 1; a = 2;")).toThrow(
+        new InvalidVariableError('Constant "a" cannot be reassigned.'),
+      );
     });
 
     it("Variable already declared", () => {
-      expect(() =>
-        interpreter.evaluateSourceCode("const hello = 1; let hello = 2;"),
-      ).toThrow(
+      expect(() => interpreter.eval("fix hello = 1; mut hello = 2;")).toThrow(
         new InvalidVariableError('Variable "hello" has already been declared.'),
       );
 
-      expect(() =>
-        interpreter.evaluateSourceCode("let hello = 1; const hello = 2;"),
-      ).toThrow(
+      expect(() => interpreter.eval("mut hello = 1; fix hello = 2;")).toThrow(
         new InvalidVariableError('Variable "hello" has already been declared.'),
       );
     });
 
     it("Shadow immut in function", () => {
       expect(() =>
-        interpreter.evaluateSourceCode(
-          "const hello = 2; function test() { let hello = 1; } test();",
+        interpreter.eval(
+          "fix hello = 2; fun test() { mut hello = 1; } test();",
         ),
       ).toThrow(
         new InvalidVariableError(
@@ -51,50 +47,60 @@ describe("Errors", () => {
     });
 
     it("Expect a function", () => {
-      expect(() => interpreter.evaluateSourceCode("let test; test();")).toThrow(
-        new InvalidNodeError("Expected a function, but got Null."),
+      expect(() => interpreter.eval("mut test; test();")).toThrow(
+        new InvalidNodeError("Expected a function, but got nil."),
       );
+    });
+
+    it("Expect variable in function", () => {
+      expect(() =>
+        interpreter.eval("fun test(a, b) {ret a + b;} test();"),
+      ).toThrow(new InvalidVariableError('Variable "a" was not found.'));
+    });
+
+    it("Call stack exceeded", () => {
+      expect(() =>
+        interpreter.eval("fun test(a, b) {ret test(a, b);} test(1, 2);"),
+      ).toThrow(new RangeError("Maximum call stack size exceeded"));
     });
   });
 
   describe("BinaryOperations", () => {
     it("Subtract string and number", () => {
-      expect(() => interpreter.evaluateSourceCode("'hello' - 5")).toThrow(
+      expect(() => interpreter.eval("'hello' - 5")).toThrow(
         new InvalidNodeError("Invalid operation: hello - 5"),
       );
     });
 
     //? Can be an expected behavior ("hello" * 2 = "hellohello")
     it("Multiply string and number", () => {
-      expect(() => interpreter.evaluateSourceCode("'hello' * 5")).toThrow(
+      expect(() => interpreter.eval("'hello' * 5")).toThrow(
         new InvalidNodeError("Invalid operation: hello * 5"),
       );
     });
 
     it("Divide string and number", () => {
-      expect(() => interpreter.evaluateSourceCode("'hello' / 5")).toThrow(
+      expect(() => interpreter.eval("'hello' / 5")).toThrow(
         new InvalidNodeError("Invalid operation: hello / 5"),
       );
     });
 
     it("Substract boolean and string", () => {
-      expect(() => interpreter.evaluateSourceCode("true - 'test'")).toThrow(
-        new InvalidNodeError("Invalid operation: 1 - test"),
+      expect(() => interpreter.eval("true - 'test'")).toThrow(
+        new InvalidNodeError("Invalid operation: true - test"),
       );
     });
 
     it("Subtract string and string", () => {
-      expect(() =>
-        interpreter.evaluateSourceCode("'hello' - 'hello2'"),
-      ).toThrow(new InvalidNodeError("Invalid operation: hello - hello2"));
+      expect(() => interpreter.eval("'hello' - 'hello2'")).toThrow(
+        new InvalidNodeError("Invalid operation: hello - hello2"),
+      );
     });
   });
 
   describe("Statements", () => {
     it("Return top level error", () => {
-      expect(() =>
-        interpreter.evaluateSourceCode("let ok = 'test'; return ok+2;"),
-      ).toThrow(
+      expect(() => interpreter.eval("mut ok = 'test'; ret ok + 2;")).toThrow(
         new InvalidNodeError(
           "Expected a number as return value, but got String.",
         ),

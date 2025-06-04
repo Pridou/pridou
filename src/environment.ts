@@ -1,50 +1,20 @@
-import { InvalidVariableError } from "@/errors";
+import type { InterpreterValue } from "@/types/interpreter";
 
-import {
-  type InterpreterBoolean,
-  type InterpreterNull,
-  type InterpreterValue,
-  InterpreterValueType,
-} from "@/types/interpreter";
+import InvalidVariableError from "@/errors/InvalidVariableError";
 
 export default class Environment {
   readonly #parent?: Environment;
-  readonly #constants: Set<string>;
-  readonly #variables: Map<string, InterpreterValue>;
+  #constants: Set<string>;
+  #variables: Map<string, InterpreterValue>;
 
   public constructor(parent?: Environment) {
     this.#parent = parent;
     this.#constants = new Set<string>();
     this.#variables = new Map<string, InterpreterValue>();
+  }
 
-    if (!this.#parent) {
-      this.addVariable(
-        "false",
-        <InterpreterBoolean>{
-          type: InterpreterValueType.Boolean,
-          value: 0,
-        },
-        true,
-      );
-
-      this.addVariable(
-        "true",
-        <InterpreterBoolean>{
-          type: InterpreterValueType.Boolean,
-          value: 1,
-        },
-        true,
-      );
-
-      this.addVariable(
-        "null",
-        <InterpreterNull>{
-          type: InterpreterValueType.Null,
-          value: null,
-        },
-        true,
-      );
-    }
+  public get parent(): Environment | undefined {
+    return this.#parent;
   }
 
   public addVariable(
@@ -92,7 +62,7 @@ export default class Environment {
       environment = environment.#parent;
     }
 
-    throw new InvalidVariableError(`Variable "${identifier} was not found."`);
+    throw new InvalidVariableError(`Variable "${identifier}" was not found.`);
   }
 
   public setVariable(

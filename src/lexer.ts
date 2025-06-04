@@ -1,180 +1,264 @@
-import { InvalidTokenError } from "@/errors";
-
-import { isIdentifier, isNumber } from "@/utils";
+// TODO: Maybe count boundaries (i.e. { { ... } }, /* /* ... */ */) for nesting
 
 import { type LexerToken, LexerTokenType } from "@/types/lexer";
 
-const BASIC_TOKENS: Map<string, LexerTokenType> = new Map([
-  ["%", LexerTokenType.BinaryOperator],
-  ["*", LexerTokenType.BinaryOperator],
-  ["+", LexerTokenType.BinaryOperator],
-  ["-", LexerTokenType.BinaryOperator],
-  ["/", LexerTokenType.BinaryOperator],
-  [".", LexerTokenType.Dot],
-  [",", LexerTokenType.Comma],
-  [":", LexerTokenType.Colon],
-  [";", LexerTokenType.Semicolon],
-  ["(", LexerTokenType.OpeningParenthesis],
-  [")", LexerTokenType.ClosingParenthesis],
-  ["{", LexerTokenType.OpeningCurlyBracket],
-  ["}", LexerTokenType.ClosingCurlyBracket],
-  ["[", LexerTokenType.OpeningSquareBracket],
-  ["]", LexerTokenType.ClosingSquareBracket],
-]);
+import { CLASSIC_TOKENS, RESERVED_TOKENS, SKIPPED_TOKENS } from "@/else/lexer";
+import { isIdentifier, isNumber } from "@/utils";
 
-const RESERVED_TOKENS: Map<string, LexerTokenType> = new Map([
-  ["let", LexerTokenType.Let],
-  ["const", LexerTokenType.Const],
-  ["function", LexerTokenType.Function],
-  ["return", LexerTokenType.Return],
-]);
-
-const SKIPPED_TOKENS: Set<string> = new Set([
-  " ",
-  "\0",
-  "\b",
-  "\f",
-  "\n",
-  "\r",
-  "\t",
-  "\v",
-  "\\",
-]);
+import InvalidTokenError from "@/errors/InvalidTokenError";
 
 export default class Lexer {
-  private toToken(type: LexerTokenType, value: string): LexerToken {
-    return { type, value };
+  #source: string[] = [];
+  #tokens: LexerToken[] = [];
+
+  private peek(offset = 0): string {
+    return this.#source[offset];
+  }
+
+  private save(type: LexerTokenType, value: string): void {
+    this.#tokens.push({ type, value });
+  }
+
+  private shift(offset = 1): string {
+    let shift = "";
+
+    for (let i = 0; i < offset; i++) {
+      shift += this.#source.shift();
+    }
+
+    return shift;
   }
 
   public toTokens(sourceCode: string): LexerToken[] {
-    const tokens: LexerToken[] = [];
-    const source: string[] = sourceCode.split("");
+    this.#source = sourceCode.split("");
 
-    while (source.length > 0) {
-      if (BASIC_TOKENS.has(source[0])) {
-        tokens.push(
-          this.toToken(
-            <LexerTokenType>BASIC_TOKENS.get(source[0]),
-            <string>source.shift(),
-          ),
+    while (this.#source.length > 0) {
+      // Parse one-line comments
+      if (this.peek() === "/" && this.peek(1) === "/") {
+        while (this.peek() !== "\n") {
+          this.shift();
+        }
+
+        // Shift "\n"
+        this.shift();
+
+        continue;
+      }
+
+      // Parse many-lines comments
+      if (this.peek() === "/" && this.peek(2) === "*") {
+        // Shift "/*"
+        this.shift(2);
+
+        while (this.peek() !== "*" && this.peek(1) !== "/") {
+          this.shift();
+        }
+
+        // Shift "*/"
+        this.shift(2);
+
+        continue;
+      }
+
+      // Parse numbers
+      if (isNumber(this.peek())) {
+        let number: string = this.shift();
+
+        while (isNumber(this.peek())) {
+          number += this.shift();
+        }
+
+        if (this.peek() === LexerTokenType.Dot) {
+          number += this.shift();
+        }
+
+        while (isNumber(this.peek())) {
+          number += this.shift();
+        }
+
+        this.save(LexerTokenType.Number, number);
+
+        continue;
+      }
+
+      // Parse identifiers
+      if (isIdentifier(this.peek())) {
+        let identifier: string = this.shift();
+
+        while (isIdentifier(this.peek())) {
+          identifier += this.shift();
+        }
+
+        this.save(
+          RESERVED_TOKENS.get(identifier) ?? LexerTokenType.Identifier,
+          identifier,
         );
 
         continue;
       }
 
-      switch (source[0]) {
-        case '"':
-        case "'": {
-          const quote = <string>source.shift();
-          let string = "";
+      // Parse skipped
+      if (SKIPPED_TOKENS.has(this.peek())) {
+        this.shift();
 
-          while (source.length > 0 && source[0] !== quote) {
-            string += source.shift();
+        continue;
+      }
+
+      // Parse classics
+      if (CLASSIC_TOKENS.has(this.peek())) {
+        this.save(
+          <LexerTokenType>CLASSIC_TOKENS.get(this.peek()),
+          this.shift(),
+        );
+
+        continue;
+      }
+
+      let token = "";
+
+      switch (this.peek()) {
+        // Parse strings
+        case LexerTokenType.SingleQuote:
+        case LexerTokenType.DoubleQuote: {
+          let string = "";
+          const quote = this.shift();
+
+          while (this.#source.length > 0 && this.peek() !== quote) {
+            string += this.shift();
           }
 
-          if (source[0] !== quote) {
+          if (this.#source.length === 0) {
             throw new InvalidTokenError("Unterminated string literal.");
           }
 
-          source.shift();
+          this.shift();
 
-          tokens.push(this.toToken(LexerTokenType.String, string));
+          this.save(LexerTokenType.String, string);
 
           break;
         }
-        case "=":
-          if (source[1] === "=") {
-            source.shift();
-            source.shift();
+        case LexerTokenType.Modulus:
+        case LexerTokenType.Multiply:
+        case LexerTokenType.Divide:
+          token = this.shift();
 
-            tokens.push(this.toToken(LexerTokenType.ComparisonOperator, "=="));
-
-            break;
+          if (this.peek() === LexerTokenType.Assignment) {
+            token += this.shift();
           }
 
-          tokens.push(
-            this.toToken(LexerTokenType.Equals, <string>source.shift()),
-          );
+          this.save(<LexerTokenType>token, token);
 
           break;
-        case "!":
-        case "<":
-        case ">":
-          if (source[1] === "=") {
-            tokens.push(
-              this.toToken(
-                LexerTokenType.ComparisonOperator,
-                `${source.shift()}=`,
-              ),
-            );
+        case LexerTokenType.Plus:
+          token = this.shift();
 
-            source.shift();
+          if (this.peek() === LexerTokenType.Plus) {
+            this.save(LexerTokenType.Increment, token + this.shift());
 
             break;
           }
 
-          tokens.push(
-            this.toToken(
-              LexerTokenType.ComparisonOperator,
-              <string>source.shift(),
-            ),
-          );
+          if (this.peek() === LexerTokenType.Assignment) {
+            this.save(LexerTokenType.Assignment, token + this.shift());
+
+            break;
+          }
+
+          if (isNumber(this.peek())) {
+            while (isNumber(this.peek())) {
+              token += this.shift();
+            }
+
+            if (this.peek() === LexerTokenType.Dot) {
+              token += this.shift();
+            }
+
+            while (isNumber(this.peek())) {
+              token += this.shift();
+            }
+
+            this.save(LexerTokenType.Number, token);
+
+            break;
+          }
+
+          // TODO: Add support for identifiers (i.e. +<identifier>)
+
+          this.save(LexerTokenType.Plus, token);
+
+          break;
+        case LexerTokenType.Minus:
+          token = this.shift();
+
+          if (this.peek() === LexerTokenType.Minus) {
+            this.save(LexerTokenType.Decrement, token + this.shift());
+
+            break;
+          }
+
+          if (this.peek() === LexerTokenType.Assignment) {
+            this.save(LexerTokenType.Assignment, token + this.shift());
+
+            break;
+          }
+
+          if (isNumber(this.peek())) {
+            while (isNumber(this.peek())) {
+              token += this.shift();
+            }
+
+            if (this.peek() === LexerTokenType.Dot) {
+              token += this.shift();
+            }
+
+            while (isNumber(this.peek())) {
+              token += this.shift();
+            }
+
+            this.save(LexerTokenType.Number, token);
+
+            break;
+          }
+
+          // TODO: Add support for identifiers (i.e. -<identifier>)
+
+          this.save(LexerTokenType.Minus, token);
+
+          break;
+        case LexerTokenType.Assignment:
+          token = this.shift();
+
+          if (this.peek() === LexerTokenType.Assignment) {
+            this.save(LexerTokenType.Equality, token + this.shift());
+
+            break;
+          }
+
+          this.save(LexerTokenType.Assignment, token);
+
+          break;
+        case LexerTokenType.LessThan:
+        case LexerTokenType.GreaterThan:
+          token = this.shift();
+
+          if (this.peek() === LexerTokenType.Assignment) {
+            token += this.shift();
+
+            this.save(<LexerTokenType>token, token);
+
+            break;
+          }
+
+          this.save(<LexerTokenType>token, token);
 
           break;
         default:
-          if (isNumber(source[0])) {
-            let number = "";
-
-            while (source.length > 0 && isNumber(source[0])) {
-              number += source.shift();
-            }
-
-            if (source[0] === ".") {
-              number += source.shift();
-
-              if (isNumber(source[0])) {
-                while (source.length > 0 && isNumber(source[0])) {
-                  number += source.shift();
-                }
-              }
-            }
-
-            tokens.push(this.toToken(LexerTokenType.Number, number));
-
-            break;
-          }
-
-          if (isIdentifier(source[0])) {
-            let identifier = "";
-
-            while (source.length > 0 && isIdentifier(source[0])) {
-              identifier += source.shift();
-            }
-
-            tokens.push(
-              this.toToken(
-                RESERVED_TOKENS.get(identifier) ?? LexerTokenType.Identifier,
-                identifier,
-              ),
-            );
-
-            break;
-          }
-
-          if (SKIPPED_TOKENS.has(source[0])) {
-            source.shift();
-
-            break;
-          }
-
-          throw new InvalidTokenError(`Invalid identifier: ${source[0]}`);
+          throw new InvalidTokenError(
+            `Invalid token ${this.peek()} was found.`,
+          );
       }
     }
 
-    tokens.push(
-      this.toToken(LexerTokenType.EndOfFile, LexerTokenType.EndOfFile),
-    );
-
-    return tokens;
+    return this.#tokens;
   }
 }
