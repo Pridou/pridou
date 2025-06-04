@@ -10,9 +10,8 @@
 
 <p align="center">
   <a href="#-getting-started">Getting started</a> •
-  <a href="#-features">Features</a> •
+  <a href="#%EF%B8%8F-how-to-use">How to use</a> •
   <a href="#%EF%B8%8F-roadmap">Roadmap</a> •
-    <a href="#-how-to-use">How to use</a> •
   <a href="#-resources">Resources</a> •
   <a href="#-contributors">Contributors</a>
 </p>
@@ -82,21 +81,29 @@
 
 # 🛠️ How to use
 
-You can use Pridou as a library in your own Node.js project:
+- ## 📦 Install
+    First install Pridou in your project with:
 
-```js
-import Pridou, { Environment } from "pridoujs";
+    ```bash
+    npm install pridoujs
+    ```
 
-const code = `
-mut a = 1 + 2;
-ret a;
-`;
+- ## 📝 Example usage
+    Then you can use Pridou as a library in your own Node.js project:
 
-const env = new Environment(); // optional
-const interpreter = new Pridou(env);
-const result = interpreter.eval(code); // or interpreter.run(code)
-console.log(result);
-```
+    ```js
+    import Pridou, { Environment } from "pridoujs";
+
+    const code = `
+        mut a = 1 + 2;
+        ret a;
+    `;
+
+    const env = new Environment(); // optional
+    const interpreter = new Pridou(env);
+    const result = interpreter.eval(code); // or interpreter.run(code)
+    console.log(result);
+    ```
 
 # 🛤️ Roadmap
 
@@ -107,7 +114,7 @@ console.log(result);
 
 # 📎 Resources
 
--   📦 [Npm](https://www.npmjs.com/package/pridou)
+-   📦 [Npm](https://www.npmjs.com/package/pridoujs)
 
 # 🤝 Contributors
 
