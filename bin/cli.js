@@ -5,15 +5,16 @@ import { createRequire } from "node:module";
 import { createInterface } from "node:readline";
 import chalk from "chalk";
 import { Command, Option } from "commander";
-import Interpreter, { Environment } from "../lib/index.js";
+import Pridou, { Environment } from "../lib/index.js";
 
 const require = createRequire(import.meta.url);
 
 const { name, description, version } = require("../package.json");
 const program = new Command();
-const interpreter = new Interpreter();
+const pridou = new Pridou();
 
 const runWatch = (filePath, options) => {
+  pridou.setEnvironment(new Environment()); // Reset environment
   const now = new Date().toLocaleTimeString();
   let isError = false;
 
@@ -22,8 +23,7 @@ const runWatch = (filePath, options) => {
 
   try {
     const data = fs.readFileSync(filePath, options.encoding);
-    //TODO: temporary
-    console.log(interpreter.run(data));
+    console.log(pridou.eval(data));
   } catch (err) {
     isError = true;
     console.log(chalk.red(`[ERROR] ${err.message}`));
@@ -54,8 +54,7 @@ const run = (filePath) => {
 
   try {
     const data = fs.readFileSync(filePath, options.encoding);
-    //TODO: temporary
-    console.log(interpreter.run(data));
+    pridou.run(data);
   } catch (err) {
     console.log(chalk.red(`[ERROR] ${err.message}`));
   }
@@ -71,7 +70,6 @@ const repl = (filePath) => {
     input: process.stdin,
     output: process.stdout,
   });
-  const environment = new Environment();
 
   console.log(`Welcome to ${name} v${version}.`);
   rl.prompt();
@@ -79,7 +77,7 @@ const repl = (filePath) => {
   rl.on("line", (line) => {
     try {
       //TODO: temporary
-      console.log(interpreter.run(line, environment));
+      console.log(pridou.eval(line));
     } catch (err) {
       console.log(chalk.red(`[ERROR] ${err.message}`));
     }

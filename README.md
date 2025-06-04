@@ -85,14 +85,15 @@
 You can use Pridou as a library in your own Node.js project:
 
 ```js
-import Interpreter from "pridou";
+import Pridou, { Environment } from "pridou";
 
 const code = `
 mut a = 1 + 2;
 ret a;
 `;
 
-const interpreter = new Interpreter();
+const env = new Environment(); // optional
+const interpreter = new Pridou(env);
 const result = interpreter.eval(code); // or interpreter.run(code)
 console.log(result);
 ```

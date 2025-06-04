@@ -37,6 +37,13 @@ import InvalidNodeError from "@/errors/InvalidNodeError";
 import InvalidTokenError from "@/errors/InvalidTokenError";
 
 export default class Interpreter {
+  private env: Environment;
+
+  constructor(environment: Environment = new Environment()) {
+    this.init(environment);
+    this.env = environment;
+  }
+
   private init(environment: Environment): void {
     for (const [identifier, value] of NATIVE_CONSTANTS) {
       environment.addVariable(identifier, value, true);
@@ -348,27 +355,18 @@ export default class Interpreter {
     }
   }
 
-  public eval(
-    sourceCode: string,
-    environment: Environment = new Environment(),
-  ): InterpreterValue {
-    this.init(environment);
+  public setEnvironment(environment: Environment) {
+    this.env = environment;
+  }
 
+  public eval(sourceCode: string): InterpreterValue {
     return this.evaluateNode(
       new Parser().sourceCodeToAST(sourceCode),
-      environment,
+      this.env,
     );
   }
 
-  public run(
-    sourceCode: string,
-    environment: Environment = new Environment(),
-  ): void {
-    this.init(environment);
-
-    // FIXME: Remove console.log for production
-    console.log(
-      this.evaluateNode(new Parser().sourceCodeToAST(sourceCode), environment),
-    );
+  public run(sourceCode: string): void {
+    this.evaluateNode(new Parser().sourceCodeToAST(sourceCode), this.env);
   }
 }
