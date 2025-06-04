@@ -36,7 +36,9 @@ const runWatch = (filePath, options) => {
   );
 };
 
-const run = (filePath, options) => {
+const run = (filePath) => {
+  const options = program.opts();
+
   const exists = fs.existsSync(filePath);
   if (!exists) program.error("error: the specified path does not exist");
 
@@ -50,12 +52,21 @@ const run = (filePath, options) => {
     return;
   }
 
-  const data = fs.readFileSync(filePath, options.encoding);
-  //TODO: temporary
-  console.log(interpreter.evaluateSourceCode(data));
+  try {
+    const data = fs.readFileSync(filePath, options.encoding);
+    //TODO: temporary
+    console.log(interpreter.evaluateSourceCode(data));
+  } catch (err) {
+    console.log(chalk.red(`[ERROR] ${err.message}`));
+  }
 };
 
-const repl = () => {
+const repl = (filePath) => {
+  if (filePath) {
+    run(filePath);
+    return;
+  }
+
   const rl = createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -77,16 +88,21 @@ const repl = () => {
   });
 };
 
-program.name(name).description(description).version(version).action(repl);
+program
+  .name(name)
+  .description(description)
+  .version(version)
+  .argument("[file]", "file to execute")
+  .addOption(new Option("-w, --watch", "watch mode").default(false))
+  .addOption(
+    new Option("-e, --encoding <encoding>", "file encoding").default("utf8"),
+  )
+  .action(repl);
 
 program
   .command("run")
   .description("Run a pridou file.")
   .argument("<file>", "file to execute")
-  .addOption(new Option("-w, --watch", "watch mode").default(false))
-  .addOption(
-    new Option("-e, --encoding <encoding>", "file encoding").default("utf8"),
-  )
   .action(run);
 
 program.helpCommand(true);
