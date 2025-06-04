@@ -117,15 +117,15 @@ export default class Parser {
 	private parseBlockBody(): ASTNode[] {
 		this.expect(LexerTokenType.LeftCurlyBracket);
 
-		const blockBody: ASTNode[] = [];
+		const body: ASTNode[] = [];
 
 		while (this.peek().type !== LexerTokenType.RightCurlyBracket) {
-			blockBody.push(this.parseStatement());
+			body.push(this.parseStatement());
 		}
 
 		this.expect(LexerTokenType.RightCurlyBracket);
 
-		return blockBody;
+		return body;
 	}
 
 	private parseFunctionDeclarationStatement(): ASTFunctionDeclarationStatement {
@@ -165,13 +165,13 @@ export default class Parser {
 		this.expect(LexerTokenType.Ret);
 
 		// TODO: Same for typing
-		const assignmentExpression: ASTNode = this.parseAssignmentExpression();
+		const expression: ASTNode = this.parseAssignmentExpression();
 
 		this.expect(LexerTokenType.Semicolon);
 
 		return <ASTReturnStatement>{
 			type: ASTNodeType.ReturnStatement,
-			value: assignmentExpression,
+			value: expression,
 		};
 	}
 
@@ -284,7 +284,7 @@ export default class Parser {
 		if (this.peek().type === LexerTokenType.Assignment) {
 			this.expect(LexerTokenType.Assignment);
 
-			const assignmentExpression: ASTAssignmentExpression = {
+			const expression: ASTAssignmentExpression = {
 				type: ASTNodeType.AssignmentExpression,
 				value: this.parseComparisonExpression(),
 				leftExpression,
@@ -292,7 +292,7 @@ export default class Parser {
 
 			this.expect(";");
 
-			return assignmentExpression;
+			return expression;
 		}
 
 		// TODO: Support complex assignment operators
@@ -327,12 +327,12 @@ export default class Parser {
 		// Parse function calls
 		if (this.peek().type === LexerTokenType.Identifier) {
 			if (this.peek(1).type === LexerTokenType.LeftRoundBracket) {
-				const functionCall: ASTFunctionCallExpression =
+				const expression: ASTFunctionCallExpression =
 					this.parseFunctionCallExpression(this.shift().value);
 
 				this.expect(LexerTokenType.Semicolon);
 
-				return functionCall;
+				return expression;
 			}
 		}
 
