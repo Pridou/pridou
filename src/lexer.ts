@@ -19,7 +19,7 @@ function consume(source: string[], count: number = 1): string {
 }
 
 const reservedKeywords: { [key: string]: LexerTokenType } = {
-  immut: LexerTokenType.Const,
+  fix: LexerTokenType.Const,
   function: LexerTokenType.Function,
   mut: LexerTokenType.Let,
   if: LexerTokenType.If,
@@ -30,8 +30,6 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
   default: LexerTokenType.Default,
   break: LexerTokenType.Break,
   while: LexerTokenType.While,
-  
-  
 
   and: LexerTokenType.And,
   or: LexerTokenType.Or,
@@ -41,17 +39,7 @@ const reservedKeywords: { [key: string]: LexerTokenType } = {
 };
 
 // TODO: Support unicode and hex
-const canBeSkippedValues: Set<string> = new Set<string>([
-  " ",
-  "\0",
-  "\b",
-  "\f",
-  "\n",
-  "\r",
-  "\t",
-  "\v",
-  "\\",
-]);
+const canBeSkippedValues: Set<string> = new Set<string>([" ", "\0", "\b", "\f", "\n", "\r", "\t", "\v", "\\"]);
 
 function shouldBeSkipped(value: string): boolean {
   return canBeSkippedValues.has(value);
@@ -86,13 +74,9 @@ export function tokenize(sourceCode: string): LexerToken[] {
       case "=":
         if (source[1] == "=") {
           if (source[2] == "=") {
-            tokens.push(
-              toToken(LexerTokenType.ComparisonOperator, consume(source, 3))
-            );
+            tokens.push(toToken(LexerTokenType.ComparisonOperator, consume(source, 3)));
           } else {
-            tokens.push(
-              toToken(LexerTokenType.ComparisonOperator, consume(source, 2))
-            );
+            tokens.push(toToken(LexerTokenType.ComparisonOperator, consume(source, 2)));
           }
         } else {
           tokens.push(toToken(LexerTokenType.Equals, source.shift()));
@@ -102,26 +86,18 @@ export function tokenize(sourceCode: string): LexerToken[] {
       case "<":
       case ">":
         if (source[1] == "=") {
-          tokens.push(
-            toToken(LexerTokenType.ComparisonOperator, consume(source, 2))
-          );
+          tokens.push(toToken(LexerTokenType.ComparisonOperator, consume(source, 2)));
         } else {
-          tokens.push(
-            toToken(LexerTokenType.ComparisonOperator, source.shift())
-          );
+          tokens.push(toToken(LexerTokenType.ComparisonOperator, source.shift()));
         }
         break;
 
       case "!":
         if (source[1] == "=") {
           if (source[2] == "=") {
-            tokens.push(
-              toToken(LexerTokenType.ComparisonOperator, consume(source, 3))
-            );
+            tokens.push(toToken(LexerTokenType.ComparisonOperator, consume(source, 3)));
           } else {
-            tokens.push(
-              toToken(LexerTokenType.ComparisonOperator, consume(source, 2))
-            );
+            tokens.push(toToken(LexerTokenType.ComparisonOperator, consume(source, 2)));
           }
         } else {
           tokens.push(toToken(LexerTokenType.Not, source.shift()));
@@ -133,12 +109,12 @@ export function tokenize(sourceCode: string): LexerToken[] {
       case "*":
       case "/":
       case "%":
-  if (source[1] === "=") {
-    tokens.push(toToken(LexerTokenType.Equals, consume(source, 2))); 
-  } else {
-    tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
-  }
-  break;
+        if (source[1] === "=") {
+          tokens.push(toToken(LexerTokenType.Equals, consume(source, 2)));
+        } else {
+          tokens.push(toToken(LexerTokenType.BinaryOperator, source.shift()));
+        }
+        break;
 
       case ",":
         tokens.push(toToken(LexerTokenType.Comma, source.shift()));
@@ -159,24 +135,16 @@ export function tokenize(sourceCode: string): LexerToken[] {
         tokens.push(toToken(LexerTokenType.ClosingParenthesis, source.shift()));
         break;
       case "{":
-        tokens.push(
-          toToken(LexerTokenType.OpeningCurlyBracket, source.shift())
-        );
+        tokens.push(toToken(LexerTokenType.OpeningCurlyBracket, source.shift()));
         break;
       case "}":
-        tokens.push(
-          toToken(LexerTokenType.ClosingCurlyBracket, source.shift())
-        );
+        tokens.push(toToken(LexerTokenType.ClosingCurlyBracket, source.shift()));
         break;
       case "[":
-        tokens.push(
-          toToken(LexerTokenType.OpeningSquareBracket, source.shift())
-        );
+        tokens.push(toToken(LexerTokenType.OpeningSquareBracket, source.shift()));
         break;
       case "]":
-        tokens.push(
-          toToken(LexerTokenType.ClosingSquareBracket, source.shift())
-        );
+        tokens.push(toToken(LexerTokenType.ClosingSquareBracket, source.shift()));
         break;
       default:
         if (isBuildingString) {
@@ -192,9 +160,7 @@ export function tokenize(sourceCode: string): LexerToken[] {
             alpha += source.shift();
           }
 
-          tokens.push(
-            toToken(reservedKeywords[alpha] ?? LexerTokenType.Alpha, alpha)
-          );
+          tokens.push(toToken(reservedKeywords[alpha] ?? LexerTokenType.Alpha, alpha));
 
           break;
         }
@@ -202,10 +168,7 @@ export function tokenize(sourceCode: string): LexerToken[] {
         if (isNumber(source[0])) {
           let number: string = "";
 
-          while (
-            source.length > 0 &&
-            (isNumber(source[0]) || source[0] === ".")
-          ) {
+          while (source.length > 0 && (isNumber(source[0]) || source[0] === ".")) {
             if (!(source[0] === "." && number.includes("."))) {
               number += source.shift();
             }
