@@ -50,7 +50,7 @@ export default class Lexer {
       }
 
       // Parse many-lines comments
-      if (this.peek() === "/" && this.peek(2) === "*") {
+      if (this.peek() === "/" && this.peek(1) === "*") {
         // Shift "/*"
         this.shift(2);
 
