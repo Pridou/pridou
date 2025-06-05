@@ -114,6 +114,34 @@ describe("Statements", () => {
 
     expect(a.toTokens(input)).toStrictEqual(expected);
   });
+
+  it("Comment", () => {
+    const a = new Lexer();
+    const input = "mut a = 0; // my comment mut b = 1;\n";
+    const expected = [
+      t(T.Mut, "mut"),
+      t(T.Identifier, "a"),
+      t(T.Assignment, "="),
+      t(T.Number, "0"),
+      t(T.Semicolon, ";"),
+    ];
+
+    expect(a.toTokens(input)).toStrictEqual(expected);
+  });
+
+  it("Multi line comment", () => {
+    const a = new Lexer();
+    const input = "mut a = 0; /* my comment mut b = 1; */";
+    const expected = [
+      t(T.Mut, "mut"),
+      t(T.Identifier, "a"),
+      t(T.Assignment, "="),
+      t(T.Number, "0"),
+      t(T.Semicolon, ";"),
+    ];
+
+    expect(a.toTokens(input)).toStrictEqual(expected);
+  });
 });
 
 describe("Variables", () => {

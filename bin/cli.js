@@ -76,7 +76,6 @@ const repl = (filePath) => {
 
   rl.on("line", (line) => {
     try {
-      //TODO: temporary
       console.log(pridou.eval(line));
     } catch (err) {
       console.log(chalk.red(`[ERROR] ${err.message}`));

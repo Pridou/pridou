@@ -134,6 +134,6 @@
 [issues-shield]: https://img.shields.io/github/issues/Pridou/pridou.svg?style=for-the-badge
 [issues-url]: https://github.com/Pridou/pridou/issues
 [license-shield]: https://img.shields.io/github/license/Pridou/pridou.svg?style=for-the-badge
-[license-url]: https://github.com/Pridou/pridou/blob/main/LICENSE.txt
+[license-url]: https://github.com/Pridou/pridou/blob/main/LICENCE
 [codecov-shield]: https://codecov.io/github/Pridou/pridou/graph/badge.svg?token=B5VBQNY4NV
 [codecov-url]: https://codecov.io/github/Pridou/pridou

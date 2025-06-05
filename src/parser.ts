@@ -194,7 +194,7 @@ export default class Parser {
     const isSemicolon = this.peek().type === LexerTokenType.Semicolon;
     const expression: ASTNode = isSemicolon
       ? <ASTNumber>{ type: ASTNodeType.Number, value: 0 }
-      : this.parseAdditiveExpression();
+      : this.parseComparisonExpression();
 
     if (expression.type !== ASTNodeType.FunctionCallExpression) {
       this.expect(LexerTokenType.Semicolon);
