@@ -13,10 +13,6 @@ export default class Environment {
 		this.#variables = new Map<string, InterpreterValue>();
 	}
 
-	public get parent(): Environment | undefined {
-		return this.#parent;
-	}
-
 	public addVariable(
 		identifier: string,
 		value: InterpreterValue,
